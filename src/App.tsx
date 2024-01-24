@@ -1,43 +1,43 @@
-import { Router, Route, Link, useState } from "kaioken"
+import { useContext } from "kaioken"
+import { BoardContext, BoardProvider } from "./state/BoardProvider"
+import { GlobalProvider, GlobalDispatchCtx } from "./state/GlobalProvider"
+import { Board } from "./components/Board"
 
 export function App() {
   return (
-    <div className="text-center">
-      <nav className="flex gap-2 justify-center">
-        <Link className="p-2 text-blue-500" to="/">
-          Home
-        </Link>
-        <Link className="p-2 text-blue-500" to="/counter">
-          Counter
-        </Link>
-      </nav>
-      <main className="p-2">
-        <Router>
-          <Route
-            path="/"
-            element={() => (
-              <div className="text-xl font-bold">Hello world!</div>
-            )}
-          />
-          <Route path="/counter" element={Counter} />
-        </Router>
-      </main>
-    </div>
+    <GlobalProvider>
+      <BoardProvider>
+        <Nav />
+        <Main />
+      </BoardProvider>
+    </GlobalProvider>
   )
 }
 
-function Counter() {
-  const [count, setCount] = useState(0)
-
+function Nav() {
+  const board = useContext(BoardContext)
   return (
-    <div className="flex flex-col gap-2">
-      <p>Count: {count}</p>
-      <button
-        className="p-2 bg-blue-500 text-white"
-        onclick={() => setCount((prev) => prev + 1)}
-      >
-        Increment
-      </button>
-    </div>
+    <nav className="p-8 ">
+      <h1>{board.title}</h1>
+    </nav>
+  )
+}
+
+function Main() {
+  const dispatch = useContext(GlobalDispatchCtx)
+
+  function handleMouseMove(e: MouseEvent) {
+    dispatch({
+      type: "UPDATE_MOUSE_POS",
+      payload: {
+        x: e.clientX,
+        y: e.clientY,
+      },
+    })
+  }
+  return (
+    <main onmousemove={handleMouseMove}>
+      <Board />
+    </main>
   )
 }

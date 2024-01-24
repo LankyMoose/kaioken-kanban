@@ -26,9 +26,10 @@ function Nav() {
 }
 
 function Main() {
-  const { updateMousePos } = useGlobal()
+  const { updateMousePos, clickedItem } = useGlobal()
 
   function handleMouseMove(e: MouseEvent) {
+    if (!clickedItem) return
     updateMousePos({
       x: e.clientX,
       y: e.clientY,

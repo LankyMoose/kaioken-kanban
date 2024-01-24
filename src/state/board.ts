@@ -23,14 +23,8 @@ export function useBoard() {
 type BoardDispatchAction =
   | { type: "ADD_LIST"; payload: { title: string } }
   | { type: "REMOVE_LIST"; payload: { id: string } }
-  | {
-      type: "UPDATE_LIST"
-      payload: Partial<List> & { id: string }
-    }
-  | {
-      type: "UPDATE_ITEM"
-      payload: Partial<ListItem> & { id: string }
-    }
+  | { type: "UPDATE_LIST"; payload: Partial<List> & { id: string } }
+  | { type: "UPDATE_ITEM"; payload: Partial<ListItem> & { id: string } }
 
 export function boardStateReducer(
   state: Board,

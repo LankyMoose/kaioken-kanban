@@ -1,7 +1,9 @@
 import { useContext } from "kaioken"
-import { BoardContext, BoardProvider } from "./state/BoardProvider"
-import { GlobalProvider, GlobalDispatchCtx } from "./state/GlobalProvider"
+import { BoardProvider } from "./state/BoardProvider"
+import { GlobalProvider } from "./state/GlobalProvider"
 import { Board } from "./components/Board"
+import { BoardContext } from "./state/board"
+import { useGlobal } from "./state/global"
 
 export function App() {
   return (
@@ -24,15 +26,12 @@ function Nav() {
 }
 
 function Main() {
-  const dispatch = useContext(GlobalDispatchCtx)
+  const { updateMousePos } = useGlobal()
 
   function handleMouseMove(e: MouseEvent) {
-    dispatch({
-      type: "UPDATE_MOUSE_POS",
-      payload: {
-        x: e.clientX,
-        y: e.clientY,
-      },
+    updateMousePos({
+      x: e.clientX,
+      y: e.clientY,
     })
   }
   return (

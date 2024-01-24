@@ -1,3 +1,20 @@
+export type Vector2 = {
+  x: number
+  y: number
+}
+
+export interface GlobalState {
+  drag: {
+    start: Vector2
+    current: Vector2
+  }
+  rootElement: HTMLElement
+  mousePos: Vector2
+  clickedItem: ClickedItem | null
+  itemDragTarget: DragTarget | null
+  dragging: boolean
+}
+
 export interface ListItem {
   id: string
   title: string

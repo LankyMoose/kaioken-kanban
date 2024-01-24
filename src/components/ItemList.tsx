@@ -1,24 +1,21 @@
-import { useRef, useContext, useEffect } from "kaioken"
-import { BoardDispatchContext, BoardContext } from "../state/BoardProvider"
+import { useRef, useEffect } from "kaioken"
 import { List, ListItem } from "../types"
 import "./ItemList.css"
-import { GlobalCtx, GlobalDispatchCtx } from "../state/GlobalProvider"
+import { useGlobal } from "../state/global"
+import { useBoard } from "../state/board"
 
 export function ItemList({ list }: { list: List }) {
   const dropAreaRef = useRef<HTMLDivElement>(null)
-  const dispatch = useContext(BoardDispatchContext)
-  const dispatchGlobal = useContext(GlobalDispatchCtx)
+  const { updateList } = useBoard()
 
-  const { clickedItem, itemDragTarget } = useContext(GlobalCtx)
+  const { clickedItem, setClickedItem, itemDragTarget, setItemDragTarget } =
+    useGlobal()
 
   useEffect(() => {
     if (!dropAreaRef.current) return
-    dispatch({
-      type: "UPDATE_LIST",
-      payload: {
-        id: list.id,
-        dropArea: dropAreaRef.current,
-      },
+    updateList({
+      id: list.id,
+      dropArea: dropAreaRef.current,
     })
   }, [dropAreaRef.current])
 
@@ -27,12 +24,9 @@ export function ItemList({ list }: { list: List }) {
     if (!dropAreaRef.current) return
     if (!clickedItem) return
     if (clickedItem && !clickedItem.dragging) {
-      dispatchGlobal({
-        type: "SET_CLICKED_ITEM",
-        payload: {
-          ...clickedItem,
-          dragging: true,
-        },
+      setClickedItem({
+        ...clickedItem,
+        dragging: true,
       })
     }
 
@@ -57,22 +51,16 @@ export function ItemList({ list }: { list: List }) {
       index++
     }
 
-    dispatchGlobal({
-      type: "SET_ITEM_DRAG_TARGET",
-      payload: {
-        index,
-        listId: list.id,
-        initial: false,
-      },
+    setItemDragTarget({
+      index,
+      listId: list.id,
+      initial: false,
     })
   }
 
   function handleMouseLeave() {
     if (!clickedItem) return
-    dispatchGlobal({
-      type: "SET_ITEM_DRAG_TARGET",
-      payload: null,
-    })
+    setItemDragTarget(null)
   }
 
   function getClassName() {
@@ -137,9 +125,9 @@ function Item({
 }) {
   const rect = useRef<DOMRect>(null)
   const ref = useRef<HTMLButtonElement>(null)
-  const { clickedItem, itemDragTarget } = useContext(GlobalCtx)
-  const { lists } = useContext(BoardContext)
-  const dispatchGlobal = useContext(GlobalDispatchCtx)
+  const { clickedItem, setClickedItem, itemDragTarget, setItemDragTarget } =
+    useGlobal()
+  const { lists } = useBoard()
 
   useEffect(() => {
     if (!ref.current) return
@@ -154,28 +142,22 @@ function Item({
     if (e.buttons !== 1) return
     const element = ref.current?.cloneNode(true) as HTMLButtonElement
     if (!element) return
-    dispatchGlobal({
-      type: "SET_CLICKED_ITEM",
-      payload: {
-        id: item.id,
-        listId: listId,
-        index: idx,
-        dragging: false,
-        element,
-        domRect: ref.current!.getBoundingClientRect(),
-        mouseOffset: {
-          x: e.offsetX,
-          y: e.offsetY,
-        },
+    setClickedItem({
+      id: item.id,
+      listId: listId,
+      index: idx,
+      dragging: false,
+      element,
+      domRect: ref.current!.getBoundingClientRect(),
+      mouseOffset: {
+        x: e.offsetX,
+        y: e.offsetY,
       },
     })
-    dispatchGlobal({
-      type: "SET_ITEM_DRAG_TARGET",
-      payload: {
-        index: idx + 1,
-        listId,
-        initial: true,
-      },
+    setItemDragTarget({
+      index: idx + 1,
+      listId,
+      initial: true,
     })
   }
 

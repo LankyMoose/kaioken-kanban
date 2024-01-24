@@ -1,28 +1,28 @@
-import { useContext, useRef, Portal, useEffect } from "kaioken"
-import { BoardContext, BoardDispatchContext } from "../state/BoardProvider"
+import { useRef, Portal, useEffect } from "kaioken"
 import { ItemList } from "./ItemList"
 import "./Board.css"
-import { GlobalCtx, GlobalDispatchCtx } from "../state/GlobalProvider"
 import { Board, ClickedItem } from "../types"
+import { useGlobal } from "../state/global"
+import { useBoard } from "../state/board"
 
 export function Board() {
-  const { rootElement, clickedItem, dragging, itemDragTarget } =
-    useContext(GlobalCtx)
-  const { lists } = useContext(BoardContext)
-  const dispatch = useContext(BoardDispatchContext)
-  const dispatchGlobal = useContext(GlobalDispatchCtx)
+  const {
+    rootElement,
+    clickedItem,
+    setClickedItem,
+    dragging,
+    setDragging,
+    itemDragTarget,
+    setItemDragTarget,
+  } = useGlobal()
+  const { lists, updateList } = useBoard()
   const boardInnerRef = useRef<HTMLDivElement>(null)
 
   function handleMouseDown(e: MouseEvent) {
     if (e.buttons !== 1) return
     if (!boardInnerRef.current) return
     if (e.target !== boardInnerRef.current) return
-    dispatchGlobal({
-      type: "SET_DRAGGING",
-      payload: {
-        dragging: true,
-      },
-    })
+    setDragging(true)
   }
 
   function handleMouseUp() {
@@ -47,10 +47,7 @@ export function Board() {
           itemList.items.forEach((item, i) => {
             item.order = i
           })
-          dispatch({
-            type: "UPDATE_LIST",
-            payload: itemList,
-          })
+          updateList(itemList)
         } else {
           targetList.items.splice(targetIdx, 0, item)
           itemList.items.forEach((item, i) => {
@@ -59,37 +56,14 @@ export function Board() {
           targetList.items.forEach((item, i) => {
             item.order = i
           })
-          dispatch({
-            type: "UPDATE_LIST",
-            payload: itemList,
-          })
-          dispatch({
-            type: "UPDATE_LIST",
-            payload: targetList,
-          })
+          updateList(itemList)
+          updateList(targetList)
         }
       }
     }
-    if (clickedItem) {
-      dispatchGlobal({
-        type: "SET_CLICKED_ITEM",
-        payload: null,
-      })
-    }
-    if (itemDragTarget) {
-      dispatchGlobal({
-        type: "SET_ITEM_DRAG_TARGET",
-        payload: null,
-      })
-    }
-    if (dragging) {
-      dispatchGlobal({
-        type: "SET_DRAGGING",
-        payload: {
-          dragging: false,
-        },
-      })
-    }
+    clickedItem && setClickedItem(null)
+    itemDragTarget && setItemDragTarget(null)
+    dragging && setDragging(false)
   }
   function handleMouseMove(e: MouseEvent) {
     if (!dragging) return
@@ -129,7 +103,7 @@ export function Board() {
 }
 
 function ListItemClone({ item }: { item: ClickedItem }) {
-  const { mousePos } = useContext(GlobalCtx)
+  const { mousePos } = useGlobal()
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {

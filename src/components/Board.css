@@ -11,12 +11,13 @@
 }
 
 #board .inner {
+  --lists-gap: 1rem;
   min-width: 100%;
   display: flex;
   cursor: grab;
   min-height: 100%;
   flex-grow: 1;
-  gap: 1rem;
+  gap: var(--lists-gap);
   padding: 1rem;
 }
 
@@ -46,6 +47,7 @@
   top: 0;
   left: 0;
   pointer-events: none;
+  backdrop-filter: blur(10px);
 }
 
 #list-clone .list {

@@ -1,5 +1,5 @@
 import { createContext, useContext } from "kaioken"
-import { Board, ClickedItem, DragTarget, List, ListItem } from "../types"
+import { Board, ClickedItem, ItemDragTarget, List, ListItem } from "../types"
 
 export const BoardContext = createContext<Board>(null)
 export const BoardDispatchContext =
@@ -13,7 +13,7 @@ export function useBoard() {
 
   function handleItemDrop(
     clickedItem: ClickedItem,
-    itemDragTarget: DragTarget
+    itemDragTarget: ItemDragTarget
   ) {
     const itemList = board.lists.find((list) => list.id === clickedItem.listId)!
     const targetList = board.lists.find(
@@ -51,6 +51,8 @@ export function useBoard() {
   }
   return {
     ...board,
+    setDropArea: (element: HTMLElement | null) =>
+      dispatch({ type: "SET_DROP_AREA", payload: { element } }),
     addList: (title: string) =>
       dispatch({ type: "ADD_LIST", payload: { title } }),
     removeList: (id: string) =>
@@ -67,6 +69,7 @@ type BoardDispatchAction =
   | { type: "REMOVE_LIST"; payload: { id: string } }
   | { type: "UPDATE_LIST"; payload: Partial<List> & { id: string } }
   | { type: "UPDATE_ITEM"; payload: Partial<ListItem> & { id: string } }
+  | { type: "SET_DROP_AREA"; payload: { element: HTMLElement | null } }
 
 export function boardStateReducer(
   state: Board,
@@ -142,6 +145,13 @@ export function boardStateReducer(
         lists,
       }
     }
+    case "SET_DROP_AREA": {
+      const { element } = action.payload
+      return {
+        ...state,
+        dropArea: element,
+      }
+    }
     default: {
       throw new Error(`Unhandled action: ${action}`)
     }
@@ -149,6 +159,9 @@ export function boardStateReducer(
 }
 
 const defaultBoard: Board = {
+  id: crypto.randomUUID(),
+  title: "Board 1",
+  dropArea: null,
   lists: [
     {
       id: "1",
@@ -211,8 +224,6 @@ const defaultBoard: Board = {
       created: new Date(),
     },
   ],
-  id: crypto.randomUUID(),
-  title: "Board 1",
 }
 
 export function loadBoard(): Board {

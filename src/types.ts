@@ -11,7 +11,9 @@ export interface GlobalState {
   rootElement: HTMLElement
   mousePos: Vector2
   clickedItem: ClickedItem | null
-  itemDragTarget: DragTarget | null
+  itemDragTarget: ItemDragTarget | null
+  clickedList: ClickedList | null
+  listDragTarget: ListDragTarget | null
   dragging: boolean
 }
 
@@ -34,10 +36,15 @@ export interface List {
   dropArea: HTMLElement | null
 }
 
-export interface DragTarget {
+export interface ItemDragTarget {
   index: number
   initial: boolean
   listId: string
+}
+
+export interface ListDragTarget {
+  index: number
+  initial: boolean
 }
 
 export interface ClickedItem {
@@ -53,8 +60,21 @@ export interface ClickedItem {
   }
 }
 
+export interface ClickedList {
+  id: string
+  index: number
+  dragging: boolean
+  element: HTMLElement
+  domRect: DOMRect
+  mouseOffset: {
+    x: number
+    y: number
+  }
+}
+
 export interface Board {
   id: string
   title: string
   lists: List[]
+  dropArea: HTMLElement | null
 }

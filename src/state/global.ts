@@ -1,5 +1,13 @@
 import { createContext, useContext } from "kaioken"
-import { ClickedItem, DragTarget, Vector2, GlobalState, List } from "../types"
+import {
+  ClickedItem,
+  ItemDragTarget,
+  Vector2,
+  GlobalState,
+  List,
+  ClickedList,
+  ListDragTarget,
+} from "../types"
 
 export const GlobalCtx = createContext<GlobalState>(null)
 export const GlobalDispatchCtx =
@@ -8,19 +16,49 @@ export const GlobalDispatchCtx =
 export function useGlobal() {
   const dispatch = useContext(GlobalDispatchCtx)
 
-  const setItemDragTarget = (payload: DragTarget | null) =>
+  const setItemDragTarget = (payload: ItemDragTarget | null) =>
     dispatch({ type: "SET_ITEM_DRAG_TARGET", payload })
 
-  function handleItemDragStart(
+  const setListDragTarget = (payload: ListDragTarget | null) =>
+    dispatch({ type: "SET_LIST_DRAG_TARGET", payload })
+
+  function handleListDrag(
+    e: MouseEvent,
+    dropArea: HTMLElement,
+    clickedList: ClickedList
+  ) {
+    const elements = Array.from(dropArea.querySelectorAll(".list")).filter(
+      (el) => el.getAttribute("data-id") !== clickedList.id
+    )
+
+    let index = elements.length
+    const draggedItemLeft = e.clientX - clickedList.mouseOffset.x
+
+    for (let i = 0; i < elements.length; i++) {
+      const rect = elements[i].getBoundingClientRect()
+      const left = rect.left
+      if (draggedItemLeft < left) {
+        index = i
+        break
+      }
+    }
+
+    setListDragTarget({
+      index,
+      initial: false,
+    })
+  }
+
+  function handleItemDrag(
     e: MouseEvent,
     dropArea: HTMLElement,
     clickedItem: ClickedItem,
-    list: List
+    targetList: List
   ) {
     const elements = Array.from(dropArea.querySelectorAll(".list-item")).filter(
       (el) => el.getAttribute("data-id") !== clickedItem.id
     )
-    const isOriginList = clickedItem?.listId === list.id
+    const isOriginList = clickedItem?.listId === targetList.id
     let index = elements.length
 
     const draggedItemTop = e.clientY - clickedItem.mouseOffset.y
@@ -40,34 +78,35 @@ export function useGlobal() {
 
     setItemDragTarget({
       index,
-      listId: list.id,
+      listId: targetList.id,
       initial: false,
     })
   }
+
   return {
     ...useContext(GlobalCtx),
     updateMousePos: (payload: Vector2) =>
       dispatch({ type: "UPDATE_MOUSE_POS", payload }),
-    updateDragStart: (payload: Vector2) =>
-      dispatch({ type: "UPDATE_DRAG_START", payload }),
-    updateDragCurrent: (payload: Vector2) =>
-      dispatch({ type: "UPDATE_DRAG_CURRENT", payload }),
     setDragging: (dragging: boolean) =>
       dispatch({ type: "SET_DRAGGING", payload: { dragging } }),
     setClickedItem: (payload: ClickedItem | null) =>
       dispatch({ type: "SET_CLICKED_ITEM", payload }),
     setItemDragTarget,
-    handleItemDragStart,
+    handleItemDrag,
+    setClickedList: (payload: ClickedList | null) =>
+      dispatch({ type: "SET_CLICKED_LIST", payload }),
+    setListDragTarget,
+    handleListDrag,
   }
 }
 
 type GlobalDispatchAction =
   | { type: "UPDATE_MOUSE_POS"; payload: Vector2 }
-  | { type: "UPDATE_DRAG_START"; payload: Vector2 }
-  | { type: "UPDATE_DRAG_CURRENT"; payload: Vector2 }
   | { type: "SET_DRAGGING"; payload: { dragging: boolean } }
   | { type: "SET_CLICKED_ITEM"; payload: ClickedItem | null }
-  | { type: "SET_ITEM_DRAG_TARGET"; payload: DragTarget | null }
+  | { type: "SET_ITEM_DRAG_TARGET"; payload: ItemDragTarget | null }
+  | { type: "SET_CLICKED_LIST"; payload: ClickedList | null }
+  | { type: "SET_LIST_DRAG_TARGET"; payload: ListDragTarget | null }
 
 export function globalStateReducer(
   state: GlobalState,
@@ -81,32 +120,6 @@ export function globalStateReducer(
         mousePos: {
           x,
           y,
-        },
-      }
-    }
-    case "UPDATE_DRAG_START": {
-      const { x, y } = action.payload
-      return {
-        ...state,
-        drag: {
-          ...state.drag,
-          start: {
-            x,
-            y,
-          },
-        },
-      }
-    }
-    case "UPDATE_DRAG_CURRENT": {
-      const { x, y } = action.payload
-      return {
-        ...state,
-        drag: {
-          ...state.drag,
-          current: {
-            x,
-            y,
-          },
         },
       }
     }
@@ -127,6 +140,18 @@ export function globalStateReducer(
       return {
         ...state,
         itemDragTarget: action.payload,
+      }
+    }
+    case "SET_CLICKED_LIST": {
+      return {
+        ...state,
+        clickedList: action.payload,
+      }
+    }
+    case "SET_LIST_DRAG_TARGET": {
+      return {
+        ...state,
+        listDragTarget: action.payload,
       }
     }
     default: {
@@ -151,7 +176,9 @@ export const defaultGlobalState: GlobalState = {
     x: 0,
     y: 0,
   },
-  clickedItem: null,
   dragging: false,
+  clickedItem: null,
   itemDragTarget: null,
+  clickedList: null,
+  listDragTarget: null,
 }

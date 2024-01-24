@@ -5,6 +5,8 @@ import { useGlobal } from "../state/global"
 import { useBoard } from "../state/board"
 
 export function ItemList({ list }: { list: List }) {
+  const listRef = useRef<HTMLDivElement>(null)
+  const rect = useRef<DOMRect>(null)
   const dropAreaRef = useRef<HTMLDivElement>(null)
   const { updateList } = useBoard()
   const {
@@ -12,8 +14,17 @@ export function ItemList({ list }: { list: List }) {
     setClickedItem,
     itemDragTarget,
     setItemDragTarget,
-    handleItemDragStart,
+    handleItemDrag,
+    clickedList,
+    setClickedList,
+    listDragTarget,
+    setListDragTarget,
   } = useGlobal()
+
+  useEffect(() => {
+    if (!listRef.current) return
+    rect.current = listRef.current.getBoundingClientRect()
+  }, [listRef.current])
 
   useEffect(() => {
     if (!dropAreaRef.current) return
@@ -23,18 +34,22 @@ export function ItemList({ list }: { list: List }) {
     })
   }, [dropAreaRef.current])
 
+  if (clickedList?.id === list.id && clickedList.dragging) {
+    return null
+  }
+
   function handleMouseMove(e: MouseEvent) {
     if (e.buttons !== 1) return
     if (!dropAreaRef.current) return
     if (!clickedItem) return
-    if (clickedItem && !clickedItem.dragging) {
+    if (!clickedItem.dragging) {
       setClickedItem({
         ...clickedItem,
         dragging: true,
       })
     }
 
-    handleItemDragStart(e, dropAreaRef.current, clickedItem, list)
+    handleItemDrag(e, dropAreaRef.current, clickedItem, list)
   }
 
   function handleMouseLeave() {
@@ -42,8 +57,30 @@ export function ItemList({ list }: { list: List }) {
     setItemDragTarget(null)
   }
 
-  function getClassName() {
+  function handleHeaderMouseDown(e: MouseEvent) {
+    if (e.buttons !== 1) return
+    const element = listRef.current?.cloneNode(true) as HTMLDivElement
+    if (!element) return
+    setClickedList({
+      id: list.id,
+      index: list.order,
+      dragging: false,
+      element,
+      domRect: rect.current!,
+      mouseOffset: {
+        x: e.offsetX,
+        y: e.offsetY,
+      },
+    })
+    setListDragTarget({
+      index: list.order + 1,
+      initial: true,
+    })
+  }
+
+  function getListItemsClassName() {
     let className = `list-items`
+
     if (!clickedItem?.dragging) {
       if (
         clickedItem &&
@@ -71,13 +108,34 @@ export function ItemList({ list }: { list: List }) {
     }`.trim()
   }
 
+  function getListClassName() {
+    let className = "list"
+    if (clickedList?.id === list.id) {
+      className += " selected"
+    }
+    return className
+  }
+
+  function getListStyle() {
+    if (!rect.current) return ""
+    if (listDragTarget?.index === list.order) {
+      return "margin-left: calc(var(--selected-list-width) + var(--lists-gap));"
+    }
+    return ""
+  }
+
   return (
-    <div className="list">
-      <div className="list-header">
+    <div
+      ref={listRef}
+      style={getListStyle()}
+      className={getListClassName()}
+      data-id={list.id}
+    >
+      <div className="list-header" onmousedown={handleHeaderMouseDown}>
         <h3 className="list-title">{list.title}</h3>
       </div>
       <div
-        className={getClassName()}
+        className={getListItemsClassName()}
         onmousemove={handleMouseMove}
         onmouseleave={handleMouseLeave}
       >
@@ -127,7 +185,7 @@ function Item({
       index: idx,
       dragging: false,
       element,
-      domRect: ref.current!.getBoundingClientRect(),
+      domRect: rect.current!,
       mouseOffset: {
         x: e.offsetX,
         y: e.offsetY,
@@ -157,7 +215,7 @@ function Item({
     return `${style} transform: translate(calc(${x}px - .5rem), calc(${y}px - .5rem))`
   }
 
-  function getClass() {
+  function getClassName() {
     let className = "list-item"
     if (clickedItem?.id === item.id) {
       className += " selected"
@@ -168,7 +226,7 @@ function Item({
   return (
     <button
       ref={ref}
-      className={getClass()}
+      className={getClassName()}
       style={getStyle()}
       onmousedown={handleMouseDown}
       data-id={item.id}

@@ -13,6 +13,7 @@
   --selected-item-height: 0px;
   --scrollbar-thumb: rgba(255, 255, 255, 0.2);
   --scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
+  --list-header-padding: 0.75rem;
 }
 
 

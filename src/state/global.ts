@@ -1,5 +1,5 @@
 import { createContext, useContext } from "kaioken"
-import { ClickedItem, DragTarget, Vector2, GlobalState } from "../types"
+import { ClickedItem, DragTarget, Vector2, GlobalState, List } from "../types"
 
 export const GlobalCtx = createContext<GlobalState>(null)
 export const GlobalDispatchCtx =
@@ -7,6 +7,43 @@ export const GlobalDispatchCtx =
 
 export function useGlobal() {
   const dispatch = useContext(GlobalDispatchCtx)
+
+  const setItemDragTarget = (payload: DragTarget | null) =>
+    dispatch({ type: "SET_ITEM_DRAG_TARGET", payload })
+
+  function handleItemDragStart(
+    e: MouseEvent,
+    dropArea: HTMLElement,
+    clickedItem: ClickedItem,
+    list: List
+  ) {
+    const elements = Array.from(dropArea.querySelectorAll(".list-item")).filter(
+      (el) => el.getAttribute("data-id") !== clickedItem.id
+    )
+    const isOriginList = clickedItem?.listId === list.id
+    let index = elements.length
+
+    const draggedItemTop = e.clientY - clickedItem.mouseOffset.y
+
+    for (let i = 0; i < elements.length; i++) {
+      const rect = elements[i].getBoundingClientRect()
+      const top = rect.top
+      if (draggedItemTop < top) {
+        index = i
+        break
+      }
+    }
+
+    if (isOriginList && clickedItem.index <= index) {
+      index++
+    }
+
+    setItemDragTarget({
+      index,
+      listId: list.id,
+      initial: false,
+    })
+  }
   return {
     ...useContext(GlobalCtx),
     updateMousePos: (payload: Vector2) =>
@@ -19,8 +56,8 @@ export function useGlobal() {
       dispatch({ type: "SET_DRAGGING", payload: { dragging } }),
     setClickedItem: (payload: ClickedItem | null) =>
       dispatch({ type: "SET_CLICKED_ITEM", payload }),
-    setItemDragTarget: (payload: DragTarget | null) =>
-      dispatch({ type: "SET_ITEM_DRAG_TARGET", payload }),
+    setItemDragTarget,
+    handleItemDragStart,
   }
 }
 

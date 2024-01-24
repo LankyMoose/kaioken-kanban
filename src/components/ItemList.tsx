@@ -7,9 +7,13 @@ import { useBoard } from "../state/board"
 export function ItemList({ list }: { list: List }) {
   const dropAreaRef = useRef<HTMLDivElement>(null)
   const { updateList } = useBoard()
-
-  const { clickedItem, setClickedItem, itemDragTarget, setItemDragTarget } =
-    useGlobal()
+  const {
+    clickedItem,
+    setClickedItem,
+    itemDragTarget,
+    setItemDragTarget,
+    handleItemDragStart,
+  } = useGlobal()
 
   useEffect(() => {
     if (!dropAreaRef.current) return
@@ -30,32 +34,7 @@ export function ItemList({ list }: { list: List }) {
       })
     }
 
-    const elements = Array.from(
-      dropAreaRef.current.querySelectorAll(".list-item")
-    ).filter((el) => el.getAttribute("data-id") !== clickedItem.id)
-    const isOriginList = clickedItem?.listId === list.id
-    let index = elements.length
-
-    const draggedItemTop = e.clientY - clickedItem.mouseOffset.y
-
-    for (let i = 0; i < elements.length; i++) {
-      const rect = elements[i].getBoundingClientRect()
-      const top = rect.top
-      if (draggedItemTop < top) {
-        index = i
-        break
-      }
-    }
-
-    if (isOriginList && clickedItem.index <= index) {
-      index++
-    }
-
-    setItemDragTarget({
-      index,
-      listId: list.id,
-      initial: false,
-    })
+    handleItemDragStart(e, dropAreaRef.current, clickedItem, list)
   }
 
   function handleMouseLeave() {

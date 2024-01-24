@@ -1,5 +1,5 @@
 import { createContext, useContext } from "kaioken"
-import { Board, List, ListItem } from "../types"
+import { Board, ClickedItem, DragTarget, List, ListItem } from "../types"
 
 export const BoardContext = createContext<Board>(null)
 export const BoardDispatchContext =
@@ -7,16 +7,58 @@ export const BoardDispatchContext =
 
 export function useBoard() {
   const dispatch = useContext(BoardDispatchContext)
+  const board = useContext(BoardContext)
+  const updateList = (payload: Partial<List> & { id: string }) =>
+    dispatch({ type: "UPDATE_LIST", payload })
+
+  function handleItemDrop(
+    clickedItem: ClickedItem,
+    itemDragTarget: DragTarget
+  ) {
+    const itemList = board.lists.find((list) => list.id === clickedItem.listId)!
+    const targetList = board.lists.find(
+      (list) => list.id === itemDragTarget.listId
+    )!
+    const isOriginList = clickedItem.listId === itemDragTarget.listId
+    const item = itemList.items.find((item) => item.id === clickedItem.id)!
+    const targetIdx =
+      isOriginList && clickedItem.index <= itemDragTarget.index
+        ? itemDragTarget.index - 1
+        : itemDragTarget.index
+
+    const moved = item.order !== targetIdx || itemList !== targetList
+    if (moved) {
+      itemList.items.splice(clickedItem.index, 1)
+
+      if (isOriginList) {
+        itemList.items.splice(targetIdx, 0, item)
+        itemList.items.forEach((item, i) => {
+          item.order = i
+        })
+        updateList(itemList)
+      } else {
+        targetList.items.splice(targetIdx, 0, item)
+        itemList.items.forEach((item, i) => {
+          item.order = i
+        })
+        targetList.items.forEach((item, i) => {
+          item.order = i
+        })
+        updateList(itemList)
+        updateList(targetList)
+      }
+    }
+  }
   return {
-    ...useContext(BoardContext),
+    ...board,
     addList: (title: string) =>
       dispatch({ type: "ADD_LIST", payload: { title } }),
     removeList: (id: string) =>
       dispatch({ type: "REMOVE_LIST", payload: { id } }),
-    updateList: (payload: Partial<List> & { id: string }) =>
-      dispatch({ type: "UPDATE_LIST", payload }),
     updateItem: (payload: Partial<ListItem> & { id: string }) =>
       dispatch({ type: "UPDATE_ITEM", payload }),
+    updateList,
+    handleItemDrop,
   }
 }
 

@@ -15,7 +15,7 @@ export function Board() {
     itemDragTarget,
     setItemDragTarget,
   } = useGlobal()
-  const { lists, updateList } = useBoard()
+  const { lists, handleItemDrop } = useBoard()
   const boardInnerRef = useRef<HTMLDivElement>(null)
 
   function handleMouseDown(e: MouseEvent) {
@@ -26,45 +26,12 @@ export function Board() {
   }
 
   function handleMouseUp() {
-    if (clickedItem && itemDragTarget) {
-      const itemList = lists.find((list) => list.id === clickedItem.listId)!
-      const targetList = lists.find(
-        (list) => list.id === itemDragTarget.listId
-      )!
-      const isOriginList = clickedItem.listId === itemDragTarget.listId
-      const item = itemList.items.find((item) => item.id === clickedItem.id)!
-      const targetIdx =
-        isOriginList && clickedItem.index <= itemDragTarget.index
-          ? itemDragTarget.index - 1
-          : itemDragTarget.index
-
-      const moved = item.order !== targetIdx || itemList !== targetList
-      if (moved) {
-        itemList.items.splice(clickedItem.index, 1)
-
-        if (isOriginList) {
-          itemList.items.splice(targetIdx, 0, item)
-          itemList.items.forEach((item, i) => {
-            item.order = i
-          })
-          updateList(itemList)
-        } else {
-          targetList.items.splice(targetIdx, 0, item)
-          itemList.items.forEach((item, i) => {
-            item.order = i
-          })
-          targetList.items.forEach((item, i) => {
-            item.order = i
-          })
-          updateList(itemList)
-          updateList(targetList)
-        }
-      }
-    }
+    clickedItem && itemDragTarget && handleItemDrop(clickedItem, itemDragTarget)
     clickedItem && setClickedItem(null)
     itemDragTarget && setItemDragTarget(null)
     dragging && setDragging(false)
   }
+
   function handleMouseMove(e: MouseEvent) {
     if (!dragging) return
     rootElement.scrollLeft -= e.movementX

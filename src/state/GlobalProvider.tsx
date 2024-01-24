@@ -1,4 +1,5 @@
 import { createContext, useReducer } from "kaioken"
+import { ClickedItem, DragTarget } from "../types"
 
 type Vector2 = {
   x: number
@@ -12,6 +13,9 @@ interface GlobalState {
   }
   rootElement: HTMLElement
   mousePos: Vector2
+  clickedItem: ClickedItem | null
+  itemDragTarget: DragTarget | null
+  dragging: boolean
 }
 
 type GlobalDispatchAction =
@@ -42,6 +46,9 @@ type GlobalDispatchAction =
         rootElement: HTMLElement
       }
     }
+  | { type: "SET_DRAGGING"; payload: { dragging: boolean } }
+  | { type: "SET_CLICKED_ITEM"; payload: ClickedItem | null }
+  | { type: "SET_ITEM_DRAG_TARGET"; payload: DragTarget | null }
 
 export const GlobalCtx = createContext<GlobalState>(null)
 export const GlobalDispatchCtx =
@@ -95,6 +102,25 @@ export function globalStateReducer(
         rootElement,
       }
     }
+    case "SET_DRAGGING": {
+      const { dragging } = action.payload
+      return {
+        ...state,
+        dragging,
+      }
+    }
+    case "SET_CLICKED_ITEM": {
+      return {
+        ...state,
+        clickedItem: action.payload,
+      }
+    }
+    case "SET_ITEM_DRAG_TARGET": {
+      return {
+        ...state,
+        itemDragTarget: action.payload,
+      }
+    }
     default: {
       return state
     }
@@ -118,6 +144,9 @@ export function GlobalProvider({ children }: { children?: JSX.Element[] }) {
       x: 0,
       y: 0,
     },
+    clickedItem: null,
+    dragging: false,
+    itemDragTarget: null,
   })
 
   return (

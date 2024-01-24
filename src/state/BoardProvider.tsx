@@ -6,26 +6,8 @@ export const BoardDispatchContext =
   createContext<(action: BoardDispatchAction) => void>(null)
 
 type BoardDispatchAction =
-  | {
-      type: "ADD_LIST"
-      payload: {
-        title: string
-      }
-    }
-  | {
-      type: "REMOVE_LIST"
-      payload: {
-        id: string
-      }
-    }
-  | {
-      type: "SET_DRAGGING"
-      payload: {
-        dragging: boolean
-      }
-    }
-  | { type: "SET_CLICKED_ITEM"; payload: Board["clickedItem"] }
-  | { type: "SET_ITEM_DRAG_TARGET"; payload: Board["itemDragTarget"] }
+  | { type: "ADD_LIST"; payload: { title: string } }
+  | { type: "REMOVE_LIST"; payload: { id: string } }
   | {
       type: "UPDATE_LIST"
       payload: Partial<List> & { id: string }
@@ -106,25 +88,6 @@ function boardStateReducer(state: Board, action: BoardDispatchAction): Board {
         lists,
       }
     }
-    case "SET_DRAGGING": {
-      const { dragging } = action.payload
-      return {
-        ...state,
-        dragging,
-      }
-    }
-    case "SET_CLICKED_ITEM": {
-      return {
-        ...state,
-        clickedItem: action.payload,
-      }
-    }
-    case "SET_ITEM_DRAG_TARGET": {
-      return {
-        ...state,
-        itemDragTarget: action.payload,
-      }
-    }
     default: {
       throw new Error(`Unhandled action: ${action}`)
     }
@@ -196,9 +159,6 @@ const defaultBoard: Board = {
   ],
   id: crypto.randomUUID(),
   title: "Board 1",
-  clickedItem: null,
-  dragging: false,
-  itemDragTarget: null,
 }
 
 function loadBoard(): Board {

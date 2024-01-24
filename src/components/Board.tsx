@@ -2,21 +2,22 @@ import { useContext, useRef, Portal, useEffect } from "kaioken"
 import { BoardContext, BoardDispatchContext } from "../state/BoardProvider"
 import { ItemList } from "./ItemList"
 import "./Board.css"
-import { GlobalCtx } from "../state/GlobalProvider"
-import { Board } from "../types"
+import { GlobalCtx, GlobalDispatchCtx } from "../state/GlobalProvider"
+import { Board, ClickedItem } from "../types"
 
 export function Board() {
-  const { rootElement } = useContext(GlobalCtx)
-  const { lists, clickedItem, dragging, itemDragTarget } =
-    useContext(BoardContext)
+  const { rootElement, clickedItem, dragging, itemDragTarget } =
+    useContext(GlobalCtx)
+  const { lists } = useContext(BoardContext)
   const dispatch = useContext(BoardDispatchContext)
+  const dispatchGlobal = useContext(GlobalDispatchCtx)
   const boardInnerRef = useRef<HTMLDivElement>(null)
 
   function handleMouseDown(e: MouseEvent) {
     if (e.buttons !== 1) return
     if (!boardInnerRef.current) return
     if (e.target !== boardInnerRef.current) return
-    dispatch({
+    dispatchGlobal({
       type: "SET_DRAGGING",
       payload: {
         dragging: true,
@@ -70,19 +71,19 @@ export function Board() {
       }
     }
     if (clickedItem) {
-      dispatch({
+      dispatchGlobal({
         type: "SET_CLICKED_ITEM",
         payload: null,
       })
     }
     if (itemDragTarget) {
-      dispatch({
+      dispatchGlobal({
         type: "SET_ITEM_DRAG_TARGET",
         payload: null,
       })
     }
     if (dragging) {
-      dispatch({
+      dispatchGlobal({
         type: "SET_DRAGGING",
         payload: {
           dragging: false,
@@ -127,7 +128,7 @@ export function Board() {
   )
 }
 
-function ListItemClone({ item }: { item: Board["clickedItem"] }) {
+function ListItemClone({ item }: { item: ClickedItem }) {
   const { mousePos } = useContext(GlobalCtx)
   const ref = useRef<HTMLDivElement>(null)
 

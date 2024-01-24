@@ -2,12 +2,14 @@ import { useRef, useContext, useEffect } from "kaioken"
 import { BoardDispatchContext, BoardContext } from "../state/BoardProvider"
 import { List, ListItem } from "../types"
 import "./ItemList.css"
+import { GlobalCtx, GlobalDispatchCtx } from "../state/GlobalProvider"
 
 export function ItemList({ list }: { list: List }) {
   const dropAreaRef = useRef<HTMLDivElement>(null)
   const dispatch = useContext(BoardDispatchContext)
+  const dispatchGlobal = useContext(GlobalDispatchCtx)
 
-  const { clickedItem, itemDragTarget } = useContext(BoardContext)
+  const { clickedItem, itemDragTarget } = useContext(GlobalCtx)
 
   useEffect(() => {
     if (!dropAreaRef.current) return
@@ -25,7 +27,7 @@ export function ItemList({ list }: { list: List }) {
     if (!dropAreaRef.current) return
     if (!clickedItem) return
     if (clickedItem && !clickedItem.dragging) {
-      dispatch({
+      dispatchGlobal({
         type: "SET_CLICKED_ITEM",
         payload: {
           ...clickedItem,
@@ -55,7 +57,7 @@ export function ItemList({ list }: { list: List }) {
       index++
     }
 
-    dispatch({
+    dispatchGlobal({
       type: "SET_ITEM_DRAG_TARGET",
       payload: {
         index,
@@ -67,7 +69,7 @@ export function ItemList({ list }: { list: List }) {
 
   function handleMouseLeave() {
     if (!clickedItem) return
-    dispatch({
+    dispatchGlobal({
       type: "SET_ITEM_DRAG_TARGET",
       payload: null,
     })
@@ -135,8 +137,9 @@ function Item({
 }) {
   const rect = useRef<DOMRect>(null)
   const ref = useRef<HTMLButtonElement>(null)
-  const dispatch = useContext(BoardDispatchContext)
-  const { lists, clickedItem, itemDragTarget } = useContext(BoardContext)
+  const { clickedItem, itemDragTarget } = useContext(GlobalCtx)
+  const { lists } = useContext(BoardContext)
+  const dispatchGlobal = useContext(GlobalDispatchCtx)
 
   useEffect(() => {
     if (!ref.current) return
@@ -151,7 +154,7 @@ function Item({
     if (e.buttons !== 1) return
     const element = ref.current?.cloneNode(true) as HTMLButtonElement
     if (!element) return
-    dispatch({
+    dispatchGlobal({
       type: "SET_CLICKED_ITEM",
       payload: {
         id: item.id,
@@ -166,7 +169,7 @@ function Item({
         },
       },
     })
-    dispatch({
+    dispatchGlobal({
       type: "SET_ITEM_DRAG_TARGET",
       payload: {
         index: idx + 1,

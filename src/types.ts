@@ -17,13 +17,13 @@ export interface List {
   dropArea: HTMLElement | null
 }
 
-interface DragTarget {
+export interface DragTarget {
   index: number
   initial: boolean
   listId: string
 }
 
-interface ClickedItem {
+export interface ClickedItem {
   id: string
   index: number
   dragging: boolean
@@ -40,7 +40,4 @@ export interface Board {
   id: string
   title: string
   lists: List[]
-  clickedItem: ClickedItem | null
-  dragging: boolean
-  itemDragTarget: DragTarget | null
 }

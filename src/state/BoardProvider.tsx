@@ -1,7 +1,8 @@
 import { useEffect, useReducer } from "kaioken"
 import { boardStateReducer, BoardContext, BoardDispatchContext } from "./board"
 import { useGlobal } from "./global"
-import { loadLists } from "../idb"
+import { loadItems, loadLists } from "../idb"
+import { SelectedBoardList } from "../types"
 
 export function BoardProvider({ children }: { children?: JSX.Element }) {
   const [value, dispatch] = useReducer(boardStateReducer, null)
@@ -13,14 +14,20 @@ export function BoardProvider({ children }: { children?: JSX.Element }) {
       lists: [],
       dropArea: null,
     }
-    loadLists(selectedBoard.id).then((lists) => {
+    loadLists(selectedBoard.id).then(async (res) => {
+      const lists = await Promise.all(
+        res.map(async (list) => {
+          const items = await loadItems(list.id)
+          return {
+            ...list,
+            items,
+            dropArea: null,
+          } as SelectedBoardList
+        })
+      )
       dispatch({
         type: "UPDATE_LISTS",
-        payload: lists.map((list) => ({
-          ...list,
-          items: [],
-          dropArea: null,
-        })),
+        payload: lists,
       })
     })
     dispatch({

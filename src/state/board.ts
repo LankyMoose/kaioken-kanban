@@ -8,11 +8,17 @@ import {
   SelectedBoard,
   SelectedBoardList,
 } from "../types"
-import { addList } from "../idb"
+import { addList, updateList as updateDbList, updateItem } from "../idb"
 
 export const BoardContext = createContext<SelectedBoard | null>(null)
 export const BoardDispatchContext =
   createContext<(action: BoardDispatchAction) => void>(null)
+
+function handleItemReorder(item: ListItem, idx: number) {
+  if (item.order === idx) return
+  item.order = idx
+  updateItem(item)
+}
 
 export function useBoard() {
   const dispatch = useContext(BoardDispatchContext)
@@ -37,7 +43,10 @@ export function useBoard() {
       board.lists.splice(clickedList.index, 1)
       board.lists.splice(targetIdx, 0, list)
       board.lists.forEach((list, i) => {
+        if (list.order === i) return
         list.order = i
+        const { dropArea, items, ...rest } = list
+        updateDbList(rest)
       })
       updateLists(board.lists)
     }
@@ -65,18 +74,12 @@ export function useBoard() {
 
       if (isOriginList) {
         itemList.items.splice(targetIdx, 0, item)
-        itemList.items.forEach((item, i) => {
-          item.order = i
-        })
+        itemList.items.forEach(handleItemReorder)
         updateList(itemList)
       } else {
         targetList.items.splice(targetIdx, 0, item)
-        itemList.items.forEach((item, i) => {
-          item.order = i
-        })
-        targetList.items.forEach((item, i) => {
-          item.order = i
-        })
+        itemList.items.forEach(handleItemReorder)
+        targetList.items.forEach(handleItemReorder)
         updateList(itemList)
         updateList(targetList)
       }

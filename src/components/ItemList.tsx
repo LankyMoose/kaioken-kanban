@@ -135,7 +135,7 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
     const listMax = list.items.reduce((max, item) => {
       if (item.order > max) return item.order
       return max
-    }, 0)
+    }, -1)
     const res = await addItem(list.id, listMax + 1)
     updateList({
       id: list.id,
@@ -167,14 +167,14 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
               <Item item={item} idx={i} listId={list.id} />
             ))}
         </div>
-        <div className="flex">
-          <button
-            className="add-item flex-grow py-2 text-sm font-semibold"
-            onclick={handleAddItemClick}
-          >
-            Add Item
-          </button>
-        </div>
+      </div>
+      <div className="flex p-2">
+        <button
+          className="add-item flex-grow py-2 text-sm font-semibold"
+          onclick={handleAddItemClick}
+        >
+          Add Item
+        </button>
       </div>
     </div>
   )

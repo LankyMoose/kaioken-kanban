@@ -38,13 +38,11 @@ export interface List {
 
 export interface ItemDragTarget {
   index: number
-  initial: boolean
   listId: string
 }
 
 export interface ListDragTarget {
   index: number
-  initial: boolean
 }
 
 export interface ClickedItem {

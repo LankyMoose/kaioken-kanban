@@ -72,10 +72,7 @@ export function ItemList({ list }: { list: List }) {
         y: e.offsetY,
       },
     })
-    setListDragTarget({
-      index: list.order + 1,
-      initial: true,
-    })
+    setListDragTarget({ index: list.order + 1 })
   }
 
   function getListItemsClassName() {
@@ -201,7 +198,6 @@ function Item({
     setItemDragTarget({
       index: idx + 1,
       listId,
-      initial: true,
     })
   }
 

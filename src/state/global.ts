@@ -45,10 +45,7 @@ export function useGlobal() {
       index++
     }
 
-    setListDragTarget({
-      index,
-      initial: false,
-    })
+    setListDragTarget({ index })
   }
 
   function handleItemDrag(
@@ -81,7 +78,6 @@ export function useGlobal() {
     setItemDragTarget({
       index,
       listId: targetList.id,
-      initial: false,
     })
   }
 

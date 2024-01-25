@@ -23,6 +23,11 @@
   overflow: hidden;
   height: fit-content;
   cursor: initial;
+  transition: margin-left .15s ease;
+}
+
+#board .inner:not(.dragging) .list {
+  transition: none;
 }
 
 .list.selected {
@@ -117,7 +122,7 @@
   background-color: rgba(0, 0, 0, 0.1);
 }
 
-.list-items.dragging:not(.initial) .list-items-inner {
+.list-items.dragging .list-items-inner {
   transition: background-color .15s ease, padding .15s ease;
 }
 
@@ -135,11 +140,6 @@
 
 .list-items.last:not(.empty) .list-items-inner {
   padding-bottom: calc(var(--selected-item-height) + var(--items-gap) + .5rem);
-}
-
-
-.list-items.dragging.initial .list-item {
-  transition: none;
 }
 
 

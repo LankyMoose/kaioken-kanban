@@ -1,5 +1,13 @@
 import { createContext, useContext } from "kaioken"
-import { Board, ClickedItem, ItemDragTarget, List, ListItem } from "../types"
+import {
+  Board,
+  ClickedItem,
+  ClickedList,
+  ItemDragTarget,
+  List,
+  ListDragTarget,
+  ListItem,
+} from "../types"
 
 export const BoardContext = createContext<Board>(null)
 export const BoardDispatchContext =
@@ -10,6 +18,25 @@ export function useBoard() {
   const board = useContext(BoardContext)
   const updateList = (payload: Partial<List> & { id: string }) =>
     dispatch({ type: "UPDATE_LIST", payload })
+  const updateLists = (payload: List[]) =>
+    dispatch({ type: "UPDATE_LISTS", payload })
+
+  function handleListDrop(
+    clickedList: ClickedList,
+    listDragTarget: ListDragTarget
+  ) {
+    const targetIdx = listDragTarget.index - 1
+    const moved = clickedList.index !== targetIdx
+    if (moved) {
+      const list = board.lists.find((list) => list.id === clickedList.id)!
+      board.lists.splice(clickedList.index, 1)
+      board.lists.splice(targetIdx, 0, list)
+      board.lists.forEach((list, i) => {
+        list.order = i
+      })
+      updateLists(board.lists)
+    }
+  }
 
   function handleItemDrop(
     clickedItem: ClickedItem,
@@ -61,6 +88,7 @@ export function useBoard() {
       dispatch({ type: "UPDATE_ITEM", payload }),
     updateList,
     handleItemDrop,
+    handleListDrop,
   }
 }
 
@@ -68,6 +96,7 @@ type BoardDispatchAction =
   | { type: "ADD_LIST"; payload: { title: string } }
   | { type: "REMOVE_LIST"; payload: { id: string } }
   | { type: "UPDATE_LIST"; payload: Partial<List> & { id: string } }
+  | { type: "UPDATE_LISTS"; payload: List[] }
   | { type: "UPDATE_ITEM"; payload: Partial<ListItem> & { id: string } }
   | { type: "SET_DROP_AREA"; payload: { element: HTMLElement | null } }
 
@@ -120,6 +149,14 @@ export function boardStateReducer(
       return {
         ...state,
         lists,
+      }
+    }
+    case "UPDATE_LISTS": {
+      const { payload } = action
+      localStorage.setItem("lists", JSON.stringify(payload))
+      return {
+        ...state,
+        lists: payload,
       }
     }
     case "UPDATE_ITEM": {

@@ -20,7 +20,8 @@ export function Board() {
     setListDragTarget,
     handleListDrag,
   } = useGlobal()
-  const { lists, handleItemDrop, dropArea, setDropArea } = useBoard()
+  const { lists, handleItemDrop, dropArea, setDropArea, handleListDrop } =
+    useBoard()
   const boardInnerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -36,11 +37,17 @@ export function Board() {
   }
 
   function handleMouseUp() {
+    // item drag
     clickedItem && itemDragTarget && handleItemDrop(clickedItem, itemDragTarget)
     clickedItem && setClickedItem(null)
     itemDragTarget && setItemDragTarget(null)
+
+    // list drag
+    clickedList && listDragTarget && handleListDrop(clickedList, listDragTarget)
     clickedList && setClickedList(null)
     listDragTarget && setListDragTarget(null)
+
+    // board drag
     dragging && setDragging(false)
   }
 

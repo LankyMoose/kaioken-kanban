@@ -1,6 +1,6 @@
+import "./Board.css"
 import { useRef, Portal, useEffect } from "kaioken"
 import { ItemList } from "./ItemList"
-import "./Board.css"
 import { Board, ClickedItem, ClickedList } from "../types"
 import { useGlobal } from "../state/global"
 import { useBoard } from "../state/board"
@@ -20,8 +20,14 @@ export function Board() {
     setListDragTarget,
     handleListDrag,
   } = useGlobal()
-  const { lists, handleItemDrop, dropArea, setDropArea, handleListDrop } =
-    useBoard()
+  const {
+    lists,
+    handleItemDrop,
+    dropArea,
+    setDropArea,
+    handleListDrop,
+    addList,
+  } = useBoard()
   const boardInnerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -89,11 +95,19 @@ export function Board() {
         }`}
         ref={boardInnerRef}
       >
-        {lists
-          .sort((a, b) => a.order - b.order)
-          .map((list) => (
-            <ItemList list={list} />
-          ))}
+        {lists &&
+          lists
+            .sort((a, b) => a.order - b.order)
+            .map((list) => <ItemList list={list} />)}
+        <div className="add-list">
+          <button
+            type="button"
+            className="btn-primary"
+            onclick={() => addList()}
+          >
+            Add a list...
+          </button>
+        </div>
       </div>
       <Portal container={document.getElementById("portal")!}>
         {clickedItem?.dragging && <ListItemClone item={clickedItem} />}

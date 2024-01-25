@@ -4,6 +4,7 @@ import { GlobalProvider } from "./state/GlobalProvider"
 import { Board } from "./components/Board"
 import { BoardContext } from "./state/board"
 import { useGlobal } from "./state/global"
+import { Select } from "./components/Select"
 
 export function App() {
   return (
@@ -17,10 +18,19 @@ export function App() {
 }
 
 function Nav() {
+  const { boards } = useGlobal()
   const board = useContext(BoardContext)
+
   return (
-    <nav className="p-8 ">
-      <h1>{board.title}</h1>
+    <nav className="p-4 ">
+      <Select
+        value={board?.id}
+        options={boards.map((board) => ({
+          key: board.id,
+          text: board.title || "(New Board)",
+        }))}
+        onChange={console.log}
+      />
     </nav>
   )
 }

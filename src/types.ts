@@ -15,30 +15,32 @@ export interface GlobalState {
   clickedList: ClickedList | null
   listDragTarget: ListDragTarget | null
   dragging: boolean
+  boards: Board[]
 }
 
 export interface ListItem {
-  id: string
+  id: number
+  listId: number
   title: string
-  description: string
+  content: string
   archived: boolean
   created: Date
   order: number
+  refereceItems: number[]
 }
 
 export interface List {
-  id: string
+  id: number
+  boardId: number
   title: string
-  items: ListItem[]
   archived: boolean
   created: Date
   order: number
-  dropArea: HTMLElement | null
 }
 
 export interface ItemDragTarget {
   index: number
-  listId: string
+  listId: number
 }
 
 export interface ListDragTarget {
@@ -46,10 +48,10 @@ export interface ListDragTarget {
 }
 
 export interface ClickedItem {
-  id: string
+  id: number
   index: number
   dragging: boolean
-  listId: string
+  listId: number
   element: HTMLElement
   domRect: DOMRect
   mouseOffset: {
@@ -59,7 +61,7 @@ export interface ClickedItem {
 }
 
 export interface ClickedList {
-  id: string
+  id: number
   index: number
   dragging: boolean
   element: HTMLElement
@@ -71,8 +73,19 @@ export interface ClickedList {
 }
 
 export interface Board {
-  id: string
+  id: number
   title: string
-  lists: List[]
+  created: Date
+  archived: boolean
+  order: number
+}
+
+export interface SelectedBoardList extends List {
+  items: ListItem[]
+  dropArea: HTMLElement | null
+}
+
+export interface SelectedBoard extends Board {
+  lists: SelectedBoardList[]
   dropArea: HTMLElement | null
 }

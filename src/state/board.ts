@@ -1,30 +1,32 @@
 import { createContext, useContext } from "kaioken"
 import {
-  Board,
   ClickedItem,
   ClickedList,
   ItemDragTarget,
-  List,
   ListDragTarget,
   ListItem,
+  SelectedBoard,
+  SelectedBoardList,
 } from "../types"
+import { addList } from "../idb"
 
-export const BoardContext = createContext<Board>(null)
+export const BoardContext = createContext<SelectedBoard | null>(null)
 export const BoardDispatchContext =
   createContext<(action: BoardDispatchAction) => void>(null)
 
 export function useBoard() {
   const dispatch = useContext(BoardDispatchContext)
   const board = useContext(BoardContext)
-  const updateList = (payload: Partial<List> & { id: string }) =>
+  const updateList = (payload: Partial<SelectedBoardList> & { id: number }) =>
     dispatch({ type: "UPDATE_LIST", payload })
-  const updateLists = (payload: List[]) =>
+  const updateLists = (payload: SelectedBoardList[]) =>
     dispatch({ type: "UPDATE_LISTS", payload })
 
   function handleListDrop(
     clickedList: ClickedList,
     listDragTarget: ListDragTarget
   ) {
+    if (!board) return
     const targetIdx =
       listDragTarget.index >= clickedList.index
         ? listDragTarget.index - 1
@@ -45,6 +47,7 @@ export function useBoard() {
     clickedItem: ClickedItem,
     itemDragTarget: ItemDragTarget
   ) {
+    if (!board) return
     const itemList = board.lists.find((list) => list.id === clickedItem.listId)!
     const targetList = board.lists.find(
       (list) => list.id === itemDragTarget.listId
@@ -80,49 +83,62 @@ export function useBoard() {
     }
   }
   return {
-    ...board,
+    ...(board ?? {}),
     setDropArea: (element: HTMLElement | null) =>
       dispatch({ type: "SET_DROP_AREA", payload: { element } }),
-    addList: (title: string) =>
-      dispatch({ type: "ADD_LIST", payload: { title } }),
-    removeList: (id: string) =>
+    addList: async () => {
+      if (!board) throw new Error("No board")
+      const maxListOrder = Math.max(...board.lists.map((l) => l.order), -1)
+      const newList = await addList(board.id, maxListOrder + 1)
+      dispatch({
+        type: "ADD_LIST",
+        payload: {
+          ...newList,
+          items: [],
+          dropArea: null,
+        },
+      })
+    },
+    removeList: (id: number) =>
       dispatch({ type: "REMOVE_LIST", payload: { id } }),
-    updateItem: (payload: Partial<ListItem> & { id: string }) =>
+    updateItem: (payload: Partial<ListItem> & { id: number }) =>
       dispatch({ type: "UPDATE_ITEM", payload }),
     updateList,
     handleItemDrop,
     handleListDrop,
+    setBoard: (payload: SelectedBoard | null) =>
+      dispatch({ type: "SET_BOARD", payload }),
   }
 }
 
 type BoardDispatchAction =
-  | { type: "ADD_LIST"; payload: { title: string } }
-  | { type: "REMOVE_LIST"; payload: { id: string } }
-  | { type: "UPDATE_LIST"; payload: Partial<List> & { id: string } }
-  | { type: "UPDATE_LISTS"; payload: List[] }
-  | { type: "UPDATE_ITEM"; payload: Partial<ListItem> & { id: string } }
+  | { type: "SET_BOARD"; payload: SelectedBoard | null }
+  | { type: "ADD_LIST"; payload: SelectedBoardList }
+  | { type: "REMOVE_LIST"; payload: { id: number } }
+  | {
+      type: "UPDATE_LIST"
+      payload: Partial<SelectedBoardList> & { id: number }
+    }
+  | { type: "UPDATE_LISTS"; payload: SelectedBoardList[] }
+  | { type: "UPDATE_ITEM"; payload: Partial<ListItem> & { id: number } }
   | { type: "SET_DROP_AREA"; payload: { element: HTMLElement | null } }
 
 export function boardStateReducer(
-  state: Board,
+  state: SelectedBoard | null,
   action: BoardDispatchAction
-): Board {
+): SelectedBoard | null {
+  if (!state) {
+    if (action.type === "SET_BOARD") {
+      return action.payload
+    }
+    return null
+  }
   switch (action.type) {
     case "ADD_LIST": {
-      const { title } = action.payload
       const lists = [
         ...state.lists,
-        {
-          id: `${state.lists.length + 1}`,
-          title,
-          items: [],
-          dropArea: null,
-          order: state.lists.length,
-          archived: false,
-          created: new Date(),
-        },
+        { ...action.payload, items: [], dropArea: null } as SelectedBoardList,
       ]
-      localStorage.setItem("lists", JSON.stringify(lists))
       return {
         ...state,
         lists,
@@ -131,7 +147,6 @@ export function boardStateReducer(
     case "REMOVE_LIST": {
       const { id } = action.payload
       const lists = state.lists.filter((list) => list.id !== id)
-      localStorage.setItem("lists", JSON.stringify(lists))
       return {
         ...state,
         lists,
@@ -148,7 +163,6 @@ export function boardStateReducer(
           ...rest,
         },
       ]
-      localStorage.setItem("lists", JSON.stringify(lists))
       return {
         ...state,
         lists,
@@ -156,7 +170,6 @@ export function boardStateReducer(
     }
     case "UPDATE_LISTS": {
       const { payload } = action
-      localStorage.setItem("lists", JSON.stringify(payload))
       return {
         ...state,
         lists: payload,
@@ -179,7 +192,6 @@ export function boardStateReducer(
           },
         ],
       }))
-      localStorage.setItem("lists", JSON.stringify(lists))
       return {
         ...state,
         lists,
@@ -192,103 +204,11 @@ export function boardStateReducer(
         dropArea: element,
       }
     }
+    case "SET_BOARD": {
+      return action.payload ? { ...action.payload } : null
+    }
     default: {
       throw new Error(`Unhandled action: ${action}`)
     }
-  }
-}
-
-const defaultBoard: Board = {
-  id: crypto.randomUUID(),
-  title: "Board 1",
-  dropArea: null,
-  lists: [
-    {
-      id: "1",
-      title: "List 1",
-      items: [
-        {
-          id: crypto.randomUUID(),
-          title: "Item 1",
-          description: "Description 1",
-          archived: false,
-          created: new Date(),
-          order: 0,
-        },
-        {
-          id: crypto.randomUUID(),
-          title: "Item 2",
-          description: "Description 2",
-          archived: false,
-          created: new Date(),
-          order: 1,
-        },
-        {
-          id: crypto.randomUUID(),
-          title: "Item 3",
-          description: "Description 3",
-          archived: false,
-          created: new Date(),
-          order: 2,
-        },
-      ],
-      dropArea: null,
-      order: 0,
-      archived: false,
-      created: new Date(),
-    },
-    {
-      id: "2",
-      title: "List 2",
-      items: [
-        {
-          id: crypto.randomUUID(),
-          title: "Item 4",
-          description: "Description 4",
-          archived: false,
-          created: new Date(),
-          order: 1,
-        },
-        {
-          id: crypto.randomUUID(),
-          title: "Item 5",
-          description: "Description 5",
-          archived: false,
-          created: new Date(),
-          order: 0,
-        },
-      ],
-      dropArea: null,
-      order: 1,
-      archived: false,
-      created: new Date(),
-    },
-    {
-      id: "3",
-      title: "List 3",
-      items: [
-        {
-          id: crypto.randomUUID(),
-          title: "Item 6",
-          description: "Description 6",
-          archived: false,
-          created: new Date(),
-          order: 0,
-        },
-      ],
-      dropArea: null,
-      order: 2,
-      archived: false,
-      created: new Date(),
-    },
-  ],
-}
-
-export function loadBoard(): Board {
-  const lists = localStorage.getItem("lists")
-  if (!lists) return defaultBoard
-  return {
-    ...defaultBoard,
-    lists: JSON.parse(lists),
   }
 }

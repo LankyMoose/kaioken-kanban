@@ -1,10 +1,11 @@
-import { useRef, useEffect } from "kaioken"
-import { List, ListItem } from "../types"
 import "./ItemList.css"
+import { useRef, useEffect } from "kaioken"
+import { ListItem, SelectedBoardList } from "../types"
 import { useGlobal } from "../state/global"
 import { useBoard } from "../state/board"
+import { addItem } from "../idb"
 
-export function ItemList({ list }: { list: List }) {
+export function ItemList({ list }: { list: SelectedBoardList }) {
   const listRef = useRef<HTMLDivElement>(null)
   const rect = useRef<DOMRect>(null)
   const dropAreaRef = useRef<HTMLDivElement>(null)
@@ -117,6 +118,7 @@ export function ItemList({ list }: { list: List }) {
   function getListStyle() {
     if (!rect.current) return ""
     if (listDragTarget?.index === list.order) {
+      console.log("listDragTarget?.index === list.order")
       return "margin-left: calc(var(--selected-list-width) + var(--lists-gap));"
     }
     if (clickedList?.id !== list.id) return ""
@@ -129,6 +131,18 @@ export function ItemList({ list }: { list: List }) {
     return `transform: translate(calc(${x}px - 1rem), calc(${y}px - 1rem))`
   }
 
+  async function handleAddItemClick() {
+    const listMax = list.items.reduce((max, item) => {
+      if (item.order > max) return item.order
+      return max
+    }, 0)
+    const res = await addItem(list.id, listMax + 1)
+    updateList({
+      id: list.id,
+      items: [...list.items, res],
+    })
+  }
+
   return (
     <div
       ref={listRef}
@@ -137,7 +151,9 @@ export function ItemList({ list }: { list: List }) {
       data-id={list.id}
     >
       <div className="list-header" onmousedown={handleHeaderMouseDown}>
-        <h3 className="list-title">{list.title}</h3>
+        <h3 className="list-title text-base font-bold">
+          {list.title || "(New List)"}
+        </h3>
       </div>
       <div
         className={getListItemsClassName()}
@@ -151,6 +167,14 @@ export function ItemList({ list }: { list: List }) {
               <Item item={item} idx={i} listId={list.id} />
             ))}
         </div>
+        <div className="flex">
+          <button
+            className="add-item flex-grow py-2 text-sm font-semibold"
+            onclick={handleAddItemClick}
+          >
+            Add Item
+          </button>
+        </div>
       </div>
     </div>
   )
@@ -163,7 +187,7 @@ function Item({
 }: {
   item: ListItem
   idx: number
-  listId: string
+  listId: number
 }) {
   const rect = useRef<DOMRect>(null)
   const ref = useRef<HTMLButtonElement>(null)
@@ -213,9 +237,8 @@ function Item({
       return "margin-top: calc(var(--selected-item-height) + var(--items-gap));"
     if (clickedItem?.id !== item.id) return ""
 
-    const list = lists.find((l) => l.id === listId)!
-
-    const dropAreaRect = list.dropArea?.getBoundingClientRect()
+    const list = lists?.find((l) => l.id === listId)
+    const dropAreaRect = list?.dropArea?.getBoundingClientRect()
     if (!dropAreaRect) return ""
 
     const x = rect.current.x - dropAreaRect.x - rootElement.scrollLeft
@@ -239,7 +262,7 @@ function Item({
       onmousedown={handleMouseDown}
       data-id={item.id}
     >
-      {item.title}
+      {item.title || "(New Item)"}
     </button>
   )
 }

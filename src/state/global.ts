@@ -7,6 +7,7 @@ import {
   List,
   ClickedList,
   ListDragTarget,
+  Board,
 } from "../types"
 
 export const GlobalCtx = createContext<GlobalState>(null)
@@ -28,7 +29,7 @@ export function useGlobal() {
     clickedList: ClickedList
   ) {
     const elements = Array.from(dropArea.querySelectorAll(".list")).filter(
-      (el) => el.getAttribute("data-id") !== clickedList.id
+      (el) => Number(el.getAttribute("data-id")) !== clickedList.id
     )
     let index = elements.length
     const draggedItemLeft = e.clientX - clickedList.mouseOffset.x
@@ -55,7 +56,7 @@ export function useGlobal() {
     targetList: List
   ) {
     const elements = Array.from(dropArea.querySelectorAll(".list-item")).filter(
-      (el) => el.getAttribute("data-id") !== clickedItem.id
+      (el) => Number(el.getAttribute("data-id")) !== clickedItem.id
     )
     const isOriginList = clickedItem?.listId === targetList.id
     let index = elements.length
@@ -105,6 +106,7 @@ type GlobalDispatchAction =
   | { type: "SET_ITEM_DRAG_TARGET"; payload: ItemDragTarget | null }
   | { type: "SET_CLICKED_LIST"; payload: ClickedList | null }
   | { type: "SET_LIST_DRAG_TARGET"; payload: ListDragTarget | null }
+  | { type: "SET_BOARDS"; payload: Board[] }
 
 export function globalStateReducer(
   state: GlobalState,
@@ -152,6 +154,12 @@ export function globalStateReducer(
         listDragTarget: action.payload,
       }
     }
+    case "SET_BOARDS": {
+      return {
+        ...state,
+        boards: action.payload,
+      }
+    }
     default: {
       return state
     }
@@ -179,4 +187,5 @@ export const defaultGlobalState: GlobalState = {
   itemDragTarget: null,
   clickedList: null,
   listDragTarget: null,
+  boards: [],
 }

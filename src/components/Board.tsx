@@ -1,13 +1,11 @@
 import "./Board.css"
-import { useRef, Portal, useEffect, Transition, useModel } from "kaioken"
+import { useRef, Portal, useEffect, Transition } from "kaioken"
 import { ItemList } from "./ItemList"
 import { Board, ClickedItem, ClickedList } from "../types"
 import { useGlobal } from "../state/global"
 import { useBoard } from "../state/board"
 import { Modal } from "./dialog/Modal"
-import { DialogHeader } from "./dialog/DialogHeader"
-import { Input } from "./atoms/Input"
-import { updateItem as updateDbItem } from "../idb"
+import { ItemEditor } from "./ItemEditor"
 
 export function Board() {
   const {
@@ -126,44 +124,12 @@ export function Board() {
                 if (clickedItem) setClickedItem(null)
               }}
             >
-              <ItemModalContents clickedItem={clickedItem} />
+              <ItemEditor clickedItem={clickedItem} />
             </Modal>
           )}
         />
       </Portal>
     </div>
-  )
-}
-
-function ItemModalContents({
-  clickedItem,
-}: {
-  clickedItem: ClickedItem | null
-}) {
-  const { updateItem } = useBoard()
-  const [ref, name] = useModel<HTMLInputElement, string>(
-    clickedItem?.item.title || "(New Item)"
-  )
-
-  return (
-    <>
-      <DialogHeader>
-        <Input
-          ref={ref}
-          className="bg-transparent w-full border-0"
-          onfocus={(e) => (e.target as HTMLInputElement)?.select()}
-          onchange={async () => {
-            if (!clickedItem) return
-            const newItem = {
-              ...clickedItem.item,
-              title: name,
-            }
-            await updateDbItem(newItem)
-            updateItem(newItem)
-          }}
-        />
-      </DialogHeader>
-    </>
   )
 }
 

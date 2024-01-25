@@ -25,7 +25,10 @@ export function useBoard() {
     clickedList: ClickedList,
     listDragTarget: ListDragTarget
   ) {
-    const targetIdx = listDragTarget.index - 1
+    const targetIdx =
+      listDragTarget.index >= clickedList.index
+        ? listDragTarget.index - 1
+        : listDragTarget.index
     const moved = clickedList.index !== targetIdx
     if (moved) {
       const list = board.lists.find((list) => list.id === clickedList.id)!
@@ -202,7 +205,7 @@ const defaultBoard: Board = {
   lists: [
     {
       id: "1",
-      title: "List 1 asdas ",
+      title: "List 1",
       items: [
         {
           id: crypto.randomUUID(),
@@ -257,6 +260,24 @@ const defaultBoard: Board = {
       ],
       dropArea: null,
       order: 1,
+      archived: false,
+      created: new Date(),
+    },
+    {
+      id: "3",
+      title: "List 3",
+      items: [
+        {
+          id: crypto.randomUUID(),
+          title: "Item 6",
+          description: "Description 6",
+          archived: false,
+          created: new Date(),
+          order: 0,
+        },
+      ],
+      dropArea: null,
+      order: 2,
       archived: false,
       created: new Date(),
     },

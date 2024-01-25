@@ -19,6 +19,7 @@ export function ItemList({ list }: { list: List }) {
     setClickedList,
     listDragTarget,
     setListDragTarget,
+    rootElement,
   } = useGlobal()
 
   useEffect(() => {
@@ -123,8 +124,8 @@ export function ItemList({ list }: { list: List }) {
     const dropAreaRect = dropArea?.getBoundingClientRect()
     if (!dropAreaRect) return ""
 
-    const x = rect.current.x - dropAreaRect.x
-    const y = rect.current.y - dropAreaRect.y
+    const x = rect.current.x - rootElement.scrollLeft
+    const y = rect.current.y - dropAreaRect.y - rootElement.scrollTop
     return `transform: translate(calc(${x}px - 1rem), calc(${y}px - 1rem))`
   }
 
@@ -166,8 +167,13 @@ function Item({
 }) {
   const rect = useRef<DOMRect>(null)
   const ref = useRef<HTMLButtonElement>(null)
-  const { clickedItem, setClickedItem, itemDragTarget, setItemDragTarget } =
-    useGlobal()
+  const {
+    clickedItem,
+    setClickedItem,
+    itemDragTarget,
+    setItemDragTarget,
+    rootElement,
+  } = useGlobal()
   const { lists } = useBoard()
 
   useEffect(() => {
@@ -212,8 +218,8 @@ function Item({
     const dropAreaRect = list.dropArea?.getBoundingClientRect()
     if (!dropAreaRect) return ""
 
-    const x = rect.current.x - dropAreaRect.x
-    const y = rect.current.y - dropAreaRect.y
+    const x = rect.current.x - dropAreaRect.x - rootElement.scrollLeft
+    const y = rect.current.y - dropAreaRect.y - rootElement.scrollTop
     return `transform: translate(calc(${x}px - .5rem), calc(${y}px - .5rem))`
   }
 

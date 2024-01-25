@@ -84,7 +84,8 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
       if (
         clickedItem &&
         clickedItem.listId === list.id &&
-        clickedItem.index === list.items.length - 1
+        clickedItem.index === list.items.length - 1 &&
+        !clickedItem.dialogOpen
       ) {
         return `${className} last`
       }
@@ -103,7 +104,9 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
     if (itemDragTarget?.listId !== list.id) return className
 
     return `${className} ${clickedItem?.dragging ? "dragging" : ""} ${
-      itemDragTarget.index === list.items.length ? "last" : ""
+      itemDragTarget.index === list.items.length && !clickedItem.dialogOpen
+        ? "last"
+        : ""
     }`.trim()
   }
 
@@ -214,10 +217,12 @@ function Item({
     const element = ref.current?.cloneNode(true) as HTMLButtonElement
     if (!element) return
     setClickedItem({
+      item,
       id: item.id,
       listId: listId,
       index: idx,
       dragging: false,
+      dialogOpen: false,
       element,
       domRect: rect.current!,
       mouseOffset: {
@@ -231,12 +236,19 @@ function Item({
     })
   }
 
+  function handleClick() {
+    setClickedItem({
+      ...clickedItem!,
+      dialogOpen: true,
+    })
+  }
+
   function getStyle() {
     if (!rect.current) return ""
     if (itemDragTarget?.index === idx && itemDragTarget?.listId === listId)
       return "margin-top: calc(var(--selected-item-height) + var(--items-gap));"
     if (clickedItem?.id !== item.id) return ""
-
+    if (clickedItem.dialogOpen) return ""
     const list = lists?.find((l) => l.id === listId)
     const dropAreaRect = list?.dropArea?.getBoundingClientRect()
     if (!dropAreaRect) return ""
@@ -248,7 +260,7 @@ function Item({
 
   function getClassName() {
     let className = "list-item"
-    if (clickedItem?.id === item.id) {
+    if (clickedItem?.id === item.id && !clickedItem.dialogOpen) {
       className += " selected"
     }
     return className
@@ -260,6 +272,7 @@ function Item({
       className={getClassName()}
       style={getStyle()}
       onmousedown={handleMouseDown}
+      onclick={handleClick}
       data-id={item.id}
     >
       {item.title || "(New Item)"}

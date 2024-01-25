@@ -79,7 +79,12 @@ export function useBoard() {
       } else {
         targetList.items.splice(targetIdx, 0, item)
         itemList.items.forEach(handleItemReorder)
-        targetList.items.forEach(handleItemReorder)
+        targetList.items.forEach((itm, i) => {
+          if (itm.order === i && itm !== item) return
+          item.order = i
+          if (itm === item) itm.listId = targetList.id
+          updateItem(itm)
+        })
         updateList(itemList)
         updateList(targetList)
       }
@@ -180,20 +185,23 @@ export function boardStateReducer(
     }
     case "UPDATE_ITEM": {
       const { id, ...rest } = action.payload
-      const item = state.lists
-        .map((list) => list.items)
-        .flat()
-        .find((item) => item.id === id)
+      const list = state.lists.find((list) => list.id === rest.listId)
+      if (!list) throw new Error("No list")
+
+      const item = list.items.find((item) => item.id === id)
       if (!item) return state
-      const lists = state.lists.map((list) => ({
-        ...list,
-        items: [
-          ...list.items.filter((item) => item.id !== id),
-          {
-            ...item,
-            ...rest,
-          },
-        ],
+      const lists = state.lists.map((l) => ({
+        ...l,
+        items:
+          l.id !== list.id
+            ? l.items
+            : [
+                ...l.items.filter((item) => item.id !== id),
+                {
+                  ...item,
+                  ...rest,
+                },
+              ],
       }))
       return {
         ...state,

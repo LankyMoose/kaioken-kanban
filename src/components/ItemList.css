@@ -141,7 +141,7 @@
 
 
 .list-items.last:not(.empty) .list-items-inner {
-  padding-bottom: calc(var(--selected-item-height) + var(--items-gap) + .5rem);
+  padding-bottom: calc(var(--selected-item-height) + var(--items-gap));
 }
 
 

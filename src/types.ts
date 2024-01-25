@@ -48,9 +48,11 @@ export interface ListDragTarget {
 }
 
 export interface ClickedItem {
+  item: ListItem
   id: number
   index: number
   dragging: boolean
+  dialogOpen: boolean
   listId: number
   element: HTMLElement
   domRect: DOMRect

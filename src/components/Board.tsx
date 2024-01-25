@@ -18,8 +18,9 @@ export function Board() {
     setClickedList,
     listDragTarget,
     setListDragTarget,
+    handleListDrag,
   } = useGlobal()
-  const { lists, handleItemDrop, setDropArea } = useBoard()
+  const { lists, handleItemDrop, dropArea, setDropArea } = useBoard()
   const boardInnerRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -49,6 +50,8 @@ export function Board() {
         ...clickedList,
         dragging: true,
       })
+    } else if (clickedList && clickedList.dragging) {
+      handleListDrag(e, dropArea!, clickedList)
     }
     if (!dragging) return
     rootElement.scrollLeft -= e.movementX

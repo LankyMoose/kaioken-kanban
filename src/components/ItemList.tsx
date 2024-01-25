@@ -8,7 +8,7 @@ export function ItemList({ list }: { list: List }) {
   const listRef = useRef<HTMLDivElement>(null)
   const rect = useRef<DOMRect>(null)
   const dropAreaRef = useRef<HTMLDivElement>(null)
-  const { updateList } = useBoard()
+  const { updateList, dropArea } = useBoard()
   const {
     clickedItem,
     setClickedItem,
@@ -121,7 +121,14 @@ export function ItemList({ list }: { list: List }) {
     if (listDragTarget?.index === list.order) {
       return "margin-left: calc(var(--selected-list-width) + var(--lists-gap));"
     }
-    return ""
+    if (clickedList?.id !== list.id) return ""
+
+    const dropAreaRect = dropArea?.getBoundingClientRect()
+    if (!dropAreaRect) return ""
+
+    const x = rect.current.x - dropAreaRect.x
+    const y = rect.current.y - dropAreaRect.y
+    return `transform: translate(calc(${x}px - 1rem), calc(${y}px - 1rem))`
   }
 
   return (
@@ -199,7 +206,6 @@ function Item({
   }
 
   function getStyle() {
-    let style = ""
     if (!rect.current) return ""
     if (itemDragTarget?.index === idx && itemDragTarget?.listId === listId)
       return "margin-top: calc(var(--selected-item-height) + var(--items-gap));"
@@ -212,7 +218,7 @@ function Item({
 
     const x = rect.current.x - dropAreaRect.x
     const y = rect.current.y - dropAreaRect.y
-    return `${style} transform: translate(calc(${x}px - .5rem), calc(${y}px - .5rem))`
+    return `transform: translate(calc(${x}px - .5rem), calc(${y}px - .5rem))`
   }
 
   function getClassName() {

@@ -30,7 +30,6 @@ export function useGlobal() {
     const elements = Array.from(dropArea.querySelectorAll(".list")).filter(
       (el) => el.getAttribute("data-id") !== clickedList.id
     )
-
     let index = elements.length
     const draggedItemLeft = e.clientX - clickedList.mouseOffset.x
 
@@ -41,6 +40,9 @@ export function useGlobal() {
         index = i
         break
       }
+    }
+    if (clickedList.index <= index) {
+      index++
     }
 
     setListDragTarget({

@@ -1,7 +1,7 @@
 import "./Board.css"
 import { useRef, Portal, useEffect, Transition } from "kaioken"
 import { ItemList } from "./ItemList"
-import { Board, ClickedItem, ClickedList } from "../types"
+import type { Board, ClickedItem, ClickedList } from "../types"
 import { useGlobal } from "../state/global"
 import { useBoard } from "../state/board"
 import { Modal } from "./dialog/Modal"
@@ -76,6 +76,7 @@ export function Board() {
   return (
     <div
       id="board"
+      className="xd"
       onmousedown={handleMouseDown}
       onmouseup={handleMouseUp}
       onmousemove={handleMouseMove}

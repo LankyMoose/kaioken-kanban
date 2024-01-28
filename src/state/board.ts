@@ -79,16 +79,8 @@ export function useBoard() {
       } else {
         targetList.items.splice(targetIdx, 0, item)
         itemList.items.forEach(handleItemReorder)
-        targetList.items.forEach((itm, i) => {
-          let changed = false
-          if (itm.order !== i) changed = true
-          item.order = i
-          if (itm === item) {
-            itm.listId = targetList.id
-            changed = true
-          }
-          updateItem(itm)
-        })
+        item.listId = targetList.id
+        targetList.items.forEach(handleItemReorder)
         updateList(itemList)
         updateList(targetList)
       }

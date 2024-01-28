@@ -149,7 +149,8 @@ select:not([disabled]) {
 
 select option {
   /* background-color: #222; */
-  color: initial;
+  color: #FFF;
+  background-color: #222;
 }
 
 .backdrop {

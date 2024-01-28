@@ -28,6 +28,7 @@ export function Select(props: SelectProps) {
           {typeof item === "object" ? item.text : item}
         </option>
       ))}
+      <option value="create-new">Create New Board</option>
     </select>
   )
 }

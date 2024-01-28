@@ -14,7 +14,7 @@ export function ItemEditor({
 }) {
   const { setClickedItem } = useGlobal()
   const { updateItem } = useBoard()
-  const [nameRef, name] = useModel<HTMLInputElement, string>(
+  const [titleRef, title] = useModel<HTMLInputElement, string>(
     clickedItem?.item.title || "(New Item)"
   )
   const [contentRef, content] = useModel<HTMLTextAreaElement, string>(
@@ -23,10 +23,7 @@ export function ItemEditor({
 
   async function handleTitleChange() {
     if (!clickedItem) return
-    const newItem = {
-      ...clickedItem.item,
-      title: name,
-    }
+    const newItem = { ...clickedItem.item, title }
     await updateDbItem(newItem)
     updateItem(newItem)
     setClickedItem({
@@ -37,10 +34,7 @@ export function ItemEditor({
 
   async function handleContentChange() {
     if (!clickedItem) return
-    const newItem = {
-      ...clickedItem.item,
-      content,
-    }
+    const newItem = { ...clickedItem.item, content }
     await updateDbItem(newItem)
     updateItem(newItem)
     setClickedItem({
@@ -53,7 +47,7 @@ export function ItemEditor({
     <>
       <DialogHeader>
         <Input
-          ref={nameRef}
+          ref={titleRef}
           className="bg-transparent w-full border-0"
           onfocus={(e) => (e.target as HTMLInputElement)?.select()}
           onchange={handleTitleChange}

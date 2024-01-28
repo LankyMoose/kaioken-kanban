@@ -4,7 +4,7 @@ import { GlobalProvider } from "./state/GlobalProvider"
 import { Board } from "./components/Board"
 import { BoardContext } from "./state/board"
 import { useGlobal } from "./state/global"
-import { Select } from "./components/Select"
+import { Select } from "./components/atoms/Select"
 
 export function App() {
   return (

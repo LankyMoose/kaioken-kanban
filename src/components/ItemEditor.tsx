@@ -5,12 +5,14 @@ import { Input } from "./atoms/Input"
 import { DialogBody } from "./dialog/DialogBody"
 import { DialogHeader } from "./dialog/DialogHeader"
 import { updateItem as updateDbItem } from "../idb"
+import { useGlobal } from "../state/global"
 
 export function ItemEditor({
   clickedItem,
 }: {
   clickedItem: ClickedItem | null
 }) {
+  const { setClickedItem } = useGlobal()
   const { updateItem } = useBoard()
   const [nameRef, name] = useModel<HTMLInputElement, string>(
     clickedItem?.item.title || "(New Item)"
@@ -27,6 +29,10 @@ export function ItemEditor({
     }
     await updateDbItem(newItem)
     updateItem(newItem)
+    setClickedItem({
+      ...clickedItem,
+      item: newItem,
+    })
   }
 
   async function handleContentChange() {
@@ -37,6 +43,10 @@ export function ItemEditor({
     }
     await updateDbItem(newItem)
     updateItem(newItem)
+    setClickedItem({
+      ...clickedItem,
+      item: newItem,
+    })
   }
 
   return (

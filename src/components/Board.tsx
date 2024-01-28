@@ -102,7 +102,14 @@ export function Board() {
           lists
             .sort((a, b) => a.order - b.order)
             .map((list) => <ItemList list={list} />)}
-        <div className="add-list">
+        <div
+          style={
+            listDragTarget && listDragTarget.index === lists?.length
+              ? "margin-left: calc(var(--selected-list-width) + var(--lists-gap));"
+              : ""
+          }
+          className="add-list"
+        >
           <button
             type="button"
             className="btn-primary"

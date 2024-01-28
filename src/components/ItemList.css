@@ -4,31 +4,29 @@
   flex-direction: column;
   width: 250px;
   min-width: 250px;
+  transition: margin-left .15s ease;
 }
 
 .add-list {
   display: flex;
   flex-direction: column;
   height: 100%;
-  margin-right: 3rem;
-  margin-left: 1.5rem;
 }
 
 .add-list button {
   width: 100%;
 }
 
-
 .list {
   overflow: hidden;
   height: fit-content;
   cursor: initial;
-  transition: margin-left .15s ease;
   background: rgba(255, 255, 255, .035);
   border-radius: var(--radius);
 }
 
-#board .inner:not(.dragging) .list {
+#board .inner:not(.dragging) .list,
+#board .inner:not(.dragging) .add-list {
   transition: none;
 }
 
@@ -52,6 +50,7 @@
   align-items: center;
   box-shadow: 0 0 5px rgba(0, 0, 0, .1);
   background-color: rgba(255, 255, 255, .025);
+  cursor: grab;
 }
 
 .list-title {
@@ -64,7 +63,6 @@
   background: transparent;
   width: 100%;
   padding: .25rem .5rem;
-  cursor: grab;
   margin: 0;
 }
 
@@ -132,18 +130,9 @@
   border-color: transparent;
 }
 
-@media (prefers-color-scheme: light) {
-  .list-items.dragging .list-items-inner {
-    background-color: rgba(0, 0, 0, 0.1);
-  }
-}
-
-
-
 .list-items.last:not(.empty) .list-items-inner {
   padding-bottom: calc(var(--selected-item-height) + var(--items-gap));
 }
-
 
 .list-items:not(.dragging) .list-item {
   transition: none;

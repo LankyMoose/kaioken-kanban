@@ -6,6 +6,7 @@ import { useBoard } from "../state/board"
 import { addItem } from "../idb"
 
 export function ItemList({ list }: { list: SelectedBoardList }) {
+  const headerRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const rect = useRef<DOMRect>(null)
   const dropAreaRef = useRef<HTMLDivElement>(null)
@@ -63,6 +64,7 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
     if (e.buttons !== 1) return
     const element = listRef.current?.cloneNode(true) as HTMLDivElement
     if (!element) return
+    console.log("clicked list", e)
     setClickedList({
       id: list.id,
       index: list.order,
@@ -70,8 +72,8 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
       element,
       domRect: rect.current!,
       mouseOffset: {
-        x: e.offsetX,
-        y: e.offsetY,
+        x: e.target === headerRef.current ? e.offsetX - 12 : e.offsetX,
+        y: e.target === headerRef.current ? e.offsetY - 12 : e.offsetY,
       },
     })
     setListDragTarget({ index: list.order + 1 })
@@ -121,7 +123,6 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
   function getListStyle() {
     if (!rect.current) return ""
     if (listDragTarget?.index === list.order) {
-      console.log("listDragTarget?.index === list.order")
       return "margin-left: calc(var(--selected-list-width) + var(--lists-gap));"
     }
     if (clickedList?.id !== list.id) return ""
@@ -153,7 +154,11 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
       className={getListClassName()}
       data-id={list.id}
     >
-      <div className="list-header" onmousedown={handleHeaderMouseDown}>
+      <div
+        className="list-header"
+        ref={headerRef}
+        onmousedown={handleHeaderMouseDown}
+      >
         <h3 className="list-title text-base font-bold">
           {list.title || "(New List)"}
         </h3>

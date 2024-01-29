@@ -63,9 +63,11 @@ export interface ClickedItem {
 }
 
 export interface ClickedList {
+  list: List
   id: number
   index: number
   dragging: boolean
+  dialogOpen: boolean
   element: HTMLElement
   domRect: DOMRect
   mouseOffset: {

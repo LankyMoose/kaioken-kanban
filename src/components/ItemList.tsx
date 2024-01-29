@@ -62,11 +62,12 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
       x: e.clientX - rect.x - 12,
       y: e.clientY - rect.y - 12,
     }
-    console.log("clicked list", mouseOffset, rootElement.scrollLeft)
     setClickedList({
+      list,
       id: list.id,
       index: list.order,
       dragging: false,
+      dialogOpen: false,
       element,
       domRect: rect,
       mouseOffset,
@@ -109,7 +110,7 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
 
   function getListClassName() {
     let className = "list"
-    if (clickedList?.id === list.id) {
+    if (clickedList?.id === list.id && !clickedList.dialogOpen) {
       className += " selected"
     }
     return className
@@ -120,6 +121,7 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
       return "margin-left: calc(var(--selected-list-width) + var(--lists-gap));"
     }
     if (clickedList?.id !== list.id) return ""
+    if (clickedList.dialogOpen) return ""
 
     // initial click state
     const dropArea = document.querySelector("#board .inner")!
@@ -158,7 +160,11 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
         <h3 className="list-title text-base font-bold">
           {list.title || "(New List)"}
         </h3>
-        <button>
+        <button
+          onclick={() =>
+            clickedList && setClickedList({ ...clickedList, dialogOpen: true })
+          }
+        >
           <MoreIcon />
         </button>
       </div>

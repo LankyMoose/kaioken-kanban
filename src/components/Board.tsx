@@ -6,6 +6,7 @@ import { useGlobal } from "../state/global"
 import { useBoard } from "../state/board"
 import { Modal } from "./dialog/Modal"
 import { ItemEditor } from "./ItemEditor"
+import { ListEditor } from "./ListEditor"
 
 export function Board() {
   const {
@@ -116,11 +117,21 @@ export function Board() {
           element={(state) => (
             <Modal
               state={state}
-              close={() => {
-                if (clickedItem) setClickedItem(null)
-              }}
+              close={() => clickedItem && setClickedItem(null)}
             >
               <ItemEditor clickedItem={clickedItem} />
+            </Modal>
+          )}
+        />
+        <Transition
+          in={clickedList?.dialogOpen || false}
+          timings={[40, 150, 150, 150]}
+          element={(state) => (
+            <Modal
+              state={state}
+              close={() => clickedList && setClickedList(null)}
+            >
+              <ListEditor clickedList={clickedList} />
             </Modal>
           )}
         />

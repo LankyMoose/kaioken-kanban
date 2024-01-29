@@ -23,14 +23,10 @@ export function useGlobal() {
   const setListDragTarget = (payload: ListDragTarget | null) =>
     dispatch({ type: "SET_LIST_DRAG_TARGET", payload })
 
-  function handleListDrag(
-    e: MouseEvent,
-    dropArea: HTMLElement,
-    clickedList: ClickedList
-  ) {
-    const elements = Array.from(dropArea.querySelectorAll(".list")).filter(
-      (el) => Number(el.getAttribute("data-id")) !== clickedList.id
-    )
+  function handleListDrag(e: MouseEvent, clickedList: ClickedList) {
+    const elements = Array.from(
+      document.querySelectorAll("#board .inner .list")
+    ).filter((el) => Number(el.getAttribute("data-id")) !== clickedList.id)
     let index = elements.length
     const draggedItemLeft = e.clientX - clickedList.mouseOffset.x
 

@@ -84,10 +84,8 @@ export interface Board {
 
 export interface SelectedBoardList extends List {
   items: ListItem[]
-  dropArea: HTMLElement | null
 }
 
 export interface SelectedBoard extends Board {
   lists: SelectedBoardList[]
-  dropArea: HTMLElement | null
 }

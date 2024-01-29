@@ -45,7 +45,7 @@ export function useBoard() {
       board.lists.forEach((list, i) => {
         if (list.order === i) return
         list.order = i
-        const { dropArea, items, ...rest } = list
+        const { items, ...rest } = list
         updateDbList(rest)
       })
       updateLists(board.lists)
@@ -88,8 +88,6 @@ export function useBoard() {
   }
   return {
     ...(board ?? {}),
-    setDropArea: (element: HTMLElement | null) =>
-      dispatch({ type: "SET_DROP_AREA", payload: { element } }),
     addList: async () => {
       if (!board) throw new Error("No board")
       const maxListOrder = Math.max(...board.lists.map((l) => l.order), -1)
@@ -99,7 +97,6 @@ export function useBoard() {
         payload: {
           ...newList,
           items: [],
-          dropArea: null,
         },
       })
     },
@@ -202,13 +199,6 @@ export function boardStateReducer(
       return {
         ...state,
         lists,
-      }
-    }
-    case "SET_DROP_AREA": {
-      const { element } = action.payload
-      return {
-        ...state,
-        dropArea: element,
       }
     }
     case "SET_BOARD": {

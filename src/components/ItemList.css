@@ -15,6 +15,8 @@
 
 .add-list button {
   width: 100%;
+  background-color: rgba(255, 255, 255, .05);
+  border-radius: var(--radius);
 }
 
 .list {
@@ -51,6 +53,10 @@
   box-shadow: 0 0 5px rgba(0, 0, 0, .1);
   background-color: rgba(255, 255, 255, .025);
   cursor: grab;
+}
+
+.list-header button {
+  cursor: pointer;
 }
 
 .list-title {

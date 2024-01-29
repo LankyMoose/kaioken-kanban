@@ -22,20 +22,8 @@ export function Board() {
     setListDragTarget,
     handleListDrag,
   } = useGlobal()
-  const {
-    lists,
-    handleItemDrop,
-    dropArea,
-    setDropArea,
-    handleListDrop,
-    addList,
-  } = useBoard()
+  const { lists, handleItemDrop, handleListDrop, addList } = useBoard()
   const boardInnerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!boardInnerRef.current) return
-    setDropArea(boardInnerRef.current)
-  }, [boardInnerRef.current])
 
   function handleMouseDown(e: MouseEvent) {
     if (e.buttons !== 1) return
@@ -66,7 +54,7 @@ export function Board() {
         dragging: true,
       })
     } else if (clickedList && clickedList.dragging) {
-      handleListDrag(e, dropArea!, clickedList)
+      handleListDrag(e, clickedList)
     }
     if (!dragging) return
     rootElement.scrollLeft -= e.movementX
@@ -112,7 +100,7 @@ export function Board() {
         >
           <button
             type="button"
-            className="btn-primary"
+            className="btn-primary text-sm font-semibold py-4 border-2 border-transparent"
             onclick={() => addList()}
           >
             Add a list...

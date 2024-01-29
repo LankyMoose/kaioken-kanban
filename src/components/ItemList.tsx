@@ -4,13 +4,14 @@ import { ListItem, SelectedBoardList } from "../types"
 import { useGlobal } from "../state/global"
 import { useBoard } from "../state/board"
 import { addItem } from "../idb"
+import { MoreIcon } from "./icons/MoreIcon"
 
 export function ItemList({ list }: { list: SelectedBoardList }) {
   const headerRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const rect = useRef<DOMRect>(null)
   const dropAreaRef = useRef<HTMLDivElement>(null)
-  const { updateList, dropArea } = useBoard()
+  const { updateList } = useBoard()
   const {
     clickedItem,
     setClickedItem,
@@ -28,14 +29,6 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
     if (!listRef.current) return
     rect.current = listRef.current.getBoundingClientRect()
   }, [listRef.current])
-
-  useEffect(() => {
-    if (!dropAreaRef.current) return
-    updateList({
-      id: list.id,
-      dropArea: dropAreaRef.current,
-    })
-  }, [dropAreaRef.current])
 
   if (clickedList?.id === list.id && clickedList.dragging) {
     return null
@@ -64,17 +57,19 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
     if (e.buttons !== 1) return
     const element = listRef.current?.cloneNode(true) as HTMLDivElement
     if (!element) return
-    console.log("clicked list", e)
+    const rect = listRef.current!.getBoundingClientRect()
+    const mouseOffset = {
+      x: e.clientX - rect.x - 12,
+      y: e.clientY - rect.y - 12,
+    }
+    console.log("clicked list", mouseOffset, rootElement.scrollLeft)
     setClickedList({
       id: list.id,
       index: list.order,
       dragging: false,
       element,
-      domRect: rect.current!,
-      mouseOffset: {
-        x: e.target === headerRef.current ? e.offsetX - 12 : e.offsetX,
-        y: e.target === headerRef.current ? e.offsetY - 12 : e.offsetY,
-      },
+      domRect: rect,
+      mouseOffset,
     })
     setListDragTarget({ index: list.order + 1 })
   }
@@ -121,17 +116,18 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
   }
 
   function getListStyle() {
-    if (!rect.current) return ""
-    if (listDragTarget?.index === list.order) {
+    if (listDragTarget && listDragTarget.index === list.order) {
       return "margin-left: calc(var(--selected-list-width) + var(--lists-gap));"
     }
     if (clickedList?.id !== list.id) return ""
 
-    const dropAreaRect = dropArea?.getBoundingClientRect()
-    if (!dropAreaRect) return ""
+    // initial click state
+    const dropArea = document.querySelector("#board .inner")!
+    const dropAreaRect = dropArea.getBoundingClientRect()
+    const rect = listRef.current!.getBoundingClientRect()
 
-    const x = rect.current.x - rootElement.scrollLeft
-    const y = rect.current.y - dropAreaRect.y - rootElement.scrollTop
+    const x = rect.left - dropAreaRect.x - rootElement.scrollLeft
+    const y = rect.y - dropAreaRect.y - rootElement.scrollTop
     return `transform: translate(calc(${x}px - 1rem), calc(${y}px - 1rem))`
   }
 
@@ -162,6 +158,9 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
         <h3 className="list-title text-base font-bold">
           {list.title || "(New List)"}
         </h3>
+        <button>
+          <MoreIcon />
+        </button>
       </div>
       <div
         className={getListItemsClassName()}
@@ -197,7 +196,6 @@ function Item({
   idx: number
   listId: number
 }) {
-  const rect = useRef<DOMRect>(null)
   const ref = useRef<HTMLButtonElement>(null)
   const {
     clickedItem,
@@ -206,12 +204,6 @@ function Item({
     setItemDragTarget,
     rootElement,
   } = useGlobal()
-  const { lists } = useBoard()
-
-  useEffect(() => {
-    if (!ref.current) return
-    rect.current = ref.current.getBoundingClientRect()
-  }, [ref.current])
 
   if (clickedItem?.id === item.id && clickedItem.dragging) {
     return null
@@ -221,6 +213,7 @@ function Item({
     if (e.buttons !== 1) return
     const element = ref.current?.cloneNode(true) as HTMLButtonElement
     if (!element) return
+    const rect = ref.current!.getBoundingClientRect()
     setClickedItem({
       item,
       id: item.id,
@@ -229,7 +222,7 @@ function Item({
       dragging: false,
       dialogOpen: false,
       element,
-      domRect: rect.current!,
+      domRect: rect,
       mouseOffset: {
         x: e.offsetX,
         y: e.offsetY,
@@ -249,17 +242,27 @@ function Item({
   }
 
   function getStyle() {
-    if (!rect.current) return ""
     if (itemDragTarget?.index === idx && itemDragTarget?.listId === listId)
       return "margin-top: calc(var(--selected-item-height) + var(--items-gap));"
     if (clickedItem?.id !== item.id) return ""
     if (clickedItem.dialogOpen) return ""
-    const list = lists?.find((l) => l.id === listId)
-    const dropAreaRect = list?.dropArea?.getBoundingClientRect()
+    const dropArea = document.querySelector(
+      `#board .inner .list[data-id="${listId}"] .list-items-inner`
+    )!
+    const dropAreaRect = dropArea.getBoundingClientRect()
     if (!dropAreaRect) return ""
 
-    const x = rect.current.x - dropAreaRect.x - rootElement.scrollLeft
-    const y = rect.current.y - dropAreaRect.y - rootElement.scrollTop
+    if (!ref.current) return ""
+    const rect = ref.current.getBoundingClientRect()
+
+    const x = rect.x - dropAreaRect.x
+    const y = rect.y - dropAreaRect.y
+    console.log({
+      rect: rect,
+      dropAreaRect,
+      scrollLeft: rootElement.scrollLeft,
+      scrollTop: rootElement.scrollTop,
+    })
     return `transform: translate(calc(${x}px - .5rem), calc(${y}px - .5rem))`
   }
 

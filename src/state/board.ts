@@ -104,6 +104,8 @@ export function useBoard() {
       dispatch({ type: "REMOVE_LIST", payload: { id } }),
     updateItem: (payload: Partial<ListItem> & { id: number }) =>
       dispatch({ type: "UPDATE_ITEM", payload }),
+    removeItem: (payload: ListItem) =>
+      dispatch({ type: "REMOVE_ITEM", payload }),
     updateList,
     handleItemDrop,
     handleListDrop,
@@ -122,6 +124,7 @@ type BoardDispatchAction =
     }
   | { type: "UPDATE_LISTS"; payload: SelectedBoardList[] }
   | { type: "UPDATE_ITEM"; payload: Partial<ListItem> & { id: number } }
+  | { type: "REMOVE_ITEM"; payload: ListItem }
   | { type: "SET_DROP_AREA"; payload: { element: HTMLElement | null } }
 
 export function boardStateReducer(
@@ -200,6 +203,20 @@ export function boardStateReducer(
         ...state,
         lists,
       }
+    }
+    case "REMOVE_ITEM": {
+      const { id, listId } = action.payload
+
+      return {
+        ...state,
+        lists: state.lists.map((list) =>
+          list.id === listId
+            ? { ...list, items: list.items.filter((i) => i.id !== id) }
+            : list
+        ),
+      }
+
+      break
     }
     case "SET_BOARD": {
       return action.payload ? { ...action.payload } : null

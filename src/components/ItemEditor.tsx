@@ -3,7 +3,7 @@ import { useBoard } from "../state/board"
 import { Input } from "./atoms/Input"
 import { DialogBody } from "./dialog/DialogBody"
 import { DialogHeader } from "./dialog/DialogHeader"
-import { updateItem as updateDbItem } from "../idb"
+import { archiveItem, deleteItem, updateItem as updateDbItem } from "../idb"
 import { useGlobal } from "../state/global"
 import { Modal } from "./dialog/Modal"
 import { MoreIcon } from "./icons/MoreIcon"
@@ -36,7 +36,7 @@ export function ItemEditorModal() {
 
 function ItemEditor() {
   const { setClickedItem, clickedItem } = useGlobal()
-  const { updateItem } = useBoard()
+  const { updateItem, removeItem } = useBoard()
   const [titleRef, title] = useModel<HTMLInputElement, string>(
     clickedItem?.item.title || "(New Item)"
   )
@@ -79,6 +79,17 @@ function ItemEditor() {
     })
   }
 
+  async function handleCtxAction(action: "delete" | "archive") {
+    if (!clickedItem) return
+    await (action === "delete" ? deleteItem : archiveItem)(clickedItem?.item)
+    if (action === "archive") {
+      updateItem({ ...clickedItem.item, archived: true })
+    } else {
+      removeItem(clickedItem.item)
+    }
+    setClickedItem(null)
+  }
+
   return (
     <>
       <DialogHeader>
@@ -98,8 +109,8 @@ function ItemEditor() {
           <ContextMenu
             open={ctxOpen}
             items={[
-              { text: "Archive", onclick: () => {} },
-              { text: "Delete", onclick: () => {} },
+              { text: "Archive", onclick: () => handleCtxAction("archive") },
+              { text: "Delete", onclick: () => handleCtxAction("delete") },
             ]}
           />
         </div>

@@ -1,13 +1,14 @@
-import { Transition, useEffect, useModel } from "kaioken"
+import { Transition, useEffect, useModel, useState } from "kaioken"
 import { useBoard } from "../state/board"
 import { ClickedList } from "../types"
 import { Input } from "./atoms/Input"
 import { DialogBody } from "./dialog/DialogBody"
 import { DialogHeader } from "./dialog/DialogHeader"
-import { updateList as updateDbList } from "../idb"
+import { archiveList, deleteList, updateList as updateDbList } from "../idb"
 import { useGlobal } from "../state/global"
 import { Modal } from "./dialog/Modal"
 import { MoreIcon } from "./icons/MoreIcon"
+import { ContextMenu } from "./ContextMenu"
 
 export function ListEditorModal() {
   const { clickedList, setClickedList } = useGlobal()
@@ -34,10 +35,12 @@ export function ListEditorModal() {
 
 function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
   const { setClickedList } = useGlobal()
-  const { updateList } = useBoard()
+  const { updateList, removeList } = useBoard()
   const [titleRef, title] = useModel<HTMLInputElement, string>(
     clickedList?.list.title || "(New List)"
   )
+
+  const [ctxOpen, setCtxOpen] = useState(false)
 
   useEffect(() => {
     if (clickedList?.sender && clickedList.sender instanceof KeyboardEvent) {
@@ -56,6 +59,29 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
     })
   }
 
+  async function handleCtxAction(
+    action: "delete" | "archive" | "view-archived"
+  ) {
+    if (!clickedList) return
+    switch (action) {
+      case "delete": {
+        await deleteList(clickedList.list)
+        removeList(clickedList.id)
+        setClickedList(null)
+        break
+      }
+      case "archive": {
+        await archiveList(clickedList.list)
+        updateList({ ...clickedList.list, archived: true })
+        setClickedList(null)
+        break
+      }
+      case "view-archived": {
+        break
+      }
+    }
+  }
+
   return (
     <>
       <DialogHeader className="flex">
@@ -65,9 +91,25 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
           onfocus={(e) => (e.target as HTMLInputElement)?.select()}
           onchange={handleTitleChange}
         />
-        <button className="w-9 flex justify-center items-center">
-          <MoreIcon />
-        </button>
+        <div className="flex justify-center items-center relative">
+          <button
+            onclick={() => setCtxOpen((prev) => !prev)}
+            className="w-9 flex justify-center items-center h-full"
+          >
+            <MoreIcon />
+          </button>
+          <ContextMenu
+            open={ctxOpen}
+            items={[
+              {
+                text: "View archived items",
+                onclick: () => handleCtxAction("delete"),
+              },
+              { text: "Archive", onclick: () => handleCtxAction("archive") },
+              { text: "Delete", onclick: () => handleCtxAction("delete") },
+            ]}
+          />
+        </div>
       </DialogHeader>
       <DialogBody></DialogBody>
     </>

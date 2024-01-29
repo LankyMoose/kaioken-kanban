@@ -90,6 +90,7 @@ export function Board() {
       >
         {lists &&
           lists
+            .filter((list) => !list.archived)
             .sort((a, b) => a.order - b.order)
             .map((list) => <ItemList list={list} />)}
       </div>

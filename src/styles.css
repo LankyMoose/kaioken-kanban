@@ -6,6 +6,7 @@
   background-color: #222;
   color: #fff;
   color-scheme: light dark;
+  --primary: rgb(64 37 121);
   --radius: 4px;
   --color: #e6e6e6;
   --title-color: #ffffff;

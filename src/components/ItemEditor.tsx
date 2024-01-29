@@ -1,4 +1,4 @@
-import { Transition, useEffect, useModel } from "kaioken"
+import { Transition, useEffect, useModel, useState } from "kaioken"
 import { useBoard } from "../state/board"
 import { Input } from "./atoms/Input"
 import { DialogBody } from "./dialog/DialogBody"
@@ -7,6 +7,7 @@ import { updateItem as updateDbItem } from "../idb"
 import { useGlobal } from "../state/global"
 import { Modal } from "./dialog/Modal"
 import { MoreIcon } from "./icons/MoreIcon"
+import { ContextMenu } from "./ContextMenu"
 
 export function ItemEditorModal() {
   const { clickedItem, setClickedItem } = useGlobal()
@@ -42,6 +43,8 @@ function ItemEditor() {
   const [contentRef, content] = useModel<HTMLTextAreaElement, string>(
     clickedItem?.item.content || ""
   )
+
+  const [ctxOpen, setCtxOpen] = useState(false)
 
   useEffect(() => {
     if (clickedItem?.sender && clickedItem.sender instanceof KeyboardEvent) {
@@ -85,9 +88,21 @@ function ItemEditor() {
           onfocus={(e) => (e.target as HTMLInputElement)?.select()}
           onchange={handleTitleChange}
         />
-        <button className="w-9 flex justify-center items-center">
-          <MoreIcon />
-        </button>
+        <div className="flex justify-center items-center relative">
+          <button
+            onclick={() => setCtxOpen((prev) => !prev)}
+            className="w-9 flex justify-center items-center h-full"
+          >
+            <MoreIcon />
+          </button>
+          <ContextMenu
+            open={ctxOpen}
+            items={[
+              { text: "Archive", onclick: () => {} },
+              { text: "Delete", onclick: () => {} },
+            ]}
+          />
+        </div>
       </DialogHeader>
       <DialogBody>
         <h3 className="text-sm font-semibold">Description</h3>

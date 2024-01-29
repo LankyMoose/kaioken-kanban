@@ -23,6 +23,7 @@ export function Modal({ state, close, children }: ModalProps) {
     if (e.key === "Escape") {
       e.preventDefault()
       close()
+      window.removeEventListener("keyup", handleKeyPress)
     }
   }
 

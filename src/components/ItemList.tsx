@@ -63,6 +63,7 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
       y: e.clientY - rect.y - 12,
     }
     setClickedList({
+      sender: e,
       list,
       id: list.id,
       index: list.order,
@@ -203,37 +204,39 @@ function Item({
   listId: number
 }) {
   const ref = useRef<HTMLButtonElement>(null)
-  const {
-    clickedItem,
-    setClickedItem,
-    itemDragTarget,
-    setItemDragTarget,
-    rootElement,
-  } = useGlobal()
+  const { clickedItem, setClickedItem, itemDragTarget, setItemDragTarget } =
+    useGlobal()
 
   if (clickedItem?.id === item.id && clickedItem.dragging) {
     return null
   }
 
-  function handleMouseDown(e: MouseEvent) {
-    if (e.buttons !== 1) return
+  function selectItem(e: MouseEvent | KeyboardEvent) {
+    if (e instanceof MouseEvent && e.buttons !== 1) return
+    if (e instanceof KeyboardEvent) {
+      if (e.key !== "Enter") return
+      e.preventDefault()
+    }
     const element = ref.current?.cloneNode(true) as HTMLButtonElement
     if (!element) return
     const rect = ref.current!.getBoundingClientRect()
+    console.log("setClickedItem", e.target)
     setClickedItem({
+      sender: e,
       item,
       id: item.id,
       listId: listId,
       index: idx,
       dragging: false,
-      dialogOpen: false,
+      dialogOpen: e instanceof KeyboardEvent,
       element,
       domRect: rect,
-      mouseOffset: {
-        x: e.offsetX,
-        y: e.offsetY,
-      },
+      mouseOffset:
+        e instanceof MouseEvent
+          ? { x: e.offsetX, y: e.offsetY }
+          : { x: 0, y: 0 },
     })
+    if (e instanceof KeyboardEvent) return
     setItemDragTarget({
       index: idx + 1,
       listId,
@@ -263,12 +266,6 @@ function Item({
 
     const x = rect.x - dropAreaRect.x
     const y = rect.y - dropAreaRect.y
-    console.log({
-      rect: rect,
-      dropAreaRect,
-      scrollLeft: rootElement.scrollLeft,
-      scrollTop: rootElement.scrollTop,
-    })
     return `transform: translate(calc(${x}px - .5rem), calc(${y}px - .5rem))`
   }
 
@@ -285,7 +282,8 @@ function Item({
       ref={ref}
       className={getClassName()}
       style={getStyle()}
-      onmousedown={handleMouseDown}
+      onmousedown={selectItem}
+      onkeypress={selectItem}
       onclick={handleClick}
       data-id={item.id}
     >

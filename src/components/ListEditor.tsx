@@ -1,4 +1,4 @@
-import { useModel } from "kaioken"
+import { Transition, useModel } from "kaioken"
 import { useBoard } from "../state/board"
 import { ClickedList } from "../types"
 import { Input } from "./atoms/Input"
@@ -6,12 +6,32 @@ import { DialogBody } from "./dialog/DialogBody"
 import { DialogHeader } from "./dialog/DialogHeader"
 import { updateList as updateDbList } from "../idb"
 import { useGlobal } from "../state/global"
+import { Modal } from "./dialog/Modal"
 
-export function ListEditor({
-  clickedList,
-}: {
-  clickedList: ClickedList | null
-}) {
+export function ListEditorModal() {
+  const { clickedList, setClickedList } = useGlobal()
+  if (!clickedList) return null
+  return (
+    <Transition
+      in={clickedList?.dialogOpen || false}
+      timings={[40, 150, 150, 150]}
+      element={(state) => (
+        <Modal
+          state={state}
+          close={() => {
+            const tgt = clickedList.sender.target
+            if (tgt && tgt instanceof HTMLElement) tgt.focus()
+            setClickedList(null)
+          }}
+        >
+          <ListEditor clickedList={clickedList} />
+        </Modal>
+      )}
+    />
+  )
+}
+
+function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
   const { setClickedList } = useGlobal()
   const { updateList } = useBoard()
   const [titleRef, title] = useModel<HTMLInputElement, string>(

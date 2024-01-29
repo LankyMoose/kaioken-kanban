@@ -1,12 +1,11 @@
 import "./Board.css"
-import { useRef, Portal, useEffect, Transition } from "kaioken"
+import { useRef, Portal, useEffect } from "kaioken"
 import { ItemList } from "./ItemList"
 import type { Board, ClickedItem, ClickedList } from "../types"
 import { useGlobal } from "../state/global"
 import { useBoard } from "../state/board"
-import { Modal } from "./dialog/Modal"
-import { ItemEditor } from "./ItemEditor"
-import { ListEditor } from "./ListEditor"
+import { ItemEditorModal } from "./ItemEditor"
+import { ListEditorModal } from "./ListEditor"
 
 export function Board() {
   const {
@@ -111,30 +110,8 @@ export function Board() {
       <Portal container={document.getElementById("portal")!}>
         {clickedItem?.dragging && <ListItemClone item={clickedItem} />}
         {clickedList?.dragging && <ListClone list={clickedList} />}
-        <Transition
-          in={clickedItem?.dialogOpen || false}
-          timings={[40, 150, 150, 150]}
-          element={(state) => (
-            <Modal
-              state={state}
-              close={() => clickedItem && setClickedItem(null)}
-            >
-              <ItemEditor clickedItem={clickedItem} />
-            </Modal>
-          )}
-        />
-        <Transition
-          in={clickedList?.dialogOpen || false}
-          timings={[40, 150, 150, 150]}
-          element={(state) => (
-            <Modal
-              state={state}
-              close={() => clickedList && setClickedList(null)}
-            >
-              <ListEditor clickedList={clickedList} />
-            </Modal>
-          )}
-        />
+        <ItemEditorModal />
+        <ListEditorModal />
       </Portal>
     </div>
   )

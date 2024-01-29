@@ -1,4 +1,4 @@
-import { useRef, type TransitionState } from "kaioken"
+import { useRef, type TransitionState, useEffect } from "kaioken"
 import { Backdrop } from "./Backdrop"
 
 type ModalProps = {
@@ -13,6 +13,19 @@ export function Modal({ state, close, children }: ModalProps) {
   const opacity = state === "entered" ? "1" : "0"
   const scale = state === "entered" ? 1 : 0.85
   const translateY = state === "entered" ? -50 : -25
+
+  useEffect(() => {
+    window.addEventListener("keyup", handleKeyPress)
+    return () => window.removeEventListener("keyup", handleKeyPress)
+  }, [])
+
+  function handleKeyPress(e: KeyboardEvent) {
+    if (e.key === "Escape") {
+      e.preventDefault()
+      close()
+    }
+  }
+
   return (
     <Backdrop
       ref={wrapperRef}

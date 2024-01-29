@@ -48,6 +48,7 @@ export interface ListDragTarget {
 }
 
 export interface ClickedItem {
+  sender: Event
   item: ListItem
   id: number
   index: number
@@ -63,6 +64,7 @@ export interface ClickedItem {
 }
 
 export interface ClickedList {
+  sender: Event
   list: List
   id: number
   index: number

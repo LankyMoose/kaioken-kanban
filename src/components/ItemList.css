@@ -76,35 +76,6 @@
   cursor: unset;
 }
 
-
-
-.list-actions {
-  position: relative;
-}
-
-.list-actions-menu {
-  position: absolute;
-  right: 0;
-  white-space: nowrap;
-  padding: .5rem;
-  border-radius: var(--radius);
-  box-shadow: 1px 1px 5px rgba(0, 0, 0, .1);
-  z-index: 1;
-}
-
-.list-actions-menu button {
-  padding: 5px;
-  border: none;
-  background-color: transparent;
-  cursor: pointer;
-  display: block;
-  width: 100%;
-  text-align: right;
-  font-weight: 400;
-  opacity: .75;
-  font-size: .85rem;
-}
-
 .list-items {
   padding: 0.75rem 0.5rem;
 }
@@ -115,12 +86,16 @@
   gap: var(--items-gap);
   display: flex;
   flex-direction: column;
-  padding: .5rem;
   border-radius: var(--radius);
+  padding: .5rem;
   transition: background-color .15s ease;
 }
 
-.list-items.empty .list-items-inner {
+/* .list-items.dragging .list-items-inner {
+  padding: .5rem; 
+} */
+
+.list-items.empty.dragging .list-items-inner {
   min-height: var(--item-height);
 }
 

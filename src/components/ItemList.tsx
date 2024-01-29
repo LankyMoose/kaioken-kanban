@@ -5,6 +5,7 @@ import { useGlobal } from "../state/global"
 import { useBoard } from "../state/board"
 import { addItem } from "../idb"
 import { MoreIcon } from "./icons/MoreIcon"
+import { Button } from "./atoms/Button"
 
 export function ItemList({ list }: { list: SelectedBoardList }) {
   const headerRef = useRef<HTMLDivElement>(null)
@@ -53,27 +54,39 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
     setItemDragTarget(null)
   }
 
-  function handleHeaderMouseDown(e: MouseEvent) {
-    if (e.buttons !== 1) return
+  function selectList(e: MouseEvent | KeyboardEvent) {
+    if (e instanceof MouseEvent && e.buttons !== 1) return
+    if (e instanceof KeyboardEvent) {
+      if (e.key !== "Enter") return
+      e.preventDefault()
+    }
     const element = listRef.current?.cloneNode(true) as HTMLDivElement
     if (!element) return
     const rect = listRef.current!.getBoundingClientRect()
-    const mouseOffset = {
-      x: e.clientX - rect.x - 12,
-      y: e.clientY - rect.y - 12,
-    }
+    const mouseOffset =
+      e instanceof MouseEvent
+        ? {
+            x: e.clientX - rect.x - 12,
+            y: e.clientY - rect.y - 12,
+          }
+        : {
+            x: 0,
+            y: 0,
+          }
     setClickedList({
       sender: e,
       list,
       id: list.id,
       index: list.order,
       dragging: false,
-      dialogOpen: false,
+      dialogOpen: e instanceof KeyboardEvent,
       element,
       domRect: rect,
       mouseOffset,
     })
-    setListDragTarget({ index: list.order + 1 })
+    if (e instanceof MouseEvent) {
+      setListDragTarget({ index: list.order + 1 })
+    }
   }
 
   function getListItemsClassName() {
@@ -153,15 +166,12 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
       className={getListClassName()}
       data-id={list.id}
     >
-      <div
-        className="list-header"
-        ref={headerRef}
-        onmousedown={handleHeaderMouseDown}
-      >
+      <div className="list-header" ref={headerRef} onmousedown={selectList}>
         <h3 className="list-title text-base font-bold">
           {list.title || "(New List)"}
         </h3>
         <button
+          onkeydown={selectList}
           onclick={() =>
             clickedList && setClickedList({ ...clickedList, dialogOpen: true })
           }
@@ -183,12 +193,13 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
         </div>
       </div>
       <div className="flex p-2">
-        <button
-          className="add-item flex-grow py-2 text-sm font-semibold"
+        <Button
+          variant="primary"
+          className="flex-grow py-2 text-sm font-semibold"
           onclick={handleAddItemClick}
         >
           Add Item
-        </button>
+        </Button>
       </div>
     </div>
   )
@@ -220,7 +231,6 @@ function Item({
     const element = ref.current?.cloneNode(true) as HTMLButtonElement
     if (!element) return
     const rect = ref.current!.getBoundingClientRect()
-    console.log("setClickedItem", e.target)
     setClickedItem({
       sender: e,
       item,
@@ -283,7 +293,7 @@ function Item({
       className={getClassName()}
       style={getStyle()}
       onmousedown={selectItem}
-      onkeypress={selectItem}
+      onkeydown={selectItem}
       onclick={handleClick}
       data-id={item.id}
     >

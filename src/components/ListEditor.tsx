@@ -1,4 +1,4 @@
-import { Transition, useModel } from "kaioken"
+import { Transition, useEffect, useModel } from "kaioken"
 import { useBoard } from "../state/board"
 import { ClickedList } from "../types"
 import { Input } from "./atoms/Input"
@@ -7,6 +7,7 @@ import { DialogHeader } from "./dialog/DialogHeader"
 import { updateList as updateDbList } from "../idb"
 import { useGlobal } from "../state/global"
 import { Modal } from "./dialog/Modal"
+import { MoreIcon } from "./icons/MoreIcon"
 
 export function ListEditorModal() {
   const { clickedList, setClickedList } = useGlobal()
@@ -38,6 +39,12 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
     clickedList?.list.title || "(New List)"
   )
 
+  useEffect(() => {
+    if (clickedList?.sender && clickedList.sender instanceof KeyboardEvent) {
+      titleRef.current?.focus()
+    }
+  }, [])
+
   async function handleTitleChange() {
     if (!clickedList) return
     const newList = { ...clickedList.list, title }
@@ -51,13 +58,16 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
 
   return (
     <>
-      <DialogHeader>
+      <DialogHeader className="flex">
         <Input
           ref={titleRef}
           className="bg-transparent w-full border-0"
           onfocus={(e) => (e.target as HTMLInputElement)?.select()}
           onchange={handleTitleChange}
         />
+        <button className="w-9 flex justify-center items-center">
+          <MoreIcon />
+        </button>
       </DialogHeader>
       <DialogBody></DialogBody>
     </>

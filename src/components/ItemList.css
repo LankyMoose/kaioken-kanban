@@ -15,7 +15,6 @@
 
 .add-list button {
   width: 100%;
-  background-color: rgba(255, 255, 255, .05);
   border-radius: var(--radius);
 }
 
@@ -36,14 +35,6 @@
   position: absolute;
 }
 
-.list .add-item {
-  background-color: rgba(255, 255, 255, .035);
-}
-
-.list .add-item:hover {
-  background-color: rgba(255, 255, 255, .05);
-
-}
 
 .list-header {
   display: flex;

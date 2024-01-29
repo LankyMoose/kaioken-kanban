@@ -22,7 +22,7 @@ export function Board() {
     setListDragTarget,
     handleListDrag,
   } = useGlobal()
-  const { lists, handleItemDrop, handleListDrop, addList } = useBoard()
+  const { lists, handleItemDrop, handleListDrop } = useBoard()
   const boardInnerRef = useRef<HTMLDivElement>(null)
 
   function handleMouseDown(e: MouseEvent) {
@@ -70,7 +70,9 @@ export function Board() {
       onmousemove={handleMouseMove}
       style={`${
         clickedItem
-          ? "--selected-item-height:" + clickedItem.domRect.height + "px;"
+          ? "--selected-item-height:" +
+            (clickedItem.domRect.height || 0) +
+            "px;"
           : ""
       }${
         clickedList
@@ -90,22 +92,6 @@ export function Board() {
           lists
             .sort((a, b) => a.order - b.order)
             .map((list) => <ItemList list={list} />)}
-        <div
-          style={
-            listDragTarget && listDragTarget.index === lists?.length
-              ? "margin-left: calc(var(--selected-list-width) + var(--lists-gap));"
-              : ""
-          }
-          className="add-list"
-        >
-          <button
-            type="button"
-            className="btn-primary text-sm font-semibold py-4 border-2 border-transparent"
-            onclick={() => addList()}
-          >
-            Add a list...
-          </button>
-        </div>
       </div>
       <Portal container={document.getElementById("portal")!}>
         {clickedItem?.dragging && <ListItemClone item={clickedItem} />}
@@ -129,7 +115,9 @@ function ListItemClone({ item }: { item: ClickedItem }) {
   function getStyle() {
     const x = mousePos.x - item.mouseOffset.x || 0
     const y = mousePos.y - item.mouseOffset.y || 0
-    return `transform: translate(${x}px, ${y}px); width: ${item.domRect.width}px; height: ${item.domRect.height}px;`
+    return `transform: translate(${x}px, ${y}px); width: ${
+      item.domRect.width || 0
+    }px; height: ${item.domRect.height || 0}px;`
   }
 
   return <div ref={ref} id="item-clone" style={getStyle()}></div>

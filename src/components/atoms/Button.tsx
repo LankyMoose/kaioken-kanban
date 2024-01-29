@@ -10,7 +10,7 @@ export function PrimaryButton({
   return (
     <button
       {...props}
-      className={`bg-blue-500 hover:bg-blue-700 text-white font-bold text-sm py-2 px-4 rounded ${
+      className={`bg-primary text-white font-bold text-sm py-2 px-4 rounded ${
         className || ""
       }`}
     >

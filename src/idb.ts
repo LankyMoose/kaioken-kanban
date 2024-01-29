@@ -70,7 +70,7 @@ const archiveBoard = (board: Board) =>
 
 const loadLists = (boardId: number) =>
   db.lists.findMany((l) => {
-    return l.boardId === boardId
+    return l.boardId === boardId && !l.archived
   }) as Promise<List[]>
 
 const updateList = (list: List) => db.lists.update(list) as Promise<List>

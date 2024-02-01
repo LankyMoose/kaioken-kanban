@@ -40,11 +40,6 @@ export function useBoard() {
       },
     })
   }
-  const updateList = (payload: SelectedBoardList) => {
-    const { items, ...rest } = payload
-    updateDbList(rest)
-    dispatch({ type: "UPDATE_LIST", payload })
-  }
   const archiveList = async (id: number) => {
     if (!board) return
     const list = board.lists.find((list) => list.id === id)
@@ -118,7 +113,7 @@ export function useBoard() {
       })
     }
   }
-  function handleItemDrop(
+  async function handleItemDrop(
     clickedItem: ClickedItem,
     itemDragTarget: ItemDragTarget
   ) {
@@ -143,28 +138,38 @@ export function useBoard() {
     const applyItemOrder = (item: ListItem, idx: number) => {
       if (item.order === idx) return
       item.order = idx
-      updateDbItem(item)
+      return updateDbItem(item)
     }
 
     if (isOriginList) {
       itemList.items.splice(targetIdx, 0, item)
-      itemList.items.forEach(applyItemOrder)
-      updateList(itemList)
+      await Promise.all(itemList.items.map(applyItemOrder))
+      dispatch({ type: "UPDATE_LIST", payload: itemList })
     } else {
       targetList.items.splice(targetIdx, 0, item)
-      itemList.items.forEach(applyItemOrder)
+      await Promise.all(itemList.items.map(applyItemOrder))
 
-      targetList.items.forEach((item, i) => {
-        if (item.id === clickedItem.id) {
-          item.order = i
-          item.listId = targetList.id
-          updateDbItem(item)
-          return
-        }
-        applyItemOrder(item, i)
+      await Promise.all(
+        targetList.items.map((item, i) => {
+          if (item.id === clickedItem.id) {
+            item.order = i
+            item.listId = targetList.id
+            return updateDbItem(item)
+          }
+          return applyItemOrder(item, i)
+        })
+      )
+      dispatch({
+        type: "UPDATE_LISTS",
+        payload: {
+          lists: board.lists.map((l) => {
+            if (l.id === itemList.id) return itemList
+            if (l.id === targetList.id) return targetList
+            return l
+          }),
+          archivedLists: board.archivedLists,
+        },
       })
-      updateList(itemList)
-      updateList(targetList)
     }
   }
   const addItem = async (listId: number) => {
@@ -219,7 +224,11 @@ export function useBoard() {
     addList,
     removeList,
     archiveList,
-    updateList,
+    updateList: async (payload: SelectedBoardList) => {
+      const { items, ...rest } = payload
+      await updateDbList(rest)
+      dispatch({ type: "UPDATE_LIST", payload })
+    },
 
     addItem,
     removeItem,

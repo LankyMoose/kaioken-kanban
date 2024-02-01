@@ -151,6 +151,7 @@ export function useBoard() {
     const moved = item.order !== targetIdx || itemList !== targetList
     if (!moved) return
 
+    itemList.items.sort((a, b) => a.order - b.order)
     itemList.items.splice(clickedItem.index, 1)
 
     const applyItemOrder = (item: ListItem, idx: number) => {
@@ -166,8 +167,16 @@ export function useBoard() {
     } else {
       targetList.items.splice(targetIdx, 0, item)
       itemList.items.forEach(applyItemOrder)
-      item.listId = targetList.id
-      targetList.items.forEach(applyItemOrder)
+
+      targetList.items.forEach((item, i) => {
+        if (item.id === clickedItem.id) {
+          item.order = i
+          item.listId = targetList.id
+          updateDbItem(item)
+          return
+        }
+        applyItemOrder(item, i)
+      })
       updateList(itemList)
       updateList(targetList)
     }

@@ -24,19 +24,6 @@ export const BoardContext = createContext<SelectedBoard | null>(null)
 export const BoardDispatchContext =
   createContext<(action: BoardDispatchAction) => void>(null)
 
-function reorderArr<const T extends unknown[]>(
-  arr: T,
-  startIdx: number,
-  targetIdx: number
-) {
-  for (let i = startIdx; i < targetIdx; i++) {
-    const temp = arr[i]
-    arr[i] = arr[i + 1]
-    arr[i + 1] = temp
-  }
-  return arr
-}
-
 export function useBoard() {
   const dispatch = useContext(BoardDispatchContext)
   const board = useContext(BoardContext)
@@ -111,21 +98,20 @@ export function useBoard() {
     if (targetIdx > board.lists.length - 1) targetIdx--
 
     if (clickedList.index !== targetIdx) {
-      const newLists = reorderArr(
-        [...board.lists],
-        clickedList.index,
-        targetIdx
-      )
+      const newLists = [...board.lists].sort((a, b) => a.order - b.order)
+      const [list] = newLists.splice(clickedList.index, 1)
+
+      newLists.splice(targetIdx, 0, list)
 
       const lists = await Promise.all(
         newLists.map(async (list, i) => {
           if (list.order === i) return list
           list.order = i
           const { items, ...rest } = list
-          return { ...(await updateDbList(rest)), items }
+          await updateDbList(rest)
+          return list
         })
       )
-
       updateLists({
         lists,
         archivedLists: board.archivedLists,

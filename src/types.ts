@@ -4,6 +4,7 @@ export type Vector2 = {
 }
 
 export interface GlobalState {
+  mainDrawerOpen: boolean
   drag: {
     start: Vector2
     current: Vector2

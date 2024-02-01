@@ -78,8 +78,13 @@ export function useGlobal() {
     })
   }
 
+  function setMainDrawerOpen(value: boolean) {
+    dispatch({ type: "SET_MAIN_DRAWER_OPEN", payload: value })
+  }
+
   return {
     ...useContext(GlobalCtx),
+    setMainDrawerOpen,
     updateMousePos: (payload: Vector2) =>
       dispatch({ type: "UPDATE_MOUSE_POS", payload }),
     setDragging: (dragging: boolean) =>
@@ -96,6 +101,7 @@ export function useGlobal() {
 }
 
 type GlobalDispatchAction =
+  | { type: "SET_MAIN_DRAWER_OPEN"; payload: boolean }
   | { type: "UPDATE_MOUSE_POS"; payload: Vector2 }
   | { type: "SET_DRAGGING"; payload: { dragging: boolean } }
   | { type: "SET_CLICKED_ITEM"; payload: ClickedItem | null }
@@ -109,6 +115,9 @@ export function globalStateReducer(
   action: GlobalDispatchAction
 ): GlobalState {
   switch (action.type) {
+    case "SET_MAIN_DRAWER_OPEN": {
+      return { ...state, mainDrawerOpen: action.payload }
+    }
     case "UPDATE_MOUSE_POS": {
       const { x, y } = action.payload
       return {
@@ -163,6 +172,7 @@ export function globalStateReducer(
 }
 
 export const defaultGlobalState: GlobalState = {
+  mainDrawerOpen: false,
   drag: {
     start: {
       x: 0,

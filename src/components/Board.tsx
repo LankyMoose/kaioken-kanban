@@ -1,11 +1,9 @@
 import "./Board.css"
-import { useRef, Portal, useEffect } from "kaioken"
+import { useRef, useEffect } from "kaioken"
 import { ItemList } from "./ItemList"
 import type { Board, ClickedItem, ClickedList } from "../types"
 import { useGlobal } from "../state/global"
 import { useBoard } from "../state/board"
-import { ItemEditorModal } from "./ItemEditor"
-import { ListEditorModal } from "./ListEditor"
 import { Button } from "./atoms/Button"
 
 export function Board() {
@@ -95,13 +93,6 @@ export function Board() {
             .map((list) => <ItemList list={list} />)}
         <AddList />
       </div>
-
-      <Portal container={document.getElementById("portal")!}>
-        {clickedItem?.dragging && <ListItemClone item={clickedItem} />}
-        {clickedList?.dragging && <ListClone list={clickedList} />}
-        <ItemEditorModal />
-        <ListEditorModal />
-      </Portal>
     </div>
   )
 }
@@ -130,42 +121,4 @@ function AddList() {
       </Button>
     </div>
   )
-}
-
-function ListItemClone({ item }: { item: ClickedItem }) {
-  const { mousePos } = useGlobal()
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!ref.current) return
-    ref.current.innerHTML = item.element.outerHTML || ""
-  }, [ref.current])
-
-  function getStyle() {
-    const x = mousePos.x - item.mouseOffset.x || 0
-    const y = mousePos.y - item.mouseOffset.y || 0
-    return `transform: translate(${x}px, ${y}px); width: ${
-      item.domRect.width || 0
-    }px; height: ${item.domRect.height || 0}px;`
-  }
-
-  return <div ref={ref} id="item-clone" style={getStyle()}></div>
-}
-
-function ListClone({ list }: { list: ClickedList }) {
-  const { mousePos } = useGlobal()
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!ref.current) return
-    ref.current.innerHTML = list.element.outerHTML || ""
-  }, [ref.current])
-
-  function getStyle() {
-    const x = mousePos.x - list.mouseOffset.x || 0
-    const y = mousePos.y - list.mouseOffset.y || 0
-    return `transform: translate(calc(${x}px - var(--list-header-padding)), calc(${y}px - var(--list-header-padding))); width: ${list.domRect.width}px; height: ${list.domRect.height}px;`
-  }
-
-  return <div ref={ref} id="list-clone" style={getStyle()}></div>
 }

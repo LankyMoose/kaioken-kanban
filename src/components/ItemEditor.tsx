@@ -3,7 +3,6 @@ import { useBoard } from "../state/board"
 import { Input } from "./atoms/Input"
 import { DialogBody } from "./dialog/DialogBody"
 import { DialogHeader } from "./dialog/DialogHeader"
-import { archiveItem, deleteItem, updateItem as updateDbItem } from "../idb"
 import { useGlobal } from "../state/global"
 import { Modal } from "./dialog/Modal"
 import { MoreIcon } from "./icons/MoreIcon"
@@ -36,7 +35,7 @@ export function ItemEditorModal() {
 
 function ItemEditor() {
   const { setClickedItem, clickedItem } = useGlobal()
-  const { updateItem, removeItem } = useBoard()
+  const { updateItem, removeItem, archiveItem } = useBoard()
   const [titleRef, title] = useModel<HTMLInputElement, string>(
     clickedItem?.item.title || "(New Item)"
   )
@@ -57,8 +56,7 @@ function ItemEditor() {
     if (title === clickedItem.item.title) return
 
     const newItem = { ...clickedItem.item, title }
-    updateItem(newItem)
-    await updateDbItem(newItem)
+    await updateItem(newItem)
     const { clickedItem: c } = useGlobal()
     if (c?.id === newItem.id && c.dialogOpen) {
       setClickedItem({
@@ -71,8 +69,7 @@ function ItemEditor() {
   async function handleContentChange() {
     if (!clickedItem) return
     const newItem = { ...clickedItem.item, content }
-    await updateDbItem(newItem)
-    updateItem(newItem)
+    await updateItem(newItem)
     setClickedItem({
       ...clickedItem,
       item: newItem,
@@ -81,12 +78,7 @@ function ItemEditor() {
 
   async function handleCtxAction(action: "delete" | "archive") {
     if (!clickedItem) return
-    await (action === "delete" ? deleteItem : archiveItem)(clickedItem?.item)
-    if (action === "archive") {
-      updateItem({ ...clickedItem.item, archived: true })
-    } else {
-      removeItem(clickedItem.item)
-    }
+    await (action === "delete" ? removeItem : archiveItem)(clickedItem.item)
     setClickedItem(null)
   }
 

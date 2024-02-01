@@ -6,6 +6,7 @@ import { useGlobal } from "../state/global"
 import { useBoard } from "../state/board"
 import { ItemEditorModal } from "./ItemEditor"
 import { ListEditorModal } from "./ListEditor"
+import { Button } from "./atoms/Button"
 
 export function Board() {
   const {
@@ -32,7 +33,7 @@ export function Board() {
     setDragging(true)
   }
 
-  function handleMouseUp() {
+  async function handleMouseUp() {
     // item drag
     clickedItem && itemDragTarget && handleItemDrop(clickedItem, itemDragTarget)
     clickedItem && setClickedItem(null)
@@ -64,7 +65,6 @@ export function Board() {
   return (
     <div
       id="board"
-      className="xd"
       onmousedown={handleMouseDown}
       onmouseup={handleMouseUp}
       onmousemove={handleMouseMove}
@@ -93,13 +93,41 @@ export function Board() {
             .filter((list) => !list.archived)
             .sort((a, b) => a.order - b.order)
             .map((list) => <ItemList list={list} />)}
+        <AddList />
       </div>
+
       <Portal container={document.getElementById("portal")!}>
         {clickedItem?.dragging && <ListItemClone item={clickedItem} />}
         {clickedList?.dragging && <ListClone list={clickedList} />}
         <ItemEditorModal />
         <ListEditorModal />
       </Portal>
+    </div>
+  )
+}
+
+function AddList() {
+  const { lists, addList } = useBoard()
+  const { clickedList, listDragTarget } = useGlobal()
+  return (
+    <div
+      style={
+        clickedList &&
+        !clickedList.dialogOpen &&
+        listDragTarget &&
+        listDragTarget.index === lists?.length
+          ? "margin-left: calc(var(--selected-list-width) + var(--lists-gap));"
+          : ""
+      }
+      className="add-list"
+    >
+      <Button
+        variant="primary"
+        className="text-sm font-semibold py-4 border-2 border-transparent"
+        onclick={() => addList()}
+      >
+        Add a list...
+      </Button>
     </div>
   )
 }

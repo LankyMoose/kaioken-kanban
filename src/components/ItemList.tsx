@@ -3,7 +3,6 @@ import { useRef, useEffect } from "kaioken"
 import { ListItem, SelectedBoardList } from "../types"
 import { useGlobal } from "../state/global"
 import { useBoard } from "../state/board"
-import { addItem } from "../idb"
 import { MoreIcon } from "./icons/MoreIcon"
 import { Button } from "./atoms/Button"
 
@@ -12,7 +11,7 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
   const listRef = useRef<HTMLDivElement>(null)
   const rect = useRef<DOMRect>(null)
   const dropAreaRef = useRef<HTMLDivElement>(null)
-  const { updateList } = useBoard()
+  const { addItem } = useBoard()
   const {
     clickedItem,
     setClickedItem,
@@ -147,18 +146,6 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
     return `transform: translate(calc(${x}px - 1rem), calc(${y}px - 1rem))`
   }
 
-  async function handleAddItemClick() {
-    const listMax = list.items.reduce((max, item) => {
-      if (item.order > max) return item.order
-      return max
-    }, -1)
-    const res = await addItem(list.id, listMax + 1)
-    updateList({
-      id: list.id,
-      items: [...list.items, res],
-    })
-  }
-
   return (
     <div
       ref={listRef}
@@ -171,6 +158,7 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
           {list.title || "(New List)"}
         </h3>
         <button
+          className="p-2"
           onkeydown={selectList}
           onclick={() =>
             clickedList && setClickedList({ ...clickedList, dialogOpen: true })
@@ -197,7 +185,7 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
         <Button
           variant="primary"
           className="flex-grow py-2 text-sm font-semibold"
-          onclick={handleAddItemClick}
+          onclick={() => addItem(list.id)}
         >
           Add Item
         </Button>

@@ -4,7 +4,6 @@ import { ClickedList } from "../types"
 import { Input } from "./atoms/Input"
 import { DialogBody } from "./dialog/DialogBody"
 import { DialogHeader } from "./dialog/DialogHeader"
-import { archiveList, deleteList, updateList as updateDbList } from "../idb"
 import { useGlobal } from "../state/global"
 import { Modal } from "./dialog/Modal"
 import { MoreIcon } from "./icons/MoreIcon"
@@ -35,7 +34,7 @@ export function ListEditorModal() {
 
 function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
   const { setClickedList } = useGlobal()
-  const { updateList, removeList } = useBoard()
+  const { updateList, removeList, archiveList, lists } = useBoard()
   const [titleRef, title] = useModel<HTMLInputElement, string>(
     clickedList?.list.title || "(New List)"
   )
@@ -50,13 +49,10 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
 
   async function handleTitleChange() {
     if (!clickedList) return
-    const newList = { ...clickedList.list, title }
-    await updateDbList(newList)
-    updateList(newList)
-    setClickedList({
-      ...clickedList,
-      list: newList,
-    })
+    const list = lists?.find((l) => l.id === clickedList.id)
+    if (!list) throw new Error("no list, wah wah")
+    await updateList({ ...list, title })
+    setClickedList({ ...clickedList, list: { ...clickedList.list, title } })
   }
 
   async function handleCtxAction(
@@ -65,14 +61,12 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
     if (!clickedList) return
     switch (action) {
       case "delete": {
-        await deleteList(clickedList.list)
-        removeList(clickedList.id)
+        await removeList(clickedList.id)
         setClickedList(null)
         break
       }
       case "archive": {
-        await archiveList(clickedList.list)
-        updateList({ ...clickedList.list, archived: true })
+        await archiveList(clickedList.id)
         setClickedList(null)
         break
       }
@@ -103,7 +97,7 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
             items={[
               {
                 text: "View archived items",
-                onclick: () => handleCtxAction("delete"),
+                onclick: () => handleCtxAction("view-archived"),
               },
               { text: "Archive", onclick: () => handleCtxAction("archive") },
               { text: "Delete", onclick: () => handleCtxAction("delete") },

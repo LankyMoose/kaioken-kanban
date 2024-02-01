@@ -3,55 +3,135 @@ import {
   ClickedItem,
   ClickedList,
   ItemDragTarget,
+  List,
   ListDragTarget,
   ListItem,
   SelectedBoard,
   SelectedBoardList,
 } from "../types"
-import { addList, updateList as updateDbList, updateItem } from "../idb"
+import {
+  addList as addDbList,
+  updateList as updateDbList,
+  archiveList as archiveDbList,
+  deleteList as deleteDbList,
+  addItem as addDbItem,
+  updateItem as updateDbItem,
+  archiveItem as archiveDbItem,
+  deleteItem as deleteDbItem,
+} from "../idb"
 
 export const BoardContext = createContext<SelectedBoard | null>(null)
 export const BoardDispatchContext =
   createContext<(action: BoardDispatchAction) => void>(null)
 
-function handleItemReorder(item: ListItem, idx: number) {
-  if (item.order === idx) return
-  item.order = idx
-  updateItem(item)
+function reorderArr<const T extends unknown[]>(
+  arr: T,
+  startIdx: number,
+  targetIdx: number
+) {
+  for (let i = startIdx; i < targetIdx; i++) {
+    const temp = arr[i]
+    arr[i] = arr[i + 1]
+    arr[i + 1] = temp
+  }
+  return arr
 }
 
 export function useBoard() {
   const dispatch = useContext(BoardDispatchContext)
   const board = useContext(BoardContext)
-  const updateList = (payload: Partial<SelectedBoardList> & { id: number }) =>
-    dispatch({ type: "UPDATE_LIST", payload })
-  const updateLists = (payload: SelectedBoardList[]) =>
-    dispatch({ type: "UPDATE_LISTS", payload })
 
-  function handleListDrop(
+  const addList = async () => {
+    if (!board) throw new Error("No board")
+    const maxListOrder = Math.max(...board.lists.map((l) => l.order), -1)
+    const newList = await addDbList(board.id, maxListOrder + 1)
+    dispatch({
+      type: "ADD_LIST",
+      payload: {
+        ...newList,
+        items: [],
+      },
+    })
+  }
+  const updateList = (payload: SelectedBoardList) => {
+    const { items, ...rest } = payload
+    updateDbList(rest)
+    dispatch({ type: "UPDATE_LIST", payload })
+  }
+  const archiveList = async (id: number) => {
+    if (!board) return
+    const list = board.lists.find((list) => list.id === id)
+    if (!list) throw new Error("dafooq, no list")
+    const { items, ...rest } = list
+    await archiveDbList(rest)
+
+    const archivedLists = [...board.archivedLists, rest]
+
+    const newLists = await Promise.all(
+      board.lists
+        .filter((l) => l.id !== id)
+        .map(async (list, i) => {
+          if (list.order !== i) {
+            list.order = i
+            const { items, ...rest } = list
+            await updateDbList(rest)
+          }
+          return list
+        })
+    )
+
+    dispatch({
+      type: "UPDATE_LISTS",
+      payload: { lists: newLists, archivedLists },
+    })
+  }
+  const removeList = async (id: number) => {
+    const list = board?.lists.find((l) => l.id === id)
+    if (!list) throw new Error("no list, wah wah")
+    const { items, ...rest } = list
+    await deleteDbList(rest)
+    dispatch({ type: "REMOVE_LIST", payload: { id } })
+  }
+  const updateLists = (payload: {
+    lists: SelectedBoardList[]
+    archivedLists: List[]
+  }) => dispatch({ type: "UPDATE_LISTS", payload })
+
+  async function handleListDrop(
     clickedList: ClickedList,
     listDragTarget: ListDragTarget
   ) {
     if (!board) return
-    const targetIdx =
+
+    let targetIdx =
       listDragTarget.index >= clickedList.index
         ? listDragTarget.index - 1
         : listDragTarget.index
-    const moved = clickedList.index !== targetIdx
-    if (moved) {
-      const list = board.lists.find((list) => list.id === clickedList.id)!
-      board.lists.splice(clickedList.index, 1)
-      board.lists.splice(targetIdx, 0, list)
-      board.lists.forEach((list, i) => {
-        if (list.order === i) return
-        list.order = i
-        const { items, ...rest } = list
-        updateDbList(rest)
+
+    if (targetIdx > board.lists.length - 1) targetIdx--
+
+    if (clickedList.index !== targetIdx) {
+      const newLists = reorderArr(
+        [...board.lists],
+        clickedList.index,
+        targetIdx
+      )
+
+      const lists = await Promise.all(
+        newLists.map(async (list, i) => {
+          if (list.order === i) return list
+          list.order = i
+          const { items, ...rest } = list
+          return { ...(await updateDbList(rest)), items }
+        })
+      )
+
+      updateLists({
+        lists,
+        archivedLists: board.archivedLists,
       })
-      updateLists(board.lists)
     }
   }
-
   function handleItemDrop(
     clickedItem: ClickedItem,
     itemDragTarget: ItemDragTarget
@@ -69,44 +149,88 @@ export function useBoard() {
         : itemDragTarget.index
 
     const moved = item.order !== targetIdx || itemList !== targetList
-    if (moved) {
-      itemList.items.splice(clickedItem.index, 1)
+    if (!moved) return
 
-      if (isOriginList) {
-        itemList.items.splice(targetIdx, 0, item)
-        itemList.items.forEach(handleItemReorder)
-        updateList(itemList)
-      } else {
-        targetList.items.splice(targetIdx, 0, item)
-        itemList.items.forEach(handleItemReorder)
-        item.listId = targetList.id
-        targetList.items.forEach(handleItemReorder)
-        updateList(itemList)
-        updateList(targetList)
-      }
+    itemList.items.splice(clickedItem.index, 1)
+
+    const applyItemOrder = (item: ListItem, idx: number) => {
+      if (item.order === idx) return
+      item.order = idx
+      updateDbItem(item)
+    }
+
+    if (isOriginList) {
+      itemList.items.splice(targetIdx, 0, item)
+      itemList.items.forEach(applyItemOrder)
+      updateList(itemList)
+    } else {
+      targetList.items.splice(targetIdx, 0, item)
+      itemList.items.forEach(applyItemOrder)
+      item.listId = targetList.id
+      targetList.items.forEach(applyItemOrder)
+      updateList(itemList)
+      updateList(targetList)
     }
   }
+  const addItem = async (listId: number) => {
+    const list = board?.lists.find((l) => l.id === listId)
+    if (!list) throw new Error("no list")
+    const listMax = list.items.reduce((max, item) => {
+      if (item.order > max) return item.order
+      return max
+    }, -1)
+    const item = await addDbItem(listId, listMax + 1)
+    dispatch({
+      type: "UPDATE_LIST",
+      payload: {
+        ...list,
+        items: [...list.items, item],
+      },
+    })
+  }
+  const updateItem = async (payload: ListItem) => {
+    await updateDbItem(payload)
+    dispatch({ type: "UPDATE_ITEM", payload })
+  }
+
+  const removeItemAndReorderList = async (payload: ListItem) => {
+    const list = board?.lists.find((l) => l.id === payload.listId)
+    if (!list) throw new Error("no list")
+    const items = await Promise.all(
+      list.items
+        .filter((i) => i.id !== payload.id)
+        .map(async (item, i) => {
+          if (item.order === i) return item
+          item.order = i
+          return await updateDbItem(item)
+        })
+    )
+    return { ...list, items }
+  }
+
+  const removeItem = async (payload: ListItem) => {
+    await deleteDbItem(payload)
+    const newList = await removeItemAndReorderList(payload)
+    dispatch({ type: "UPDATE_LIST", payload: newList })
+  }
+  const archiveItem = async (payload: ListItem) => {
+    await archiveDbItem(payload)
+    const newList = await removeItemAndReorderList(payload)
+    dispatch({ type: "UPDATE_LIST", payload: newList })
+  }
+
   return {
     ...(board ?? {}),
-    addList: async () => {
-      if (!board) throw new Error("No board")
-      const maxListOrder = Math.max(...board.lists.map((l) => l.order), -1)
-      const newList = await addList(board.id, maxListOrder + 1)
-      dispatch({
-        type: "ADD_LIST",
-        payload: {
-          ...newList,
-          items: [],
-        },
-      })
-    },
-    removeList: (id: number) =>
-      dispatch({ type: "REMOVE_LIST", payload: { id } }),
-    updateItem: (payload: Partial<ListItem> & { id: number }) =>
-      dispatch({ type: "UPDATE_ITEM", payload }),
-    removeItem: (payload: ListItem) =>
-      dispatch({ type: "REMOVE_ITEM", payload }),
+    addList,
+    removeList,
+    archiveList,
     updateList,
+
+    addItem,
+    removeItem,
+    archiveItem,
+    updateItem,
+
     handleItemDrop,
     handleListDrop,
     setBoard: (payload: SelectedBoard | null) =>
@@ -117,14 +241,19 @@ export function useBoard() {
 type BoardDispatchAction =
   | { type: "SET_BOARD"; payload: SelectedBoard | null }
   | { type: "ADD_LIST"; payload: SelectedBoardList }
-  | { type: "REMOVE_LIST"; payload: { id: number } }
   | {
       type: "UPDATE_LIST"
       payload: Partial<SelectedBoardList> & { id: number }
     }
-  | { type: "UPDATE_LISTS"; payload: SelectedBoardList[] }
-  | { type: "UPDATE_ITEM"; payload: Partial<ListItem> & { id: number } }
-  | { type: "REMOVE_ITEM"; payload: ListItem }
+  | {
+      type: "UPDATE_LISTS"
+      payload: {
+        lists: SelectedBoardList[]
+        archivedLists: List[]
+      }
+    }
+  | { type: "REMOVE_LIST"; payload: { id: number } }
+  | { type: "UPDATE_ITEM"; payload: ListItem }
   | { type: "SET_DROP_AREA"; payload: { element: HTMLElement | null } }
 
 export function boardStateReducer(
@@ -148,14 +277,6 @@ export function boardStateReducer(
         lists,
       }
     }
-    case "REMOVE_LIST": {
-      const { id } = action.payload
-      const lists = state.lists.filter((list) => list.id !== id)
-      return {
-        ...state,
-        lists,
-      }
-    }
     case "UPDATE_LIST": {
       const { id, ...rest } = action.payload
       const list = state.lists.find((list) => list.id === id)
@@ -172,11 +293,34 @@ export function boardStateReducer(
         lists,
       }
     }
+    // case "UPDATE_LIST": {
+    //   return {
+    //     ...state,
+    //     lists: state.lists.map((list) =>
+    //       list.id === action.payload.id
+    //         ? {
+    //             ...list,
+    //             ...action.payload,
+    //           }
+    //         : list
+    //     ),
+    //   }
+    // }
     case "UPDATE_LISTS": {
-      const { payload } = action
+      const {
+        payload: { lists, archivedLists },
+      } = action
       return {
         ...state,
-        lists: payload,
+        lists,
+        archivedLists,
+      }
+    }
+    case "REMOVE_LIST": {
+      const { id } = action.payload
+      return {
+        ...state,
+        lists: state.lists.filter((l) => l.id !== id),
       }
     }
     case "UPDATE_ITEM": {
@@ -204,20 +348,7 @@ export function boardStateReducer(
         lists,
       }
     }
-    case "REMOVE_ITEM": {
-      const { id, listId } = action.payload
 
-      return {
-        ...state,
-        lists: state.lists.map((list) =>
-          list.id === listId
-            ? { ...list, items: list.items.filter((i) => i.id !== id) }
-            : list
-        ),
-      }
-
-      break
-    }
     case "SET_BOARD": {
       return action.payload ? { ...action.payload } : null
     }

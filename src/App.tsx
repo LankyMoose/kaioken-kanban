@@ -23,6 +23,10 @@ export function App() {
   )
 }
 
+function Logo() {
+  return <span className="honk-font cursor-default text-4xl">Kaioban</span>
+}
+
 function Nav() {
   const { boards, setMainDrawerOpen } = useGlobal()
   const board = useContext(BoardContext)
@@ -37,6 +41,7 @@ function Nav() {
         }))}
         onChange={console.log}
       />
+      <Logo />
       <button onclick={() => setMainDrawerOpen(true)} className="py-2 px-3">
         <MoreIcon />
       </button>

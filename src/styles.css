@@ -18,6 +18,16 @@
   --dialog-background: #221b30;
 }
 
+.honk-font {
+  font-family: "Honk", system-ui;
+  font-optical-sizing: auto;
+  font-weight: 400;
+  font-style: normal;
+  font-variation-settings:
+    "MORF" 15,
+    "SHLN" 50;
+}
+
 
 * {
   scrollbar-width: thin;

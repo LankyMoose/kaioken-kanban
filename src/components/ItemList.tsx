@@ -174,7 +174,6 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
       >
         <div ref={dropAreaRef} className="list-items-inner">
           {list.items
-            .filter((item) => !item.archived)
             .sort((a, b) => a.order - b.order)
             .map((item, i) => (
               <Item item={item} idx={i} listId={list.id} />

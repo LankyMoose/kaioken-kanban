@@ -4,6 +4,7 @@ import {
   ClickedItem,
   ClickedList,
   ItemDragTarget,
+  List,
   ListDragTarget,
   ListItem,
   SelectedBoard,
@@ -108,6 +109,29 @@ export function useBoard() {
     await deleteDbList(rest)
     dispatch({ type: "REMOVE_LIST", payload: { id } })
   }
+  const updateList = async (payload: SelectedBoardList) => {
+    const { items, ...rest } = payload
+    await updateDbList(rest)
+    dispatch({ type: "UPDATE_LIST", payload })
+  }
+  const restoreList = async (list: List) => {
+    if (!board) return
+    const maxListOrder = Math.max(...board.lists.map((l) => l.order), -1)
+    const newList: List = {
+      ...list,
+      archived: false,
+      order: maxListOrder + 1,
+    }
+    await updateDbList(newList)
+    dispatch({
+      type: "ADD_LIST",
+      payload: {
+        ...newList,
+        items: [],
+      },
+    })
+  }
+
   const updateLists = (payload: SelectedBoardList[]) =>
     dispatch({ type: "UPDATE_LISTS", payload })
 
@@ -253,11 +277,8 @@ export function useBoard() {
     addList,
     removeList,
     archiveList,
-    updateList: async (payload: SelectedBoardList) => {
-      const { items, ...rest } = payload
-      await updateDbList(rest)
-      dispatch({ type: "UPDATE_LIST", payload })
-    },
+    updateList,
+    restoreList,
 
     addItem,
     removeItem,

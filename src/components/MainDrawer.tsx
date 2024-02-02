@@ -8,6 +8,7 @@ import { Button } from "./atoms/Button"
 import { List, SelectedBoard } from "../types"
 import { loadLists } from "../idb"
 import { Spinner } from "./atoms/Spinner"
+import { addNotification } from "./notifications/Tray"
 
 export function MainDrawer() {
   const { mainDrawerOpen, setMainDrawerOpen } = useGlobal()
@@ -69,6 +70,9 @@ function ArchivedLists({ board }: { board: SelectedBoard | null }) {
   async function handleSendToBoard(list: List) {
     await restoreList(list)
     setLists((prev) => prev.filter((l) => l.id !== list.id))
+    addNotification({
+      text: `List '${list.title}' was restored`,
+    })
   }
 
   return (

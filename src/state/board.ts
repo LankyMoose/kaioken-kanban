@@ -19,6 +19,8 @@ import {
   archiveItem as archiveDbItem,
   deleteItem as deleteDbItem,
   updateBoard as updateDbBoard,
+  loadLists,
+  loadItems,
 } from "../idb"
 import { useGlobal } from "./global"
 
@@ -30,6 +32,28 @@ export function useBoard() {
   const { boards, updateBoards } = useGlobal()
   const dispatch = useContext(BoardDispatchContext)
   const board = useContext(BoardContext)
+
+  async function selectBoard(board: Board) {
+    const lists = await loadLists(board.id)
+
+    const selectedBoard = {
+      ...board,
+      lists: await Promise.all(
+        lists.map(async (list) => {
+          const items = await loadItems(list.id)
+          return {
+            ...list,
+            items,
+            dropArea: null,
+          } as SelectedBoardList
+        })
+      ),
+      dropArea: null,
+    }
+
+    localStorage.setItem("kaioban-board-id", board.id.toString())
+    dispatch({ type: "SET_BOARD", payload: selectedBoard })
+  }
 
   async function updateSelectedBoard(payload: Partial<Board>) {
     if (!board) throw new Error("no board, whaaaaaaaaaaat?")
@@ -224,6 +248,7 @@ export function useBoard() {
   return {
     board,
     updateSelectedBoard,
+    selectBoard,
 
     addList,
     removeList,

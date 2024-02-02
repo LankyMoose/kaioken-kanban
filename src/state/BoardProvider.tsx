@@ -1,40 +1,28 @@
 import { useEffect, useReducer } from "kaioken"
-import { boardStateReducer, BoardContext, BoardDispatchContext } from "./board"
+import {
+  boardStateReducer,
+  BoardContext,
+  BoardDispatchContext,
+  useBoard,
+} from "./board"
 import { useGlobal } from "./global"
-import { loadItems, loadLists } from "../idb"
-import { SelectedBoardList } from "../types"
 
 export function BoardProvider({ children }: { children?: JSX.Element }) {
   const [value, dispatch] = useReducer(boardStateReducer, null)
   const { boards } = useGlobal()
+  const { selectBoard } = useBoard()
+
   useEffect(() => {
     if (boards.length === 0) return
-    const selectedBoard = {
-      ...boards.at(-1)!,
-      lists: [],
-      archivedLists: [],
-      dropArea: null,
+    const prevBoardId = localStorage.getItem("kaioban-board-id")
+    if (prevBoardId) {
+      const board = boards.find((b) => b.id.toString() === prevBoardId)
+      if (board) {
+        selectBoard(board)
+        return
+      }
     }
-    loadLists(selectedBoard.id).then(async (res) => {
-      const lists = await Promise.all(
-        res.map(async (list) => {
-          const items = await loadItems(list.id)
-          return {
-            ...list,
-            items,
-            dropArea: null,
-          } as SelectedBoardList
-        })
-      )
-      dispatch({
-        type: "UPDATE_LISTS",
-        payload: lists,
-      })
-    })
-    dispatch({
-      type: "SET_BOARD",
-      payload: selectedBoard,
-    })
+    selectBoard(boards[0])
   }, [boards.length])
 
   return (

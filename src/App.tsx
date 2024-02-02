@@ -2,8 +2,8 @@ import { Portal, useContext } from "kaioken"
 import { BoardProvider } from "./state/BoardProvider"
 import { GlobalProvider } from "./state/GlobalProvider"
 import { Board } from "./components/Board"
-import { BoardContext } from "./state/board"
-import { useGlobal } from "./state/global"
+import { BoardContext, useBoard } from "./state/board"
+import { GlobalDispatchCtx, useGlobal } from "./state/global"
 import { Select } from "./components/atoms/Select"
 import { MoreIcon } from "./components/icons/MoreIcon"
 import { ListItemClone } from "./components/ListItemClone"
@@ -11,6 +11,7 @@ import { ListClone } from "./components/ListClone"
 import { ItemEditorModal } from "./components/ItemEditor"
 import { ListEditorModal } from "./components/ListEditor"
 import { MainDrawer } from "./components/MainDrawer"
+import { addBoard } from "./idb"
 
 export function App() {
   return (
@@ -27,20 +28,49 @@ function Logo() {
   return <span className="honk-font cursor-default text-4xl">Kaioban</span>
 }
 
-function Nav() {
-  const { boards, setMainDrawerOpen } = useGlobal()
+function BoardSelector() {
+  const { boards } = useGlobal()
+  const dispatch = useContext(GlobalDispatchCtx)
   const board = useContext(BoardContext)
+  const { selectBoard } = useBoard()
+  const newBoardKey = "new-board"
+
+  async function handleBoardSelectorChange(key: string) {
+    if (key === board?.id.toString()) return
+    if (key === newBoardKey) {
+      const newBoard = await addBoard()
+      dispatch({ type: "SET_BOARDS", payload: [...boards, newBoard] })
+      return
+    }
+    const selectedBoard = boards.find((b) => b.id.toString() === key)
+    if (!selectedBoard) throw new Error("no board, dafuuuq")
+    selectBoard(selectedBoard)
+  }
+
+  return (
+    <Select
+      value={board?.id}
+      options={[
+        ...boards.map((board) => ({
+          key: board.id,
+          text: board.title || "(New Board)",
+        })),
+        {
+          key: newBoardKey,
+          text: "Add new board",
+        },
+      ]}
+      onChange={handleBoardSelectorChange}
+    />
+  )
+}
+
+function Nav() {
+  const { setMainDrawerOpen } = useGlobal()
 
   return (
     <nav className="p-4 flex justify-between">
-      <Select
-        value={board?.id}
-        options={boards.map((board) => ({
-          key: board.id,
-          text: board.title || "(New Board)",
-        }))}
-        onChange={console.log}
-      />
+      <BoardSelector />
       <Logo />
       <button onclick={() => setMainDrawerOpen(true)} className="py-2 px-3">
         <MoreIcon />

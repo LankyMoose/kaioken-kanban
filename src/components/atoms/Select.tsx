@@ -19,7 +19,8 @@ export function Select(props: SelectProps) {
     props.onChange?.(target.value)
   }
   return (
-    <select className="p-2" onchange={handleChange}>
+    // @ts-ignore - value not yet implemented as valid <select/> prop
+    <select value={props.value} className="p-2" onchange={handleChange}>
       {props.options.map((item) => (
         <option
           value={typeof item === "object" ? String(item.key) : item}
@@ -28,7 +29,6 @@ export function Select(props: SelectProps) {
           {typeof item === "object" ? item.text : item}
         </option>
       ))}
-      <option value="create-new">Create New Board</option>
     </select>
   )
 }

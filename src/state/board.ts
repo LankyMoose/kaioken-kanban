@@ -230,6 +230,27 @@ export function useBoard() {
     await db.updateItem(payload)
     dispatch({ type: "UPDATE_ITEM", payload })
   }
+  const restoreItem = async (payload: ListItem) => {
+    const board = getBoardOrDie()
+    const list = board.lists.find((l) => l.id === payload.listId)
+    if (!list) throw new Error("no list, dafooooq")
+    const maxListOrder = list.items.reduce(
+      (acc, item) => (item.order > acc ? item.order : acc),
+      -1
+    )
+    const item = await db.updateItem({
+      ...payload,
+      archived: false,
+      order: maxListOrder + 1,
+    })
+    dispatch({
+      type: "UPDATE_LIST",
+      payload: {
+        ...list,
+        items: [...list.items, item],
+      },
+    })
+  }
 
   const removeItemAndReorderList = async (payload: ListItem) => {
     const board = getBoardOrDie()
@@ -273,6 +294,7 @@ export function useBoard() {
     removeItem,
     archiveItem,
     updateItem,
+    restoreItem,
 
     handleItemDrop,
     handleListDrop,

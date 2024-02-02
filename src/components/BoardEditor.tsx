@@ -41,6 +41,7 @@ export function BoardEditor() {
 function ArchivedItems({ board }: { board: SelectedBoard | null }) {
   const [loading, setLoading] = useState(false)
   const [items, setItems] = useState<(ListItem & { list: string })[]>([])
+  const { restoreItem } = useBoard()
 
   useEffect(() => {
     if (!board) return
@@ -48,17 +49,25 @@ function ArchivedItems({ board }: { board: SelectedBoard | null }) {
     ;(async () => {
       const res = await Promise.all(
         board.lists.map(async (list) => {
-          const items = (await loadItems(list.id, true)).map((item) => ({
+          return (await loadItems(list.id, true)).map((item) => ({
             ...item,
             list: list.title,
           }))
-          return items
         })
       )
       setLoading(false)
       setItems(res.flat())
     })()
   }, [])
+
+  async function handleItemRestore(item: ListItem & { list: string }) {
+    const { list, ...rest } = item
+    await restoreItem(rest)
+    setItems((prev) => prev.filter((l) => l.id !== item.id))
+    addNotification({
+      text: `Item '${item.title}' was restored to list '${list}'`,
+    })
+  }
 
   return (
     <div className="p-3 bg-black bg-opacity-15">
@@ -77,7 +86,18 @@ function ArchivedItems({ board }: { board: SelectedBoard | null }) {
         items.map((item) => (
           <div className="flex gap-2 px-2 py-1 justify-between bg-white bg-opacity-5 border-b border-black border-opacity-30 last:border-b-0">
             <span>{item.title}</span>
-            <span className="text-xs align-super opacity-75">{item.list}</span>
+            <div className="flex flex-col items-end">
+              <span className="text-xs align-super opacity-75">
+                {item.list}
+              </span>
+              <Button
+                variant="link"
+                className="p-0"
+                onclick={() => handleItemRestore(item)}
+              >
+                Restore
+              </Button>
+            </div>
           </div>
         ))
       )}

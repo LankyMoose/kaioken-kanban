@@ -21,20 +21,24 @@ import {
   deleteItem as deleteDbItem,
   updateBoard as updateDbBoard,
 } from "../idb"
+import { useGlobal } from "./global"
 
 export const BoardContext = createContext<SelectedBoard | null>(null)
 export const BoardDispatchContext =
   createContext<(action: BoardDispatchAction) => void>(null)
 
 export function useBoard() {
+  const { boards, updateBoards } = useGlobal()
   const dispatch = useContext(BoardDispatchContext)
   const board = useContext(BoardContext)
 
   async function updateSelectedBoard(payload: Partial<Board>) {
     if (!board) throw new Error("no board, whaaaaaaaaaaat?")
     const { lists, archivedLists, ...rest } = board
-    const res = await updateDbBoard({ ...rest, ...payload })
+    const newBoard = { ...rest, ...payload }
+    const res = await updateDbBoard(newBoard)
     dispatch({ type: "SET_BOARD", payload: { ...res, lists, archivedLists } })
+    updateBoards(boards.map((b) => (b.id === res.id ? newBoard : b)))
   }
 
   const addList = async () => {
@@ -231,6 +235,7 @@ export function useBoard() {
   return {
     board,
     updateSelectedBoard,
+
     addList,
     removeList,
     archiveList,

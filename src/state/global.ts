@@ -97,6 +97,8 @@ export function useGlobal() {
       dispatch({ type: "SET_CLICKED_LIST", payload }),
     setListDragTarget,
     handleListDrag,
+    updateBoards: (payload: Board[]) =>
+      dispatch({ type: "SET_BOARDS", payload }),
   }
 }
 

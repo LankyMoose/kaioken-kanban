@@ -15,6 +15,7 @@ export function BoardSelector() {
     if (key === board?.id.toString()) return
     if (key === newBoardKey) {
       const newBoard = await addBoard()
+      localStorage.setItem("kaioban-board-id", newBoard.id.toString())
       dispatch({ type: "SET_BOARDS", payload: [...boards, newBoard] })
       return
     }

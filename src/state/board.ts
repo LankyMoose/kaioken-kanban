@@ -41,7 +41,6 @@ export function useBoard() {
     localStorage.setItem("kaioban-board-id", board.id.toString())
     dispatch({ type: "SET_BOARD", payload: selectedBoard })
   }
-
   const updateSelectedBoard = async (payload: Partial<Board>) => {
     if (!board) throw new Error("no board, whaaaaaaaaaaat?")
     const { lists, ...rest } = board
@@ -118,9 +117,6 @@ export function useBoard() {
     })
   }
 
-  const updateLists = (payload: SelectedBoardList[]) =>
-    dispatch({ type: "UPDATE_LISTS", payload })
-
   const handleListDrop = async (
     clickedList: ClickedList,
     listDragTarget: ListDragTarget
@@ -149,7 +145,7 @@ export function useBoard() {
           return list
         })
       )
-      updateLists(lists)
+      dispatch({ type: "UPDATE_LISTS", payload: lists })
     }
   }
   const handleItemDrop = async (

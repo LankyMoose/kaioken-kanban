@@ -10,19 +10,7 @@ import {
   SelectedBoard,
   SelectedBoardList,
 } from "../types"
-import {
-  addList as addDbList,
-  updateList as updateDbList,
-  archiveList as archiveDbList,
-  deleteList as deleteDbList,
-  addItem as addDbItem,
-  updateItem as updateDbItem,
-  archiveItem as archiveDbItem,
-  deleteItem as deleteDbItem,
-  updateBoard as updateDbBoard,
-  loadLists,
-  loadItems,
-} from "../idb"
+import * as db from "../idb"
 import { useGlobal } from "./global"
 
 export const BoardContext = createContext<SelectedBoard | null>(null)
@@ -34,33 +22,31 @@ export function useBoard() {
   const dispatch = useContext(BoardDispatchContext)
   const board = useContext(BoardContext)
 
-  async function selectBoard(board: Board) {
-    const lists = await loadLists(board.id)
+  const selectBoard = async (board: Board) => {
+    const lists = await db.loadLists(board.id)
 
     const selectedBoard = {
       ...board,
       lists: await Promise.all(
         lists.map(async (list) => {
-          const items = await loadItems(list.id)
+          const items = await db.loadItems(list.id)
           return {
             ...list,
             items,
-            dropArea: null,
           } as SelectedBoardList
         })
       ),
-      dropArea: null,
     }
 
     localStorage.setItem("kaioban-board-id", board.id.toString())
     dispatch({ type: "SET_BOARD", payload: selectedBoard })
   }
 
-  async function updateSelectedBoard(payload: Partial<Board>) {
+  const updateSelectedBoard = async (payload: Partial<Board>) => {
     if (!board) throw new Error("no board, whaaaaaaaaaaat?")
     const { lists, ...rest } = board
     const newBoard = { ...rest, ...payload }
-    const res = await updateDbBoard(newBoard)
+    const res = await db.updateBoard(newBoard)
     dispatch({ type: "SET_BOARD", payload: { ...res, lists } })
     updateBoards(boards.map((b) => (b.id === res.id ? newBoard : b)))
   }
@@ -68,7 +54,7 @@ export function useBoard() {
   const addList = async () => {
     if (!board) throw new Error("No board")
     const maxListOrder = Math.max(...board.lists.map((l) => l.order), -1)
-    const newList = await addDbList(board.id, maxListOrder + 1)
+    const newList = await db.addList(board.id, maxListOrder + 1)
     dispatch({
       type: "ADD_LIST",
       payload: {
@@ -82,7 +68,7 @@ export function useBoard() {
     const list = board.lists.find((list) => list.id === id)
     if (!list) throw new Error("dafooq, no list")
     const { items, ...rest } = list
-    await archiveDbList(rest)
+    await db.archiveList(rest)
 
     const newLists = await Promise.all(
       board.lists
@@ -91,7 +77,7 @@ export function useBoard() {
           if (list.order !== i) {
             list.order = i
             const { items, ...rest } = list
-            await updateDbList(rest)
+            await db.updateList(rest)
           }
           return list
         })
@@ -106,12 +92,12 @@ export function useBoard() {
     const list = board?.lists.find((l) => l.id === id)
     if (!list) throw new Error("no list, wah wah")
     const { items, ...rest } = list
-    await deleteDbList(rest)
+    await db.deleteList(rest)
     dispatch({ type: "REMOVE_LIST", payload: { id } })
   }
   const updateList = async (payload: SelectedBoardList) => {
     const { items, ...rest } = payload
-    await updateDbList(rest)
+    await db.updateList(rest)
     dispatch({ type: "UPDATE_LIST", payload })
   }
   const restoreList = async (list: List) => {
@@ -122,7 +108,7 @@ export function useBoard() {
       archived: false,
       order: maxListOrder + 1,
     }
-    await updateDbList(newList)
+    await db.updateList(newList)
     dispatch({
       type: "ADD_LIST",
       payload: {
@@ -135,10 +121,10 @@ export function useBoard() {
   const updateLists = (payload: SelectedBoardList[]) =>
     dispatch({ type: "UPDATE_LISTS", payload })
 
-  async function handleListDrop(
+  const handleListDrop = async (
     clickedList: ClickedList,
     listDragTarget: ListDragTarget
-  ) {
+  ) => {
     if (!board) return
 
     let targetIdx =
@@ -159,17 +145,17 @@ export function useBoard() {
           if (list.order === i) return list
           list.order = i
           const { items, ...rest } = list
-          await updateDbList(rest)
+          await db.updateList(rest)
           return list
         })
       )
       updateLists(lists)
     }
   }
-  async function handleItemDrop(
+  const handleItemDrop = async (
     clickedItem: ClickedItem,
     itemDragTarget: ItemDragTarget
-  ) {
+  ) => {
     if (!board) return
     const itemList = board.lists.find((list) => list.id === clickedItem.listId)!
     const targetList = board.lists.find(
@@ -191,7 +177,7 @@ export function useBoard() {
     const applyItemOrder = (item: ListItem, idx: number) => {
       if (item.order === idx) return
       item.order = idx
-      return updateDbItem(item)
+      return db.updateItem(item)
     }
 
     if (isOriginList) {
@@ -207,7 +193,7 @@ export function useBoard() {
           if (item.id === clickedItem.id) {
             item.order = i
             item.listId = targetList.id
-            return updateDbItem(item)
+            return db.updateItem(item)
           }
           return applyItemOrder(item, i)
         })
@@ -229,7 +215,7 @@ export function useBoard() {
       if (item.order > max) return item.order
       return max
     }, -1)
-    const item = await addDbItem(listId, listMax + 1)
+    const item = await db.addItem(listId, listMax + 1)
     dispatch({
       type: "UPDATE_LIST",
       payload: {
@@ -239,7 +225,7 @@ export function useBoard() {
     })
   }
   const updateItem = async (payload: ListItem) => {
-    await updateDbItem(payload)
+    await db.updateItem(payload)
     dispatch({ type: "UPDATE_ITEM", payload })
   }
 
@@ -252,19 +238,19 @@ export function useBoard() {
         .map(async (item, i) => {
           if (item.order === i) return item
           item.order = i
-          return await updateDbItem(item)
+          return await db.updateItem(item)
         })
     )
     return { ...list, items }
   }
 
   const removeItem = async (payload: ListItem) => {
-    await deleteDbItem(payload)
+    await db.deleteItem(payload)
     const newList = await removeItemAndReorderList(payload)
     dispatch({ type: "UPDATE_LIST", payload: newList })
   }
   const archiveItem = async (payload: ListItem) => {
-    await archiveDbItem(payload)
+    await db.archiveItem(payload)
     const newList = await removeItemAndReorderList(payload)
     dispatch({ type: "UPDATE_LIST", payload: newList })
   }
@@ -318,7 +304,7 @@ export function boardStateReducer(
     case "ADD_LIST": {
       const lists = [
         ...state.lists,
-        { ...action.payload, items: [], dropArea: null } as SelectedBoardList,
+        { ...action.payload, items: [] } as SelectedBoardList,
       ]
       return {
         ...state,

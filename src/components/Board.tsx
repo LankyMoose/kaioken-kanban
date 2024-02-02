@@ -1,7 +1,7 @@
 import "./Board.css"
-import { useRef, useEffect } from "kaioken"
+import { useRef } from "kaioken"
 import { ItemList } from "./ItemList"
-import type { Board, ClickedItem, ClickedList } from "../types"
+import type { Board } from "../types"
 import { useGlobal } from "../state/global"
 import { useBoard } from "../state/board"
 import { Button } from "./atoms/Button"
@@ -21,7 +21,7 @@ export function Board() {
     setListDragTarget,
     handleListDrag,
   } = useGlobal()
-  const { lists, handleItemDrop, handleListDrop } = useBoard()
+  const { board, handleItemDrop, handleListDrop } = useBoard()
   const boardInnerRef = useRef<HTMLDivElement>(null)
 
   function handleMouseDown(e: MouseEvent) {
@@ -86,8 +86,8 @@ export function Board() {
         }`}
         ref={boardInnerRef}
       >
-        {lists &&
-          lists
+        {board?.lists &&
+          board.lists
             .filter((list) => !list.archived)
             .sort((a, b) => a.order - b.order)
             .map((list) => <ItemList list={list} />)}
@@ -98,7 +98,7 @@ export function Board() {
 }
 
 function AddList() {
-  const { lists, addList } = useBoard()
+  const { board, addList } = useBoard()
   const { clickedList, listDragTarget } = useGlobal()
   return (
     <div
@@ -106,7 +106,7 @@ function AddList() {
         clickedList &&
         !clickedList.dialogOpen &&
         listDragTarget &&
-        listDragTarget.index === lists?.length
+        listDragTarget.index === board?.lists.length
           ? "margin-left: calc(var(--selected-list-width) + var(--lists-gap));"
           : ""
       }

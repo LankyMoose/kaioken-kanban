@@ -22,6 +22,7 @@ export function Modal({ state, close, children }: ModalProps) {
   function handleKeyPress(e: KeyboardEvent) {
     if (e.key === "Escape") {
       e.preventDefault()
+      if (state === "exited") return
       close()
       window.removeEventListener("keyup", handleKeyPress)
     }

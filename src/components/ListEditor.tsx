@@ -34,7 +34,7 @@ export function ListEditorModal() {
 
 function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
   const { setClickedList } = useGlobal()
-  const { updateList, removeList, archiveList, lists } = useBoard()
+  const { updateList, removeList, archiveList, board } = useBoard()
   const [titleRef, title] = useModel<HTMLInputElement, string>(
     clickedList?.list.title || "(New List)"
   )
@@ -49,7 +49,7 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
 
   async function handleTitleChange() {
     if (!clickedList) return
-    const list = lists?.find((l) => l.id === clickedList.id)
+    const list = board?.lists.find((l) => l.id === clickedList.id)
     if (!list) throw new Error("no list, wah wah")
     await updateList({ ...list, title })
     setClickedList({ ...clickedList, list: { ...clickedList.list, title } })

@@ -1,5 +1,6 @@
 import { createContext, useContext } from "kaioken"
 import {
+  Board,
   ClickedItem,
   ClickedList,
   ItemDragTarget,
@@ -18,6 +19,7 @@ import {
   updateItem as updateDbItem,
   archiveItem as archiveDbItem,
   deleteItem as deleteDbItem,
+  updateBoard as updateDbBoard,
 } from "../idb"
 
 export const BoardContext = createContext<SelectedBoard | null>(null)
@@ -27,6 +29,13 @@ export const BoardDispatchContext =
 export function useBoard() {
   const dispatch = useContext(BoardDispatchContext)
   const board = useContext(BoardContext)
+
+  async function updateSelectedBoard(payload: Partial<Board>) {
+    if (!board) throw new Error("no board, whaaaaaaaaaaat?")
+    const { lists, archivedLists, ...rest } = board
+    const res = await updateDbBoard({ ...rest, ...payload })
+    dispatch({ type: "SET_BOARD", payload: { ...res, lists, archivedLists } })
+  }
 
   const addList = async () => {
     if (!board) throw new Error("No board")
@@ -220,7 +229,8 @@ export function useBoard() {
   }
 
   return {
-    ...(board ?? {}),
+    board,
+    updateSelectedBoard,
     addList,
     removeList,
     archiveList,
@@ -297,19 +307,6 @@ export function boardStateReducer(
         lists,
       }
     }
-    // case "UPDATE_LIST": {
-    //   return {
-    //     ...state,
-    //     lists: state.lists.map((list) =>
-    //       list.id === action.payload.id
-    //         ? {
-    //             ...list,
-    //             ...action.payload,
-    //           }
-    //         : list
-    //     ),
-    //   }
-    // }
     case "UPDATE_LISTS": {
       const {
         payload: { lists, archivedLists },
@@ -352,7 +349,6 @@ export function boardStateReducer(
         lists,
       }
     }
-
     case "SET_BOARD": {
       return action.payload ? { ...action.payload } : null
     }

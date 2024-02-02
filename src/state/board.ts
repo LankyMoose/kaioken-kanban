@@ -20,7 +20,12 @@ export const BoardDispatchContext =
 export function useBoard() {
   const { boards, updateBoards } = useGlobal()
   const dispatch = useContext(BoardDispatchContext)
-  const board = useContext(BoardContext)
+  const selectedBoard = useContext(BoardContext)
+
+  const getBoardOrDie = () => {
+    if (!selectedBoard) throw "no board selected"
+    return selectedBoard
+  }
 
   const selectBoard = async (board: Board) => {
     const lists = await db.loadLists(board.id)
@@ -42,8 +47,7 @@ export function useBoard() {
     dispatch({ type: "SET_BOARD", payload: selectedBoard })
   }
   const updateSelectedBoard = async (payload: Partial<Board>) => {
-    if (!board) throw new Error("no board, whaaaaaaaaaaat?")
-    const { lists, ...rest } = board
+    const { lists, ...rest } = getBoardOrDie()
     const newBoard = { ...rest, ...payload }
     const res = await db.updateBoard(newBoard)
     dispatch({ type: "SET_BOARD", payload: { ...res, lists } })
@@ -51,7 +55,7 @@ export function useBoard() {
   }
 
   const addList = async () => {
-    if (!board) throw new Error("No board")
+    const board = getBoardOrDie()
     const maxListOrder = Math.max(...board.lists.map((l) => l.order), -1)
     const newList = await db.addList(board.id, maxListOrder + 1)
     dispatch({
@@ -63,7 +67,7 @@ export function useBoard() {
     })
   }
   const archiveList = async (id: number) => {
-    if (!board) return
+    const board = getBoardOrDie()
     const list = board.lists.find((list) => list.id === id)
     if (!list) throw new Error("dafooq, no list")
     const { items, ...rest } = list
@@ -88,6 +92,7 @@ export function useBoard() {
     })
   }
   const removeList = async (id: number) => {
+    const board = getBoardOrDie()
     const list = board?.lists.find((l) => l.id === id)
     if (!list) throw new Error("no list, wah wah")
     const { items, ...rest } = list
@@ -100,7 +105,7 @@ export function useBoard() {
     dispatch({ type: "UPDATE_LIST", payload })
   }
   const restoreList = async (list: List) => {
-    if (!board) return
+    const board = getBoardOrDie()
     const maxListOrder = Math.max(...board.lists.map((l) => l.order), -1)
     const newList: List = {
       ...list,
@@ -121,7 +126,7 @@ export function useBoard() {
     clickedList: ClickedList,
     listDragTarget: ListDragTarget
   ) => {
-    if (!board) return
+    const board = getBoardOrDie()
 
     let targetIdx =
       listDragTarget.index >= clickedList.index
@@ -152,7 +157,7 @@ export function useBoard() {
     clickedItem: ClickedItem,
     itemDragTarget: ItemDragTarget
   ) => {
-    if (!board) return
+    const board = getBoardOrDie()
     const itemList = board.lists.find((list) => list.id === clickedItem.listId)!
     const targetList = board.lists.find(
       (list) => list.id === itemDragTarget.listId
@@ -205,6 +210,7 @@ export function useBoard() {
     }
   }
   const addItem = async (listId: number) => {
+    const board = getBoardOrDie()
     const list = board?.lists.find((l) => l.id === listId)
     if (!list) throw new Error("no list")
     const listMax = list.items.reduce((max, item) => {
@@ -226,6 +232,7 @@ export function useBoard() {
   }
 
   const removeItemAndReorderList = async (payload: ListItem) => {
+    const board = getBoardOrDie()
     const list = board?.lists.find((l) => l.id === payload.listId)
     if (!list) throw new Error("no list")
     const items = await Promise.all(
@@ -252,7 +259,7 @@ export function useBoard() {
   }
 
   return {
-    board,
+    board: selectedBoard,
     updateSelectedBoard,
     selectBoard,
 
@@ -269,8 +276,6 @@ export function useBoard() {
 
     handleItemDrop,
     handleListDrop,
-    setBoard: (payload: SelectedBoard | null) =>
-      dispatch({ type: "SET_BOARD", payload }),
   }
 }
 

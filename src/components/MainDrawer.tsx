@@ -5,7 +5,7 @@ import { DialogHeader } from "./dialog/DialogHeader"
 import { useBoard } from "../state/board"
 import { Input } from "./atoms/Input"
 import { Button } from "./atoms/Button"
-import { List } from "../types"
+import { List, SelectedBoard } from "../types"
 import { loadLists } from "../idb"
 import { Spinner } from "./atoms/Spinner"
 
@@ -24,20 +24,44 @@ export function MainDrawer() {
   )
 }
 
-function BoardEditor() {
-  const { board, updateSelectedBoard } = useBoard()
-  const [titleRef, title] = useModel(board?.title || "(New Board)")
-  const [archivedLists, setArchivedLists] = useState<List[]>([])
+function sleep(ms: number) {
+  return new Promise((res) => setTimeout(res, ms))
+}
+
+function ArchivedLists({ board }: { board: SelectedBoard | null }) {
   const [loading, setLoading] = useState(false)
+  const [data, setData] = useState<List[]>([])
   useEffect(() => {
     if (!board) return
     setLoading(true)
     ;(async () => {
       const res = await loadLists(board.id, true)
-      setArchivedLists(res)
+      await sleep(1000)
+      setData(res)
       setLoading(false)
     })()
   }, [])
+
+  return (
+    <div className="p-2">
+      {loading ? (
+        <div className="flex justify-center">
+          <Spinner />
+        </div>
+      ) : data.length === 0 ? (
+        <small className="text-gray-400">
+          <i>No archived lists</i>
+        </small>
+      ) : (
+        data.map((list) => <div>{list.title}</div>)
+      )}
+    </div>
+  )
+}
+
+function BoardEditor() {
+  const { board, updateSelectedBoard } = useBoard()
+  const [titleRef, title] = useModel(board?.title || "(New Board)")
 
   function handleSubmit() {
     updateSelectedBoard({ ...board, title })
@@ -55,17 +79,7 @@ function BoardEditor() {
           Save
         </Button>
       </div>
-      <div className="p-2">
-        {loading ? (
-          <Spinner />
-        ) : archivedLists.length === 0 ? (
-          <small className="text-gray-400">
-            <i>No archived lists</i>
-          </small>
-        ) : (
-          archivedLists.map((l) => <div>{l.title}</div>)
-        )}
-      </div>
+      <ArchivedLists board={board} />
     </>
   )
 }

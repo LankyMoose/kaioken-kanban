@@ -68,9 +68,9 @@ const archiveBoard = (board: Board) =>
 
 // Lists
 
-const loadLists = (boardId: number) =>
+const loadLists = (boardId: number, archived = false) =>
   db.lists.findMany((l) => {
-    return l.boardId === boardId && !l.archived
+    return l.boardId === boardId && l.archived === archived
   }) as Promise<List[]>
 
 const updateList = (list: List) => db.lists.update(list) as Promise<List>
@@ -85,9 +85,9 @@ const archiveList = (list: List) =>
 
 // Items
 
-const loadItems = (listId: number) =>
+const loadItems = (listId: number, archived = false) =>
   db.items.findMany((i) => {
-    return i.listId === listId && !i.archived
+    return i.listId === listId && i.archived === archived
   }) as Promise<ListItem[]>
 
 const updateItem = (item: ListItem) =>

@@ -93,5 +93,4 @@ export interface SelectedBoardList extends List {
 
 export interface SelectedBoard extends Board {
   lists: SelectedBoardList[]
-  archivedLists: List[]
 }

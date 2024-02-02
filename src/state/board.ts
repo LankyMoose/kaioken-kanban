@@ -4,7 +4,6 @@ import {
   ClickedItem,
   ClickedList,
   ItemDragTarget,
-  List,
   ListDragTarget,
   ListItem,
   SelectedBoard,
@@ -34,10 +33,10 @@ export function useBoard() {
 
   async function updateSelectedBoard(payload: Partial<Board>) {
     if (!board) throw new Error("no board, whaaaaaaaaaaat?")
-    const { lists, archivedLists, ...rest } = board
+    const { lists, ...rest } = board
     const newBoard = { ...rest, ...payload }
     const res = await updateDbBoard(newBoard)
-    dispatch({ type: "SET_BOARD", payload: { ...res, lists, archivedLists } })
+    dispatch({ type: "SET_BOARD", payload: { ...res, lists } })
     updateBoards(boards.map((b) => (b.id === res.id ? newBoard : b)))
   }
 
@@ -60,8 +59,6 @@ export function useBoard() {
     const { items, ...rest } = list
     await archiveDbList(rest)
 
-    const archivedLists = [...board.archivedLists, rest]
-
     const newLists = await Promise.all(
       board.lists
         .filter((l) => l.id !== id)
@@ -77,7 +74,7 @@ export function useBoard() {
 
     dispatch({
       type: "UPDATE_LISTS",
-      payload: { lists: newLists, archivedLists },
+      payload: newLists,
     })
   }
   const removeList = async (id: number) => {
@@ -87,10 +84,8 @@ export function useBoard() {
     await deleteDbList(rest)
     dispatch({ type: "REMOVE_LIST", payload: { id } })
   }
-  const updateLists = (payload: {
-    lists: SelectedBoardList[]
-    archivedLists: List[]
-  }) => dispatch({ type: "UPDATE_LISTS", payload })
+  const updateLists = (payload: SelectedBoardList[]) =>
+    dispatch({ type: "UPDATE_LISTS", payload })
 
   async function handleListDrop(
     clickedList: ClickedList,
@@ -120,10 +115,7 @@ export function useBoard() {
           return list
         })
       )
-      updateLists({
-        lists,
-        archivedLists: board.archivedLists,
-      })
+      updateLists(lists)
     }
   }
   async function handleItemDrop(
@@ -174,14 +166,11 @@ export function useBoard() {
       )
       dispatch({
         type: "UPDATE_LISTS",
-        payload: {
-          lists: board.lists.map((l) => {
-            if (l.id === itemList.id) return itemList
-            if (l.id === targetList.id) return targetList
-            return l
-          }),
-          archivedLists: board.archivedLists,
-        },
+        payload: board.lists.map((l) => {
+          if (l.id === itemList.id) return itemList
+          if (l.id === targetList.id) return targetList
+          return l
+        }),
       })
     }
   }
@@ -264,13 +253,7 @@ type BoardDispatchAction =
       type: "UPDATE_LIST"
       payload: Partial<SelectedBoardList> & { id: number }
     }
-  | {
-      type: "UPDATE_LISTS"
-      payload: {
-        lists: SelectedBoardList[]
-        archivedLists: List[]
-      }
-    }
+  | { type: "UPDATE_LISTS"; payload: SelectedBoardList[] }
   | { type: "REMOVE_LIST"; payload: { id: number } }
   | { type: "UPDATE_ITEM"; payload: ListItem }
   | { type: "SET_DROP_AREA"; payload: { element: HTMLElement | null } }
@@ -313,13 +296,9 @@ export function boardStateReducer(
       }
     }
     case "UPDATE_LISTS": {
-      const {
-        payload: { lists, archivedLists },
-      } = action
       return {
         ...state,
-        lists,
-        archivedLists,
+        lists: action.payload,
       }
     }
     case "REMOVE_LIST": {

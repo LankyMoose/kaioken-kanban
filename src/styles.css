@@ -4,12 +4,11 @@
 
 :root {
   background-color: #222;
-  color: #fff;
+  color: #eee6ff;
   color-scheme: light dark;
   --primary: rgb(64 37 121);
   --radius: 4px;
   --color: #e6e6e6;
-  --title-color: #ffffff;
   --item-height: 80px;
   --selected-item-height: 0px;
   --scrollbar-thumb: rgba(255, 255, 255, 0.2);

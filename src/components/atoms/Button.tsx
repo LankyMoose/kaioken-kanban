@@ -1,6 +1,6 @@
 import { type ElementProps } from "kaioken"
 
-type ButtonVariant = "primary" | "secondary" | "danger" | "success"
+type ButtonVariant = "primary" | "secondary" | "danger" | "success" | "link"
 
 export function PrimaryButton({
   className,
@@ -87,6 +87,19 @@ export function DefaultButton({
   )
 }
 
+function LinkButton({ className, children, ...props }: ElementProps<"button">) {
+  return (
+    <button
+      {...props}
+      className={`bg-transparent text-primary-light font-medium underline text-sm p-1 ${
+        className || ""
+      }`}
+    >
+      {children}
+    </button>
+  )
+}
+
 export function Button({
   variant,
   children,
@@ -101,6 +114,8 @@ export function Button({
       return <DangerButton {...props}>{children}</DangerButton>
     case "success":
       return <SuccessButton {...props}>{children}</SuccessButton>
+    case "link":
+      return <LinkButton {...props}>{children}</LinkButton>
     default:
       return <DefaultButton {...props}>{children}</DefaultButton>
   }

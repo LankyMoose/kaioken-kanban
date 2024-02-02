@@ -43,7 +43,10 @@ function ArchivedLists({ board }: { board: SelectedBoard | null }) {
   }, [])
 
   return (
-    <div className="p-2">
+    <div className="p-3 bg-black bg-opacity-15">
+      <h4 className="text-sm mb-2 pb-1 border-b border-white border-opacity-10">
+        Archived Lists
+      </h4>
       {loading ? (
         <div className="flex justify-center">
           <Spinner />
@@ -53,7 +56,12 @@ function ArchivedLists({ board }: { board: SelectedBoard | null }) {
           <i>No archived lists</i>
         </small>
       ) : (
-        data.map((list) => <div>{list.title}</div>)
+        data.map((list) => (
+          <div className="flex gap-2 p-2 items-center justify-between bg-white bg-opacity-5">
+            <span>{list.title}</span>
+            <Button variant="link">Send to board</Button>
+          </div>
+        ))
       )}
     </div>
   )
@@ -79,6 +87,7 @@ function BoardEditor() {
           Save
         </Button>
       </div>
+      <br />
       <ArchivedLists board={board} />
     </>
   )

@@ -12,6 +12,10 @@ import { ItemEditorModal } from "./components/ItemEditor"
 import { ListEditorModal } from "./components/ListEditor"
 import { MainDrawer } from "./components/MainDrawer"
 import { addBoard } from "./idb"
+import {
+  NotificationTray,
+  addNotification,
+} from "./components/notifications/Tray"
 
 export function App() {
   return (
@@ -79,6 +83,8 @@ function Nav() {
   )
 }
 
+let i = 0
+
 function Main() {
   const { updateMousePos, clickedItem, clickedList } = useGlobal()
 
@@ -90,6 +96,15 @@ function Main() {
   }
   return (
     <main onmousemove={handleMouseMove}>
+      <button
+        onclick={() =>
+          addNotification({
+            text: `test ${i++}`,
+          })
+        }
+      >
+        Add Notification
+      </button>
       <Board />
       <Portal container={document.getElementById("portal")!}>
         {clickedItem?.dragging && <ListItemClone item={clickedItem} />}
@@ -97,6 +112,7 @@ function Main() {
         <ItemEditorModal />
         <ListEditorModal />
         <MainDrawer />
+        <NotificationTray />
       </Portal>
     </main>
   )

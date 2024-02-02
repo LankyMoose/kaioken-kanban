@@ -1,0 +1,20 @@
+.notification-tray {
+  z-index: 99999;
+  position: absolute;
+  top: 0;
+  right: 0;
+  overflow: hidden;
+  padding: .5rem;
+}
+
+.notification {
+  border-radius: var(--radius);
+  min-width: 140px;
+  transition: .3s ease;
+  margin-bottom: .5rem;
+  overflow: hidden;
+}
+
+.notification .inner {
+  padding: .5rem;
+}

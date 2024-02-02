@@ -55,9 +55,7 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
     setClickedList({ ...clickedList, list: { ...clickedList.list, title } })
   }
 
-  async function handleCtxAction(
-    action: "delete" | "archive" | "view-archived"
-  ) {
+  async function handleCtxAction(action: "delete" | "archive") {
     if (!clickedList) return
     switch (action) {
       case "delete": {
@@ -68,9 +66,6 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
       case "archive": {
         await archiveList(clickedList.id)
         setClickedList(null)
-        break
-      }
-      case "view-archived": {
         break
       }
     }
@@ -95,10 +90,6 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
           <ContextMenu
             open={ctxOpen}
             items={[
-              {
-                text: "View archived items",
-                onclick: () => handleCtxAction("view-archived"),
-              },
               { text: "Archive", onclick: () => handleCtxAction("archive") },
               { text: "Delete", onclick: () => handleCtxAction("delete") },
             ]}

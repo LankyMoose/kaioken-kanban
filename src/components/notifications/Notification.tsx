@@ -62,7 +62,7 @@ function Notification({
               marginBottom,
             }}
           >
-            <div className="inner">{text}</div>
+            <div className="inner text-sm">{text}</div>
           </div>
         )
       }}

@@ -180,7 +180,7 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
             ))}
         </div>
       </div>
-      <div className="flex p-2">
+      <div className="flex py-2">
         <Button
           variant="primary"
           className="flex-grow py-2 text-sm font-semibold"
@@ -264,7 +264,7 @@ function Item({
 
     const x = rect.x - dropAreaRect.x
     const y = rect.y - dropAreaRect.y
-    return `transform: translate(calc(${x}px - .5rem), calc(${y}px - .5rem))`
+    return `transform: translate(calc(${x}px), calc(${y}px))`
   }
 
   function getClassName() {

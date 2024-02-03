@@ -13,20 +13,10 @@
   --selected-item-height: 0px;
   --scrollbar-thumb: rgba(255, 255, 255, 0.2);
   --scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
-  --list-header-padding: 0.75rem;
+  --list-header-padding-x: 0.25rem;
+  --list-header-padding-y: 0.5rem;
   --dialog-background: #221b30;
 }
-
-.honk-font {
-  font-family: "Honk", system-ui;
-  font-optical-sizing: auto;
-  font-weight: 400;
-  font-style: normal;
-  font-variation-settings:
-    "MORF" 15,
-    "SHLN" 50;
-}
-
 
 * {
   scrollbar-width: thin;

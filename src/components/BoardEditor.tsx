@@ -6,7 +6,6 @@ import { Button } from "./atoms/Button"
 import { Input } from "./atoms/Input"
 import { Spinner } from "./atoms/Spinner"
 import { DialogHeader } from "./dialog/DialogHeader"
-import { addNotification } from "./notifications/Tray"
 
 export function BoardEditor() {
   const { board, updateSelectedBoard } = useBoard()
@@ -64,9 +63,6 @@ function ArchivedItems({ board }: { board: SelectedBoard | null }) {
     const { list, ...rest } = item
     await restoreItem(rest)
     setItems((prev) => prev.filter((l) => l.id !== item.id))
-    addNotification({
-      text: `Item '${item.title}' was restored to list '${list}'`,
-    })
   }
 
   return (
@@ -122,9 +118,6 @@ function ArchivedLists({ board }: { board: SelectedBoard | null }) {
   async function handleSendToBoard(list: List) {
     await restoreList(list)
     setLists((prev) => prev.filter((l) => l.id !== list.id))
-    addNotification({
-      text: `List '${list.title}' was restored`,
-    })
   }
 
   return (

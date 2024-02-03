@@ -9,7 +9,6 @@ import { ListClone } from "./components/ListClone"
 import { ItemEditorModal } from "./components/ItemEditor"
 import { ListEditorModal } from "./components/ListEditor"
 import { MainDrawer } from "./components/MainDrawer"
-import { NotificationTray } from "./components/notifications/Tray"
 import { BoardSelector } from "./components/BoardSelector"
 
 export function App() {
@@ -23,17 +22,13 @@ export function App() {
   )
 }
 
-function Logo() {
-  return <span className="honk-font cursor-default text-4xl">Kaioban</span>
-}
-
 function Nav() {
   const { setMainDrawerOpen } = useGlobal()
 
   return (
     <nav className="p-4 flex justify-between">
       <BoardSelector />
-      <Logo />
+
       <button onclick={() => setMainDrawerOpen(true)} className="py-2 px-3">
         <MoreIcon />
       </button>
@@ -59,7 +54,6 @@ function Main() {
         <ItemEditorModal />
         <ListEditorModal />
         <MainDrawer />
-        <NotificationTray />
       </Portal>
     </main>
   )

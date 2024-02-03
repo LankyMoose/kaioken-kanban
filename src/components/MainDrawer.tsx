@@ -9,11 +9,13 @@ export function MainDrawer() {
     <Transition
       in={mainDrawerOpen}
       timings={[40, 150, 150, 150]}
-      element={(state) => (
-        <Drawer state={state} close={() => setMainDrawerOpen(false)}>
-          <BoardEditor />
-        </Drawer>
-      )}
+      element={(state) =>
+        state === "exited" ? null : (
+          <Drawer state={state} close={() => setMainDrawerOpen(false)}>
+            <BoardEditor />
+          </Drawer>
+        )
+      }
     />
   )
 }

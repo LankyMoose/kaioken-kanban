@@ -56,7 +56,7 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
   function selectList(e: MouseEvent | KeyboardEvent) {
     if (e instanceof MouseEvent && e.buttons !== 1) return
     if (e instanceof KeyboardEvent) {
-      if (e.key !== "Enter") return
+      if (e.key !== "Enter" && e.key !== " ") return
       e.preventDefault()
     }
     const element = listRef.current?.cloneNode(true) as HTMLDivElement
@@ -213,7 +213,7 @@ function Item({
   function selectItem(e: MouseEvent | KeyboardEvent) {
     if (e instanceof MouseEvent && e.buttons !== 1) return
     if (e instanceof KeyboardEvent) {
-      if (e.key !== "Enter") return
+      if (e.key !== "Enter" && e.key !== " ") return
       e.preventDefault()
     }
     const element = ref.current?.cloneNode(true) as HTMLButtonElement

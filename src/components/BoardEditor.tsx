@@ -84,7 +84,7 @@ function ArchivedItems({ board }: { board: SelectedBoard | null }) {
             <span>{item.title}</span>
             <div className="flex flex-col items-end">
               <span className="text-xs align-super opacity-75">
-                {item.list}
+                {item.list || "(Unnamed Item)"}
               </span>
               <Button
                 variant="link"
@@ -136,7 +136,7 @@ function ArchivedLists({ board }: { board: SelectedBoard | null }) {
       ) : (
         lists.map((list) => (
           <div className="flex gap-2 px-2 py-1  items-center justify-between bg-white bg-opacity-5">
-            <span className="text-sm">{list.title}</span>
+            <span className="text-sm">{list.title || "(Unnamed List)"}</span>
             <Button
               variant="link"
               className="text-sm py-1"

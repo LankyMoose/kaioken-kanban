@@ -113,11 +113,12 @@ export function useBoard() {
       order: maxListOrder + 1,
     }
     await db.updateList(newList)
+    const items = await db.loadItems(list.id)
     dispatch({
       type: "ADD_LIST",
       payload: {
         ...newList,
-        items: [],
+        items,
       },
     })
   }
@@ -325,10 +326,7 @@ export function boardStateReducer(
   }
   switch (action.type) {
     case "ADD_LIST": {
-      const lists = [
-        ...state.lists,
-        { ...action.payload, items: [] } as SelectedBoardList,
-      ]
+      const lists = [...state.lists, { ...action.payload } as SelectedBoardList]
       return {
         ...state,
         lists,

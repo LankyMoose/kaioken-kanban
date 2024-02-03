@@ -85,7 +85,8 @@
   padding-block: .5rem;
 }
 
-.list-items.empty.dragging .list-items-inner {
+.list-items.empty.dragging .list-items-inner,
+#board .inner.dragging .list:hover .list-items.empty .list-items-inner {
   min-height: var(--item-height);
 }
 
@@ -130,21 +131,6 @@
   background: rgba(255, 255, 255, .035);
 }
 
-
-.list-item.default {
-  background-color: transparent;
-  font-weight: 500;
-  font-size: 16px;
-  padding: .5rem;
-  border-radius: var(--radius);
-  display: flex;
-  align-items: center;
-  gap: .5rem;
-  text-align: center;
-  opacity: .5;
-}
-
-
 #item-clone {
   position: absolute;
   z-index: 1000;
@@ -153,7 +139,6 @@
   pointer-events: none;
   backdrop-filter: blur(10px);
 }
-
 
 #item-clone button {
   width: 100%;

@@ -24,7 +24,6 @@ export function Modal({ state, close, children }: ModalProps) {
       e.preventDefault()
       if (state === "exited") return
       close()
-      window.removeEventListener("keyup", handleKeyPress)
     }
   }
 

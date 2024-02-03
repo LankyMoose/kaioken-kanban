@@ -7,6 +7,8 @@ import { useGlobal } from "../state/global"
 import { Modal } from "./dialog/Modal"
 import { MoreIcon } from "./icons/MoreIcon"
 import { ContextMenu } from "./ContextMenu"
+import { Button } from "./atoms/Button"
+import { DialogFooter } from "./dialog/DialogFooter"
 
 export function ItemEditorModal() {
   const { clickedItem, setClickedItem } = useGlobal()
@@ -51,24 +53,9 @@ function ItemEditor() {
     }
   }, [])
 
-  async function handleTitleChange() {
+  async function saveChanges() {
     if (!clickedItem) return
-    if (title === clickedItem.item.title) return
-
-    const newItem = { ...clickedItem.item, title }
-    await updateItem(newItem)
-    const { clickedItem: c } = useGlobal()
-    if (c?.id === newItem.id && c.dialogOpen) {
-      setClickedItem({
-        ...c,
-        item: newItem,
-      })
-    }
-  }
-
-  async function handleContentChange() {
-    if (!clickedItem) return
-    const newItem = { ...clickedItem.item, content }
+    const newItem = { ...clickedItem.item, content, title }
     await updateItem(newItem)
     setClickedItem({
       ...clickedItem,
@@ -89,7 +76,6 @@ function ItemEditor() {
           ref={titleRef}
           className="bg-transparent w-full border-0"
           onfocus={(e) => (e.target as HTMLInputElement)?.select()}
-          onchange={handleTitleChange}
         />
         <div className="flex justify-center items-center relative">
           <button
@@ -109,12 +95,17 @@ function ItemEditor() {
       </DialogHeader>
       <DialogBody>
         <h3 className="text-sm font-semibold">Description</h3>
-        <textarea
-          ref={contentRef}
-          className="w-full border-0 resize-none"
-          onchange={handleContentChange}
-        />
+        <textarea ref={contentRef} className="w-full border-0 resize-none" />
       </DialogBody>
+      {(title !== clickedItem?.item.title ||
+        content !== clickedItem?.item.content) && (
+        <DialogFooter>
+          <span></span>
+          <Button variant="primary" onclick={saveChanges}>
+            Save changes
+          </Button>
+        </DialogFooter>
+      )}
     </>
   )
 }

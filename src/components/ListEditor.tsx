@@ -8,6 +8,8 @@ import { useGlobal } from "../state/global"
 import { Modal } from "./dialog/Modal"
 import { MoreIcon } from "./icons/MoreIcon"
 import { ContextMenu } from "./ContextMenu"
+import { DialogFooter } from "./dialog/DialogFooter"
+import { Button } from "./atoms/Button"
 
 export function ListEditorModal() {
   const { clickedList, setClickedList } = useGlobal()
@@ -47,7 +49,7 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
     }
   }, [])
 
-  async function handleTitleChange() {
+  async function saveChanges() {
     if (!clickedList) return
     const list = board?.lists.find((l) => l.id === clickedList.id)
     if (!list) throw new Error("no list, wah wah")
@@ -78,7 +80,6 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
           ref={titleRef}
           className="bg-transparent w-full border-0"
           onfocus={(e) => (e.target as HTMLInputElement)?.select()}
-          onchange={handleTitleChange}
         />
         <div className="flex justify-center items-center relative">
           <button
@@ -96,7 +97,14 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
           />
         </div>
       </DialogHeader>
-      <DialogBody></DialogBody>
+      {title !== clickedList?.list.title && (
+        <DialogFooter>
+          <span></span>
+          <Button variant="primary" onclick={saveChanges}>
+            Save changes
+          </Button>
+        </DialogFooter>
+      )}
     </>
   )
 }

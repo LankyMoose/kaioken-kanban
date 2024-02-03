@@ -84,6 +84,8 @@ export function useGlobal() {
 
   return {
     ...useContext(GlobalCtx),
+    setRootElement: (payload: HTMLDivElement) =>
+      dispatch({ type: "SET_ROOT_EL", payload }),
     setMainDrawerOpen,
     updateMousePos: (payload: Vector2) =>
       dispatch({ type: "UPDATE_MOUSE_POS", payload }),
@@ -111,12 +113,16 @@ type GlobalDispatchAction =
   | { type: "SET_CLICKED_LIST"; payload: ClickedList | null }
   | { type: "SET_LIST_DRAG_TARGET"; payload: ListDragTarget | null }
   | { type: "SET_BOARDS"; payload: Board[] }
+  | { type: "SET_ROOT_EL"; payload: HTMLDivElement }
 
 export function globalStateReducer(
   state: GlobalState,
   action: GlobalDispatchAction
 ): GlobalState {
   switch (action.type) {
+    case "SET_ROOT_EL": {
+      return { ...state, rootElement: action.payload }
+    }
     case "SET_MAIN_DRAWER_OPEN": {
       return { ...state, mainDrawerOpen: action.payload }
     }
@@ -175,17 +181,7 @@ export function globalStateReducer(
 
 export const defaultGlobalState: GlobalState = {
   mainDrawerOpen: false,
-  drag: {
-    start: {
-      x: 0,
-      y: 0,
-    },
-    current: {
-      x: 0,
-      y: 0,
-    },
-  },
-  rootElement: document.getElementById("app")!,
+  rootElement: null,
   mousePos: {
     x: 0,
     y: 0,

@@ -55,9 +55,11 @@ export function Board() {
     } else if (clickedList && clickedList.dragging) {
       handleListDrag(e, clickedList)
     }
-    if (!dragging) return
+    if (!dragging || !rootElement) return
     rootElement.scrollLeft -= e.movementX
     rootElement.scrollTop -= e.movementY
+    console.log(rootElement.scrollLeft, rootElement.scrollTop)
+    // console.log(e.movementY)
   }
 
   return (

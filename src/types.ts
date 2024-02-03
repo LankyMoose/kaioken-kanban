@@ -5,11 +5,7 @@ export type Vector2 = {
 
 export interface GlobalState {
   mainDrawerOpen: boolean
-  drag: {
-    start: Vector2
-    current: Vector2
-  }
-  rootElement: HTMLElement
+  rootElement: HTMLElement | null
   mousePos: Vector2
   clickedItem: ClickedItem | null
   itemDragTarget: ItemDragTarget | null

@@ -1,4 +1,4 @@
-import { Portal } from "kaioken"
+import { Portal, useEffect, useRef } from "kaioken"
 import { BoardProvider } from "./state/BoardProvider"
 import { GlobalProvider } from "./state/GlobalProvider"
 import { Board } from "./components/Board"
@@ -15,10 +15,40 @@ export function App() {
   return (
     <GlobalProvider>
       <BoardProvider>
-        <Nav />
         <Main />
       </BoardProvider>
     </GlobalProvider>
+  )
+}
+
+function Main() {
+  const rootElementRef = useRef<HTMLDivElement>(null)
+  const { updateMousePos, setRootElement, clickedItem, clickedList } =
+    useGlobal()
+
+  useEffect(() => {
+    if (!rootElementRef.current) return
+    setRootElement(rootElementRef.current)
+  }, [rootElementRef.current])
+
+  function handleMouseMove(e: MouseEvent) {
+    updateMousePos({
+      x: e.clientX,
+      y: e.clientY,
+    })
+  }
+  return (
+    <main ref={rootElementRef} onmousemove={handleMouseMove}>
+      <Nav />
+      <Board />
+      <Portal container={document.getElementById("portal")!}>
+        {clickedItem?.dragging && <ListItemClone item={clickedItem} />}
+        {clickedList?.dragging && <ListClone list={clickedList} />}
+        <ItemEditorModal />
+        <ListEditorModal />
+        <MainDrawer />
+      </Portal>
+    </main>
   )
 }
 
@@ -33,28 +63,5 @@ function Nav() {
         <MoreIcon />
       </button>
     </nav>
-  )
-}
-
-function Main() {
-  const { updateMousePos, clickedItem, clickedList } = useGlobal()
-
-  function handleMouseMove(e: MouseEvent) {
-    updateMousePos({
-      x: e.clientX,
-      y: e.clientY,
-    })
-  }
-  return (
-    <main onmousemove={handleMouseMove}>
-      <Board />
-      <Portal container={document.getElementById("portal")!}>
-        {clickedItem?.dragging && <ListItemClone item={clickedItem} />}
-        {clickedList?.dragging && <ListClone list={clickedList} />}
-        <ItemEditorModal />
-        <ListEditorModal />
-        <MainDrawer />
-      </Portal>
-    </main>
   )
 }

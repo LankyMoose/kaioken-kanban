@@ -135,6 +135,7 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
     }
     if (clickedList?.id !== list.id) return ""
     if (clickedList.dialogOpen) return ""
+    if (!rootElement) return ""
 
     // initial click state
     const dropArea = document.querySelector("#board .inner")!

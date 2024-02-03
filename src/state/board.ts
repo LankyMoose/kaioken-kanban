@@ -54,6 +54,29 @@ export function useBoard() {
     updateBoards(boards.map((b) => (b.id === res.id ? newBoard : b)))
   }
 
+  const handleBoardRemoved = async (board: Board) => {
+    const newBoards = boards.filter((b) => b.id !== board.id)
+    let newBoard = newBoards.at(board.order - 1)
+
+    if (newBoards.length) {
+      if (!newBoard) newBoard = newBoards[0]
+    } else {
+      newBoard = await db.addBoard()
+      newBoards.push(newBoard)
+    }
+
+    updateBoards(newBoards)
+    selectBoard(newBoard)
+  }
+  const deleteBoard = async (board: Board) => {
+    await db.deleteBoard(board)
+    await handleBoardRemoved(board)
+  }
+  const archiveBoard = async (board: Board) => {
+    await db.archiveBoard(board)
+    await handleBoardRemoved(board)
+  }
+
   const addList = async () => {
     const board = getBoardOrDie()
     const maxListOrder = Math.max(...board.lists.map((l) => l.order), -1)
@@ -284,6 +307,8 @@ export function useBoard() {
     board: selectedBoard,
     updateSelectedBoard,
     selectBoard,
+    deleteBoard,
+    archiveBoard,
 
     addList,
     removeList,

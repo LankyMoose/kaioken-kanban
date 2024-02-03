@@ -6,18 +6,56 @@ import { Button } from "./atoms/Button"
 import { Input } from "./atoms/Input"
 import { Spinner } from "./atoms/Spinner"
 import { DialogHeader } from "./dialog/DialogHeader"
+import { useGlobal } from "../state/global"
+import { ContextMenu } from "./ContextMenu"
+import { MoreIcon } from "./icons/MoreIcon"
 
 export function BoardEditor() {
-  const { board, updateSelectedBoard } = useBoard()
+  const { setMainDrawerOpen } = useGlobal()
+  const { board, updateSelectedBoard, deleteBoard, archiveBoard } = useBoard()
   const [titleRef, title] = useModel(board?.title || "(New Board)")
+  const [ctxMenuOpen, setCtxMenuOpen] = useState(false)
 
   function handleSubmit() {
     updateSelectedBoard({ ...board, title })
   }
 
+  async function handleDeleteClick() {
+    if (!board) return
+    if (!confirm("Are you sure? This can't be undone!")) return
+    await deleteBoard(board)
+    setMainDrawerOpen(false)
+  }
+
+  async function handleArchiveClick() {
+    if (!board) return
+    await archiveBoard(board)
+    setMainDrawerOpen(false)
+  }
+
   return (
     <>
-      <DialogHeader>Board Details</DialogHeader>
+      <DialogHeader>
+        Board Details
+        <div className="relative">
+          <button onclick={() => setCtxMenuOpen((prev) => !prev)}>
+            <MoreIcon />
+          </button>
+          <ContextMenu
+            items={[
+              {
+                text: "Archive",
+                onclick: handleArchiveClick,
+              },
+              {
+                text: "Delete",
+                onclick: handleDeleteClick,
+              },
+            ]}
+            open={ctxMenuOpen}
+          />
+        </div>
+      </DialogHeader>
       <div className="flex gap-2">
         <Input
           className="bg-opacity-15 bg-black w-full border-0"

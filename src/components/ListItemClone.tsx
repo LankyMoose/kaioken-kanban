@@ -1,9 +1,9 @@
 import { useRef, useEffect } from "kaioken"
-import { useGlobal } from "../state/global"
 import { ClickedItem } from "../types"
+import { useMouse } from "../state/mouse"
 
 export function ListItemClone({ item }: { item: ClickedItem }) {
-  const { mousePos } = useGlobal()
+  const { current: mousePos } = useMouse()
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {

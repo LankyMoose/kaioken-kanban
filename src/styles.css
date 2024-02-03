@@ -132,7 +132,7 @@ nav {
   left: 0;
   top: 0;
   z-index: 1;
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgb(23 17 40);
 }
 
 textarea {

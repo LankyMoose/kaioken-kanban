@@ -6,7 +6,6 @@ export type Vector2 = {
 export interface GlobalState {
   mainDrawerOpen: boolean
   rootElement: HTMLElement | null
-  mousePos: Vector2
   clickedItem: ClickedItem | null
   itemDragTarget: ItemDragTarget | null
   clickedList: ClickedList | null

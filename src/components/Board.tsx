@@ -1,10 +1,18 @@
 import "./Board.css"
-import { useRef } from "kaioken"
+import { Portal, useEffect, useRef, useState } from "kaioken"
 import { ItemList } from "./ItemList"
-import type { Board } from "../types"
+import type { Board, Vector2 } from "../types"
 import { useGlobal } from "../state/global"
 import { useBoard } from "../state/board"
 import { Button } from "./atoms/Button"
+import { ItemEditorModal } from "./ItemEditor"
+import { ListEditorModal } from "./ListEditor"
+import { MainDrawer } from "./MainDrawer"
+import { ListItemClone } from "./ListItemClone"
+import { ListClone } from "./ListClone"
+import { MouseCtx } from "../state/mouse"
+
+const autoScrollSpeed = 10
 
 export function Board() {
   const {
@@ -21,8 +29,57 @@ export function Board() {
     setListDragTarget,
     handleListDrag,
   } = useGlobal()
+  const animFrameRef = useRef(-1)
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const [autoScrollVec, setAutoScrollVec] = useState<Vector2>({ x: 0, y: 0 })
   const { board, handleItemDrop, handleListDrop } = useBoard()
   const boardInnerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const v = getAutoScrollVec()
+    if (v.x !== autoScrollVec.x || v.y !== autoScrollVec.y) {
+      setAutoScrollVec(v)
+    }
+  }, [mousePos, clickedItem, clickedList])
+
+  useEffect(() => {
+    animFrameRef.current = requestAnimationFrame(applyAutoScroll)
+    return () => {
+      if (animFrameRef.current !== -1) {
+        cancelAnimationFrame(animFrameRef.current!)
+        animFrameRef.current = -1
+      }
+    }
+  }, [rootElement, autoScrollVec])
+
+  function applyAutoScroll() {
+    if (rootElement) {
+      if (autoScrollVec.x !== 0)
+        rootElement.scrollLeft += autoScrollVec.x * autoScrollSpeed
+      if (autoScrollVec.y !== 0)
+        rootElement.scrollTop += autoScrollVec.y * autoScrollSpeed
+    }
+
+    animFrameRef.current = requestAnimationFrame(applyAutoScroll)
+  }
+
+  function getAutoScrollVec() {
+    const scrollPadding = 100
+    const res: Vector2 = { x: 0, y: 0 }
+    if (!clickedItem && !clickedList) return res
+
+    if (mousePos.x + scrollPadding > window.innerWidth) {
+      res.x++
+    } else if (mousePos.x - scrollPadding < 0) {
+      res.x--
+    }
+    if (mousePos.y + scrollPadding > window.innerHeight) {
+      res.y++
+    } else if (mousePos.y - scrollPadding < 0) {
+      res.y--
+    }
+    return res
+  }
 
   function handleMouseDown(e: MouseEvent) {
     if (e.buttons !== 1) return
@@ -42,11 +99,17 @@ export function Board() {
     clickedList && setClickedList(null)
     listDragTarget && setListDragTarget(null)
 
+    // setAutoScrollVec({ x: 0, y: 0 })
+
     // board drag
     dragging && setDragging(false)
   }
 
   function handleMouseMove(e: MouseEvent) {
+    setMousePos({
+      x: e.clientX,
+      y: e.clientY,
+    })
     if (clickedList && !clickedList.dragging) {
       setClickedList({
         ...clickedList,
@@ -58,44 +121,51 @@ export function Board() {
     if (!dragging || !rootElement) return
     rootElement.scrollLeft -= e.movementX
     rootElement.scrollTop -= e.movementY
-    console.log(rootElement.scrollLeft, rootElement.scrollTop)
-    // console.log(e.movementY)
   }
 
   return (
-    <div
-      id="board"
-      onmousedown={handleMouseDown}
-      onmouseup={handleMouseUp}
-      onmousemove={handleMouseMove}
-      style={`${
-        clickedItem
-          ? "--selected-item-height:" +
-            (clickedItem.domRect.height || 0) +
-            "px;"
-          : ""
-      }${
-        clickedList
-          ? "--selected-list-width:" + clickedList.domRect.width + "px;"
-          : ""
-      }`}
-    >
+    <MouseCtx.Provider value={{ current: mousePos, setValue: setMousePos }}>
       <div
-        className={`inner ${
-          dragging || clickedItem?.dragging || clickedList?.dragging
-            ? "dragging"
+        id="board"
+        onmousedown={handleMouseDown}
+        onmouseup={handleMouseUp}
+        onmousemove={handleMouseMove}
+        style={`${
+          clickedItem
+            ? "--selected-item-height:" +
+              (clickedItem.domRect.height || 0) +
+              "px;"
+            : ""
+        }${
+          clickedList
+            ? "--selected-list-width:" + clickedList.domRect.width + "px;"
             : ""
         }`}
-        ref={boardInnerRef}
       >
-        {board?.lists &&
-          board.lists
-            .filter((list) => !list.archived)
-            .sort((a, b) => a.order - b.order)
-            .map((list) => <ItemList list={list} />)}
-        <AddList />
+        <div
+          className={`inner ${
+            dragging || clickedItem?.dragging || clickedList?.dragging
+              ? "dragging"
+              : ""
+          }`}
+          ref={boardInnerRef}
+        >
+          {board?.lists &&
+            board.lists
+              .filter((list) => !list.archived)
+              .sort((a, b) => a.order - b.order)
+              .map((list) => <ItemList list={list} />)}
+          <AddList />
+        </div>
+        <Portal container={document.getElementById("portal")!}>
+          {clickedItem?.dragging && <ListItemClone item={clickedItem} />}
+          {clickedList?.dragging && <ListClone list={clickedList} />}
+          <ItemEditorModal />
+          <ListEditorModal />
+          <MainDrawer />
+        </Portal>
       </div>
-    </div>
+    </MouseCtx.Provider>
   )
 }
 

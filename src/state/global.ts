@@ -2,7 +2,6 @@ import { createContext, useContext } from "kaioken"
 import {
   ClickedItem,
   ItemDragTarget,
-  Vector2,
   GlobalState,
   List,
   ClickedList,
@@ -87,8 +86,6 @@ export function useGlobal() {
     setRootElement: (payload: HTMLDivElement) =>
       dispatch({ type: "SET_ROOT_EL", payload }),
     setMainDrawerOpen,
-    updateMousePos: (payload: Vector2) =>
-      dispatch({ type: "UPDATE_MOUSE_POS", payload }),
     setDragging: (dragging: boolean) =>
       dispatch({ type: "SET_DRAGGING", payload: { dragging } }),
     setClickedItem: (payload: ClickedItem | null) =>
@@ -106,7 +103,6 @@ export function useGlobal() {
 
 type GlobalDispatchAction =
   | { type: "SET_MAIN_DRAWER_OPEN"; payload: boolean }
-  | { type: "UPDATE_MOUSE_POS"; payload: Vector2 }
   | { type: "SET_DRAGGING"; payload: { dragging: boolean } }
   | { type: "SET_CLICKED_ITEM"; payload: ClickedItem | null }
   | { type: "SET_ITEM_DRAG_TARGET"; payload: ItemDragTarget | null }
@@ -126,16 +122,7 @@ export function globalStateReducer(
     case "SET_MAIN_DRAWER_OPEN": {
       return { ...state, mainDrawerOpen: action.payload }
     }
-    case "UPDATE_MOUSE_POS": {
-      const { x, y } = action.payload
-      return {
-        ...state,
-        mousePos: {
-          x,
-          y,
-        },
-      }
-    }
+
     case "SET_DRAGGING": {
       const { dragging } = action.payload
       return {
@@ -182,10 +169,6 @@ export function globalStateReducer(
 export const defaultGlobalState: GlobalState = {
   mainDrawerOpen: false,
   rootElement: null,
-  mousePos: {
-    x: 0,
-    y: 0,
-  },
   dragging: false,
   clickedItem: null,
   itemDragTarget: null,

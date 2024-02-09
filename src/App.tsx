@@ -11,8 +11,42 @@ export function App() {
     <GlobalProvider>
       <BoardProvider>
         <Main />
+        <Footer />
       </BoardProvider>
     </GlobalProvider>
+  )
+}
+
+function Footer() {
+  return (
+    <footer className="fixed bottom-0 w-full px-3 py-2">
+      <div className="text-right">
+        <a
+          href="https://github.com/robby6strings/kaioken-kanban"
+          target="_blank"
+          style="color:crimson"
+          className="inline-flex gap-1"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            {/** @ts-ignore */}
+            <rect width="18" height="18" x="3" y="3" rx="2" />
+            <path d="M8 7v7" />
+            <path d="M12 7v4" />
+            <path d="M16 7v9" />
+          </svg>
+        </a>
+      </div>
+    </footer>
   )
 }
 

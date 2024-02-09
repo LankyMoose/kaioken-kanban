@@ -77,6 +77,25 @@ export function useBoard() {
     await handleBoardRemoved(board)
   }
 
+  const handleListRemoved = async (id: number) => {
+    const board = getBoardOrDie()
+    const newLists = await Promise.all(
+      board.lists
+        .filter((l) => l.id !== id)
+        .map(async (list, i) => {
+          if (list.order !== i) {
+            list.order = i
+            const { items, ...rest } = list
+            await db.updateList(rest)
+          }
+          return list
+        })
+    )
+    dispatch({
+      type: "UPDATE_LISTS",
+      payload: newLists,
+    })
+  }
   const addList = async () => {
     const board = getBoardOrDie()
     const maxListOrder = Math.max(...board.lists.map((l) => l.order), -1)
@@ -95,24 +114,7 @@ export function useBoard() {
     if (!list) throw new Error("dafooq, no list")
     const { items, ...rest } = list
     await db.archiveList(rest)
-
-    const newLists = await Promise.all(
-      board.lists
-        .filter((l) => l.id !== id)
-        .map(async (list, i) => {
-          if (list.order !== i) {
-            list.order = i
-            const { items, ...rest } = list
-            await db.updateList(rest)
-          }
-          return list
-        })
-    )
-
-    dispatch({
-      type: "UPDATE_LISTS",
-      payload: newLists,
-    })
+    await handleListRemoved(id)
   }
   const removeList = async (id: number) => {
     const board = getBoardOrDie()
@@ -120,7 +122,7 @@ export function useBoard() {
     if (!list) throw new Error("no list, wah wah")
     const { items, ...rest } = list
     await db.deleteList(rest)
-    dispatch({ type: "REMOVE_LIST", payload: { id } })
+    await handleListRemoved(id)
   }
   const updateList = async (payload: SelectedBoardList) => {
     const { items, ...rest } = payload
@@ -335,7 +337,6 @@ type BoardDispatchAction =
       payload: Partial<SelectedBoardList> & { id: number }
     }
   | { type: "UPDATE_LISTS"; payload: SelectedBoardList[] }
-  | { type: "REMOVE_LIST"; payload: { id: number } }
   | { type: "UPDATE_ITEM"; payload: ListItem }
   | { type: "SET_DROP_AREA"; payload: { element: HTMLElement | null } }
 
@@ -377,13 +378,6 @@ export function boardStateReducer(
       return {
         ...state,
         lists: action.payload,
-      }
-    }
-    case "REMOVE_LIST": {
-      const { id } = action.payload
-      return {
-        ...state,
-        lists: state.lists.filter((l) => l.id !== id),
       }
     }
     case "UPDATE_ITEM": {

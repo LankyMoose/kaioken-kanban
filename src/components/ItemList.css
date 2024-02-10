@@ -21,7 +21,6 @@
   overflow: hidden;
   height: fit-content;
   cursor: initial;
-  /* background: rgba(255, 255, 255, .035); */
   border-radius: var(--radius);
 }
 
@@ -41,8 +40,6 @@
   padding-block: var(--list-header-padding-y);
   gap: .5rem;
   align-items: center;
-  /* box-shadow: 0 0 5px rgba(0, 0, 0, .1);
-  background-color: rgba(255, 255, 255, .025); */
   cursor: grab;
   border-bottom: 2px solid #402579;
 }
@@ -157,5 +154,6 @@
 
 #list-clone .list {
   margin: 0;
-  box-shadow: 4px 4px 10px -1px rgba(0, 0, 0, .3);
+  background-color: rgba(255, 255, 255, .015);
+  box-shadow: 4px 4px 10px -1px rgba(0, 0, 0, .15);
 }

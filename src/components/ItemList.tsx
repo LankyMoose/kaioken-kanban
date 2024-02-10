@@ -65,8 +65,8 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
     const mouseOffset =
       e instanceof MouseEvent
         ? {
-            x: e.clientX - rect.x - 12,
-            y: e.clientY - rect.y - 12,
+            x: e.clientX - rect.x - 4,
+            y: e.clientY - rect.y - 8,
           }
         : {
             x: 0,

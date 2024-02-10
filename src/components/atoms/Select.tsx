@@ -8,27 +8,27 @@ type SelectOption =
   | string
 
 interface SelectProps {
-  value?: Key
+  value?: number
   options: SelectOption[]
-  onChange?: (value: string) => void
+  onchange?: (value: string) => void
 }
 
 export function Select(props: SelectProps) {
   function handleChange(e: Event) {
     const target = e.target as HTMLSelectElement
-    props.onChange?.(target.value)
+    props.onchange?.(target.value)
   }
+
   return (
-    // @ts-ignore - value not yet implemented as valid <select/> prop
-    <select value={props.value} className="p-2" onchange={handleChange}>
-      {props.options.map((item) => (
-        <option
-          value={typeof item === "object" ? String(item.key) : item}
-          selected={props.value === item}
-        >
-          {typeof item === "object" ? item.text : item}
-        </option>
-      ))}
+    <select className="p-2" onchange={handleChange}>
+      {props.options.map((item) => {
+        const key = typeof item === "object" ? String(item.key) : item
+        return (
+          <option value={key} selected={String(props.value) === key}>
+            {typeof item === "object" ? item.text : item}
+          </option>
+        )
+      })}
     </select>
   )
 }

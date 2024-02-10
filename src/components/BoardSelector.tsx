@@ -25,6 +25,7 @@ export function BoardSelector() {
   return (
     <Select
       value={board?.id}
+      id="board-selector"
       options={[
         ...boards.map((board) => ({
           key: board.id,

@@ -156,7 +156,7 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
       className={getListClassName()}
       data-id={list.id}
     >
-      <div className="list-header" ref={headerRef} onmousedown={selectList}>
+      <div className="list-header" ref={headerRef} onpointerdown={selectList}>
         <h3 className="list-title text-base font-bold">
           {list.title || `(Unnamed List)`}
         </h3>
@@ -283,7 +283,7 @@ function Item({
       ref={ref}
       className={getClassName()}
       style={getStyle()}
-      onmousedown={selectItem}
+      onpointerdown={selectItem}
       onkeydown={selectItem}
       onclick={handleClick}
       data-id={item.id}

@@ -127,9 +127,9 @@ export function Board() {
     <MouseCtx.Provider value={{ current: mousePos, setValue: setMousePos }}>
       <div
         id="board"
-        onmousedown={handleMouseDown}
-        onmouseup={handleMouseUp}
-        onmousemove={handleMouseMove}
+        onpointerdown={handleMouseDown}
+        onpointerup={handleMouseUp}
+        onpointermove={handleMouseMove}
         style={`${
           clickedItem
             ? "--selected-item-height:" +

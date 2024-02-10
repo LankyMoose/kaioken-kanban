@@ -136,7 +136,7 @@ nav {
 }
 
 button[disabled] {
-  opacity: .75;
+  opacity: .5;
   filter: grayscale();
   cursor: not-allowed;
   transition: .3s;

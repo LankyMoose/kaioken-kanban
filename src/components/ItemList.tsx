@@ -91,6 +91,11 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
   function getListItemsClassName() {
     let className = `list-items`
 
+    const isOriginList = clickedItem?.listId === list.id
+    if (isOriginList) {
+      className += " origin"
+    }
+
     if (!clickedItem?.dragging) {
       if (
         clickedItem &&
@@ -102,13 +107,10 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
       }
       return className
     }
-    const isOriginList = clickedItem?.listId === list.id
+
     const empty =
       list.items.length === 0 || (isOriginList && list.items.length === 1)
 
-    if (isOriginList) {
-      className += " origin"
-    }
     if (empty) {
       className += " empty"
     }
@@ -181,7 +183,7 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
             ))}
         </div>
       </div>
-      <div className="flex py-2">
+      <div className="flex p-2">
         <Button
           variant="primary"
           className="flex-grow py-2 text-sm font-semibold"
@@ -265,7 +267,7 @@ function Item({
 
     const x = rect.x - dropAreaRect.x
     const y = rect.y - dropAreaRect.y
-    return `transform: translate(calc(${x}px), calc(${y}px))`
+    return `transform: translate(calc(${x}px - .5rem), ${y}px)`
   }
 
   function getClassName() {

@@ -2,8 +2,7 @@
 .add-list {
   display: flex;
   flex-direction: column;
-  width: 250px;
-  min-width: 250px;
+  width: 270px;
   transition: margin-left .15s ease;
 }
 
@@ -71,6 +70,7 @@
 
 
 .list-items-inner {
+  padding-inline: .5rem;
   margin-top: .5rem;
   --items-gap: .5rem;
   position: relative;
@@ -85,9 +85,8 @@
   padding-block: .5rem;
 }
 
-.list-items.empty.dragging .list-items-inner,
-#board .inner.dragging .list:hover .list-items.empty .list-items-inner {
-  min-height: var(--item-height);
+.list .list-items.empty .list-items-inner {
+  padding-bottom: calc(var(--selected-item-height) + var(--items-gap));
 }
 
 .list-items.dragging .list-items-inner {
@@ -110,7 +109,7 @@
   transition: none;
 }
 
-.list-items:not(.dragging) .list-items-inner {
+.list:hover .list-items:not(.dragging) .list-items-inner {
   transition: none;
 }
 
@@ -128,7 +127,7 @@
 
 .list-item.selected {
   position: absolute;
-  width: 100%;
+  width: calc(100% - 1rem);
   background: rgba(255, 255, 255, .035);
 }
 

@@ -9,6 +9,7 @@ import { MoreIcon } from "./icons/MoreIcon"
 import { ContextMenu } from "./ContextMenu"
 import { Button } from "./atoms/Button"
 import { DialogFooter } from "./dialog/DialogFooter"
+import { maxItemNameLength } from "../constants"
 
 export function ItemEditorModal() {
   const { clickedItem, setClickedItem } = useGlobal()
@@ -39,7 +40,7 @@ function ItemEditor() {
   const { setClickedItem, clickedItem } = useGlobal()
   const { updateItem, removeItem, archiveItem } = useBoard()
   const [titleRef, title] = useModel<HTMLInputElement, string>(
-    clickedItem?.item.title || "(New Item)"
+    clickedItem?.item.title || ""
   )
   const [contentRef, content] = useModel<HTMLTextAreaElement, string>(
     clickedItem?.item.content || ""
@@ -74,7 +75,9 @@ function ItemEditor() {
       <DialogHeader>
         <Input
           ref={titleRef}
-          className="bg-transparent w-full border-0"
+          maxLength={maxItemNameLength}
+          placeholder="(Unnamed Item)"
+          className="w-full border-0"
           onfocus={(e) => (e.target as HTMLInputElement)?.select()}
         />
         <div className="flex justify-center items-center relative">
@@ -94,18 +97,22 @@ function ItemEditor() {
         </div>
       </DialogHeader>
       <DialogBody>
-        <h3 className="text-sm font-semibold">Description</h3>
+        <label className="text-sm font-semibold">Description</label>
         <textarea ref={contentRef} className="w-full border-0 resize-none" />
       </DialogBody>
-      {(title !== clickedItem?.item.title ||
-        content !== clickedItem?.item.content) && (
-        <DialogFooter>
-          <span></span>
-          <Button variant="primary" onclick={saveChanges}>
-            Save changes
-          </Button>
-        </DialogFooter>
-      )}
+      <DialogFooter>
+        <span></span>
+        <Button
+          variant="primary"
+          onclick={saveChanges}
+          disabled={
+            title === clickedItem?.item.title &&
+            content === clickedItem?.item.content
+          }
+        >
+          Save changes
+        </Button>
+      </DialogFooter>
     </>
   )
 }

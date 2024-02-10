@@ -77,6 +77,20 @@ export function useBoard() {
     await handleBoardRemoved(board)
   }
 
+  const ensureCorrectListOrders = async () => {
+    const board = getBoardOrDie()
+    await Promise.all(
+      board.lists.map(async (list, i) => {
+        if (list.order !== i) {
+          list.order = i
+          const { items, ...rest } = list
+          await db.updateList(rest)
+        }
+        return list
+      })
+    )
+  }
+
   const handleListRemoved = async (id: number) => {
     const board = getBoardOrDie()
     const newLists = await Promise.all(
@@ -326,6 +340,8 @@ export function useBoard() {
 
     handleItemDrop,
     handleListDrop,
+
+    ensureCorrectListOrders,
   }
 }
 

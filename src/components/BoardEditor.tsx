@@ -9,11 +9,18 @@ import { DialogHeader } from "./dialog/DialogHeader"
 import { useGlobal } from "../state/global"
 import { ContextMenu } from "./ContextMenu"
 import { MoreIcon } from "./icons/MoreIcon"
+import { maxBoardNameLength } from "../constants"
 
 export function BoardEditor() {
   const { setMainDrawerOpen } = useGlobal()
-  const { board, updateSelectedBoard, deleteBoard, archiveBoard } = useBoard()
-  const [titleRef, title] = useModel(board?.title || "(New Board)")
+  const {
+    board,
+    updateSelectedBoard,
+    deleteBoard,
+    archiveBoard,
+    ensureCorrectListOrders,
+  } = useBoard()
+  const [titleRef, title] = useModel(board?.title || "")
   const [ctxMenuOpen, setCtxMenuOpen] = useState(false)
 
   function handleSubmit() {
@@ -60,14 +67,23 @@ export function BoardEditor() {
         <Input
           className="bg-opacity-15 bg-black w-full border-0"
           ref={titleRef}
+          maxLength={maxBoardNameLength}
+          placeholder="(Unnamed Board)"
         />
-        {title !== board?.title && (
-          <Button variant="primary" onclick={handleSubmit}>
-            Save
-          </Button>
-        )}
+        <Button
+          variant="primary"
+          onclick={handleSubmit}
+          disabled={title === board?.title}
+        >
+          Save
+        </Button>
       </div>
       <br />
+      {false && (
+        <button onclick={() => ensureCorrectListOrders()}>
+          fix list orders
+        </button>
+      )}
       <ArchivedLists board={board} />
       <br />
       <ArchivedItems board={board} />

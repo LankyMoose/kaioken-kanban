@@ -156,7 +156,7 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
     >
       <div className="list-header" ref={headerRef} onmousedown={selectList}>
         <h3 className="list-title text-base font-bold">
-          {list.title || "(New List)"}
+          {list.title || `(Unnamed List)`}
         </h3>
         <button
           className="p-2"
@@ -269,7 +269,7 @@ function Item({
   }
 
   function getClassName() {
-    let className = "list-item"
+    let className = "list-item text-sm"
     if (clickedItem?.id === item.id && !clickedItem.dialogOpen) {
       className += " selected"
     }
@@ -286,7 +286,7 @@ function Item({
       onclick={handleClick}
       data-id={item.id}
     >
-      {item.title || "(New Item)"}
+      {item.title || "(Unnamed Item)"}
     </button>
   )
 }

@@ -9,6 +9,7 @@ import { MoreIcon } from "./icons/MoreIcon"
 import { ContextMenu } from "./ContextMenu"
 import { DialogFooter } from "./dialog/DialogFooter"
 import { Button } from "./atoms/Button"
+import { maxListNameLength } from "../constants"
 
 export function ListEditorModal() {
   const { clickedList, setClickedList } = useGlobal()
@@ -37,7 +38,7 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
   const { setClickedList } = useGlobal()
   const { updateList, removeList, archiveList, board } = useBoard()
   const [titleRef, title] = useModel<HTMLInputElement, string>(
-    clickedList?.list.title || "(New List)"
+    clickedList?.list.title || ""
   )
 
   const [ctxOpen, setCtxOpen] = useState(false)
@@ -74,10 +75,12 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
 
   return (
     <>
-      <DialogHeader className="flex">
+      <DialogHeader className="flex pb-0 mb-0 border-b-0">
         <Input
           ref={titleRef}
+          maxLength={maxListNameLength}
           className="bg-transparent w-full border-0"
+          placeholder="(Unnamed List)"
           onfocus={(e) => (e.target as HTMLInputElement)?.select()}
         />
         <div className="flex justify-center items-center relative">
@@ -96,14 +99,16 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
           />
         </div>
       </DialogHeader>
-      {title !== clickedList?.list.title && (
-        <DialogFooter>
-          <span></span>
-          <Button variant="primary" onclick={saveChanges}>
-            Save changes
-          </Button>
-        </DialogFooter>
-      )}
+      <DialogFooter className="mt-2">
+        <span></span>
+        <Button
+          variant="primary"
+          onclick={saveChanges}
+          disabled={title === clickedList?.list.title}
+        >
+          Save changes
+        </Button>
+      </DialogFooter>
     </>
   )
 }

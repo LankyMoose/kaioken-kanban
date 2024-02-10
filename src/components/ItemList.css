@@ -123,6 +123,7 @@
   transition: margin-top .15s ease;
   background: rgba(255, 255, 255, .025);
   min-height: var(--item-height);
+  text-align: left;
 }
 
 .list-item.selected {

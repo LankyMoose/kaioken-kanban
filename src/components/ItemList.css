@@ -46,6 +46,11 @@
 
 .list-header button {
   cursor: pointer;
+  transition: .15s;
+}
+
+.list-header button:hover {
+  background-color: rgba(255, 255, 255, .05);
 }
 
 .list-title {

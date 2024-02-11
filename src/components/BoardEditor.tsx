@@ -1,4 +1,4 @@
-import { useModel, useState, useEffect } from "kaioken"
+import { useModel, useState, useEffect, ElementProps } from "kaioken"
 import { loadItems, loadLists } from "../idb"
 import { useBoard } from "../state/board"
 import { SelectedBoard, List, ListItem } from "../types"
@@ -121,9 +121,7 @@ function ArchivedItems({ board }: { board: SelectedBoard | null }) {
 
   return (
     <div className="p-3 bg-black bg-opacity-15">
-      <h4 className="text-sm mb-2 pb-1 border-b border-white border-opacity-10">
-        Archived Items
-      </h4>
+      <ListTitle>Archived Items</ListTitle>
       {loading ? (
         <div className="flex justify-center">
           <Spinner />
@@ -134,21 +132,21 @@ function ArchivedItems({ board }: { board: SelectedBoard | null }) {
         </span>
       ) : (
         items.map((item) => (
-          <div className="flex gap-2 px-2 py-1 justify-between bg-white bg-opacity-5 border-b border-black border-opacity-30 last:border-b-0">
-            <span>{item.title}</span>
+          <ListItemContainer>
+            <span className="text-sm">{item.title}</span>
             <div className="flex flex-col items-end">
-              <span className="text-xs align-super opacity-75">
+              <span className="text-xs align-super text-gray-400 text-nowrap mb-2">
                 {item.list || "(Unnamed Item)"}
               </span>
               <Button
                 variant="link"
-                className="p-0"
+                className="px-0 py-0"
                 onclick={() => handleItemRestore(item)}
               >
                 Restore
               </Button>
             </div>
-          </div>
+          </ListItemContainer>
         ))
       )}
     </div>
@@ -176,31 +174,45 @@ function ArchivedLists({ board }: { board: SelectedBoard | null }) {
 
   return (
     <div className="p-3 bg-black bg-opacity-15">
-      <h4 className="text-sm mb-2 pb-1 border-b border-white border-opacity-10">
-        Archived Lists
-      </h4>
+      <ListTitle>Archived Lists</ListTitle>
       {loading ? (
         <div className="flex justify-center">
           <Spinner />
         </div>
       ) : lists.length === 0 ? (
-        <span className="text-sm text-gray-400">
+        <span>
           <i>No archived lists</i>
         </span>
       ) : (
         lists.map((list) => (
-          <div className="flex gap-2 px-2 py-1  items-center justify-between bg-white bg-opacity-5">
+          <ListItemContainer>
             <span className="text-sm">{list.title || "(Unnamed List)"}</span>
             <Button
               variant="link"
-              className="text-sm py-1"
+              className="text-sm py-0 px-0"
               onclick={() => handleSendToBoard(list)}
             >
-              Send to board
+              Restore
             </Button>
-          </div>
+          </ListItemContainer>
         ))
       )}
+    </div>
+  )
+}
+
+function ListTitle({ children }: ElementProps<"div">) {
+  return (
+    <h4 className="text-sm mb-2 pb-1 border-b border-white text-gray-400 border-opacity-10">
+      {children}
+    </h4>
+  )
+}
+
+function ListItemContainer({ children }: ElementProps<"div">) {
+  return (
+    <div className="flex gap-4 p-2 justify-between bg-white bg-opacity-5 border-b border-black border-opacity-30 last:border-b-0">
+      {children}
     </div>
   )
 }

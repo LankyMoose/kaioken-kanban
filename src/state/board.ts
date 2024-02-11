@@ -18,7 +18,7 @@ export const BoardDispatchContext =
   createContext<(action: BoardDispatchAction) => void>(null)
 
 export function useBoard() {
-  const { boards, updateBoards } = useGlobal()
+  const { boards, updateBoards, setClickedItem, setClickedList } = useGlobal()
   const dispatch = useContext(BoardDispatchContext)
   const selectedBoard = useContext(BoardContext)
 
@@ -120,6 +120,13 @@ export function useBoard() {
         ...newList,
         items: [],
       },
+    })
+    setClickedList({
+      list: newList,
+      dialogOpen: true,
+      dragging: false,
+      id: newList.id,
+      index: newList.order,
     })
   }
   const archiveList = async (id: number) => {
@@ -264,6 +271,14 @@ export function useBoard() {
         ...list,
         items: [...list.items, item],
       },
+    })
+    setClickedItem({
+      item,
+      id: item.id,
+      dialogOpen: true,
+      dragging: false,
+      listId,
+      index: item.order,
     })
   }
   const updateItem = async (payload: ListItem) => {

@@ -16,7 +16,7 @@ export function ItemEditorModal() {
   if (!clickedItem) return null
 
   const handleClose = () => {
-    const tgt = clickedItem.sender.target
+    const tgt = clickedItem.sender?.target
     if (tgt && tgt instanceof HTMLElement) tgt.focus()
     setClickedItem(null)
   }

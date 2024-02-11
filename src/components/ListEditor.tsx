@@ -22,7 +22,7 @@ export function ListEditorModal() {
         <Modal
           state={state}
           close={() => {
-            const tgt = clickedList.sender.target
+            const tgt = clickedList.sender?.target
             if (tgt && tgt instanceof HTMLElement) tgt.focus()
             setClickedList(null)
           }}

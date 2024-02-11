@@ -44,31 +44,31 @@ export interface ListDragTarget {
 }
 
 export interface ClickedItem {
-  sender: Event
+  sender?: Event
   item: ListItem
   id: number
   index: number
   dragging: boolean
   dialogOpen: boolean
   listId: number
-  element: HTMLElement
-  domRect: DOMRect
-  mouseOffset: {
+  element?: HTMLElement
+  domRect?: DOMRect
+  mouseOffset?: {
     x: number
     y: number
   }
 }
 
 export interface ClickedList {
-  sender: Event
+  sender?: Event
   list: List
   id: number
   index: number
   dragging: boolean
   dialogOpen: boolean
-  element: HTMLElement
-  domRect: DOMRect
-  mouseOffset: {
+  element?: HTMLElement
+  domRect?: DOMRect
+  mouseOffset?: {
     x: number
     y: number
   }

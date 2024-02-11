@@ -133,12 +133,12 @@ export function Board() {
         style={`${
           clickedItem
             ? "--selected-item-height:" +
-              (clickedItem.domRect.height || 0) +
+              (clickedItem.domRect?.height || 0) +
               "px;"
             : ""
         }${
           clickedList
-            ? "--selected-list-width:" + clickedList.domRect.width + "px;"
+            ? "--selected-list-width:" + clickedList.domRect?.width + "px;"
             : ""
         }`}
       >

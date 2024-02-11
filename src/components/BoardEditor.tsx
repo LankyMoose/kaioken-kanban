@@ -1,5 +1,5 @@
 import { useModel, useState, useEffect, ElementProps } from "kaioken"
-import { loadItems, loadLists } from "../idb"
+import { deleteItem, deleteList, loadItems, loadLists } from "../idb"
 import { useBoard } from "../state/board"
 import { SelectedBoard, List, ListItem } from "../types"
 import { Button } from "./atoms/Button"
@@ -31,6 +31,13 @@ export function BoardEditor() {
     if (!board) return
     if (!confirm("Are you sure? This can't be undone!")) return
     await deleteBoard(board)
+    await Promise.all(
+      board.lists.map(async (l) => {
+        await Promise.all(l.items.map(deleteItem))
+        return deleteList(l)
+      })
+    )
+
     setMainDrawerOpen(false)
   }
 

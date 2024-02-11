@@ -138,11 +138,13 @@ export function useBoard() {
     await handleListRemoved(id)
   }
   const removeList = async (id: number) => {
+    if (!confirm("Are you sure? This can't be undone!")) return
     const board = getBoardOrDie()
     const list = board?.lists.find((l) => l.id === id)
     if (!list) throw new Error("no list, wah wah")
     const { items, ...rest } = list
     await db.deleteList(rest)
+    await Promise.all(items.map(db.deleteItem))
     await handleListRemoved(id)
   }
   const updateList = async (payload: SelectedBoardList) => {

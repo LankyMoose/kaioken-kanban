@@ -66,7 +66,7 @@ export function Board() {
   function getAutoScrollVec() {
     const scrollPadding = 100
     const res: Vector2 = { x: 0, y: 0 }
-    if (!clickedItem && !clickedList) return res
+    if (!clickedItem?.dragging && !clickedList?.dragging) return res
 
     if (mousePos.x + scrollPadding > window.innerWidth) {
       res.x++

@@ -1,4 +1,4 @@
-.context-menu {
+.action-menu {
   z-index: 99999;
   background-color: var(--primary);
   box-shadow: 0 0 10px 1px #0002;
@@ -10,14 +10,14 @@
   filter: grayscale(.85);
 }
 
-.context-menu-item {
+.action-menu-item {
   border-bottom: 2px solid #0002;
 }
 
-.context-menu-item button:hover {
+.action-menu-item button:hover {
   background-color: #fff1;
 }
 
-.context-menu-item:last-child {
+.action-menu-item:last-child {
   border-bottom: 0;
 }

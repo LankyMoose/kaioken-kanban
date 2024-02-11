@@ -7,7 +7,7 @@ import { Input } from "./atoms/Input"
 import { Spinner } from "./atoms/Spinner"
 import { DialogHeader } from "./dialog/DialogHeader"
 import { useGlobal } from "../state/global"
-import { ContextMenu } from "./ContextMenu"
+import { ActionMenu } from "./ActionMenu"
 import { MoreIcon } from "./icons/MoreIcon"
 import { maxBoardNameLength } from "../constants"
 
@@ -48,7 +48,7 @@ export function BoardEditor() {
           <button onclick={() => setCtxMenuOpen((prev) => !prev)}>
             <MoreIcon />
           </button>
-          <ContextMenu
+          <ActionMenu
             items={[
               {
                 text: "Archive",

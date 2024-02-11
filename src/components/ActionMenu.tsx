@@ -1,18 +1,18 @@
 import { Transition } from "kaioken"
-import "./ContextMenu.css"
 import { Button } from "./atoms/Button"
+import "./ActionMenu.css"
 
-type ContextMenuItem = {
+type ActionMenuItem = {
   text: string
   onclick: (e: Event) => void
 }
 
-interface ContextMenuProps {
-  items: ContextMenuItem[]
+interface ActionMenuProps {
+  items: ActionMenuItem[]
   open: boolean
 }
 
-export function ContextMenu({ open, items }: ContextMenuProps) {
+export function ActionMenu({ open, items }: ActionMenuProps) {
   return (
     <Transition
       in={open}
@@ -24,14 +24,14 @@ export function ContextMenu({ open, items }: ContextMenuProps) {
         const translateY = state === "entered" ? 0 : -25
         return (
           <div
-            className="context-menu absolute"
+            className="action-menu absolute"
             style={{
               opacity,
               transform: `translateY(${translateY}%) scale(${scale})`,
             }}
           >
             {items.map((item) => (
-              <div className="context-menu-item flex">
+              <div className="action-menu-item flex">
                 <Button
                   variant="primary"
                   className="text-xs font-normal text-nowrap px-5 py-2 flex-grow"

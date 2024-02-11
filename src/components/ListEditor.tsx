@@ -6,7 +6,7 @@ import { DialogHeader } from "./dialog/DialogHeader"
 import { useGlobal } from "../state/global"
 import { Modal } from "./dialog/Modal"
 import { MoreIcon } from "./icons/MoreIcon"
-import { ContextMenu } from "./ContextMenu"
+import { ActionMenu } from "./ActionMenu"
 import { DialogFooter } from "./dialog/DialogFooter"
 import { Button } from "./atoms/Button"
 import { maxListNameLength } from "../constants"
@@ -90,7 +90,7 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
           >
             <MoreIcon />
           </button>
-          <ContextMenu
+          <ActionMenu
             open={ctxOpen}
             items={[
               { text: "Archive", onclick: () => handleCtxAction("archive") },

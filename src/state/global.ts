@@ -23,11 +23,12 @@ export function useGlobal() {
     dispatch({ type: "SET_LIST_DRAG_TARGET", payload })
 
   function handleListDrag(e: MouseEvent, clickedList: ClickedList) {
+    if (!clickedList.mouseOffset) throw new Error("no mouseoffset")
     const elements = Array.from(
       document.querySelectorAll("#board .inner .list")
     ).filter((el) => Number(el.getAttribute("data-id")) !== clickedList.id)
     let index = elements.length
-    const draggedItemLeft = e.clientX - clickedList.mouseOffset.x
+    const draggedItemLeft = e.clientX - (clickedList.mouseOffset.x ?? 0)
 
     for (let i = 0; i < elements.length; i++) {
       const rect = elements[i].getBoundingClientRect()
@@ -50,6 +51,7 @@ export function useGlobal() {
     clickedItem: ClickedItem,
     targetList: List
   ) {
+    if (!clickedItem.mouseOffset) throw new Error("no mouseoffset")
     const elements = Array.from(dropArea.querySelectorAll(".list-item")).filter(
       (el) => Number(el.getAttribute("data-id")) !== clickedItem.id
     )

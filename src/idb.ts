@@ -58,7 +58,12 @@ const loadBoards = () => db.boards.all() as Promise<Board[]>
 
 const updateBoard = (board: Board) => db.boards.update(board) as Promise<Board>
 
-const addBoard = () => db.boards.create({}) as Promise<Board>
+const addBoard = async (): Promise<Board> => {
+  const board = await db.boards.create({})
+  if (!board) throw new Error("failed to create board")
+  await addList(board.id)
+  return board as Board
+}
 
 const deleteBoard = (board: Board) =>
   db.boards.delete(board.id) as Promise<void>

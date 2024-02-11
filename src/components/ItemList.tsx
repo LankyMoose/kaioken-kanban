@@ -1,6 +1,6 @@
 import "./ItemList.css"
 import { useRef, useEffect } from "kaioken"
-import { ListItem, SelectedBoardList } from "../types"
+import { ListItem, SelectedBoardList, Tag } from "../types"
 import { useGlobal } from "../state/global"
 import { useBoard } from "../state/board"
 import { MoreIcon } from "./icons/MoreIcon"
@@ -208,6 +208,12 @@ function Item({
   const ref = useRef<HTMLButtonElement>(null)
   const { clickedItem, setClickedItem, itemDragTarget, setItemDragTarget } =
     useGlobal()
+  const { board } = useBoard()
+  const tags: Tag[] = !board
+    ? []
+    : board.itemTags
+        .filter((it) => it.itemId === item.id)
+        .map((it) => board.tags.find((t) => t.id === it.tagId)!)
 
   if (clickedItem?.id === item.id && clickedItem.dragging) {
     return null
@@ -288,7 +294,17 @@ function Item({
       onclick={handleClick}
       data-id={item.id}
     >
-      {item.title || "(Unnamed Item)"}
+      <span>{item.title || "(Unnamed Item)"}</span>
+      <div className="flex gap-2 flex-wrap">
+        {tags.map((tag) => (
+          <span
+            className="px-[4px] py-[1px] text-xs"
+            style={{ backgroundColor: tag.color }}
+          >
+            {tag.title}
+          </span>
+        ))}
+      </div>
     </button>
   )
 }

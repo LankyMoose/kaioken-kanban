@@ -4,11 +4,13 @@ import {
   ClickedItem,
   ClickedList,
   ItemDragTarget,
+  ItemTag,
   List,
   ListDragTarget,
   ListItem,
   SelectedBoard,
   SelectedBoardList,
+  Tag,
 } from "../types"
 import * as db from "../idb"
 import { useGlobal } from "./global"
@@ -29,9 +31,12 @@ export function useBoard() {
 
   const selectBoard = async (board: Board) => {
     const lists = await db.loadLists(board.id)
+    const { tags, itemTags } = await db.loadTags(board.id)
 
     const selectedBoard = {
       ...board,
+      tags,
+      itemTags,
       lists: await Promise.all(
         lists.map(async (list) => {
           const items = await db.loadItems(list.id)
@@ -47,11 +52,43 @@ export function useBoard() {
     dispatch({ type: "SET_BOARD", payload: selectedBoard })
   }
   const updateSelectedBoard = async (payload: Partial<Board>) => {
-    const { lists, ...rest } = getBoardOrDie()
+    const { lists, tags, itemTags, ...rest } = getBoardOrDie()
     const newBoard = { ...rest, ...payload }
     const res = await db.updateBoard(newBoard)
-    dispatch({ type: "SET_BOARD", payload: { ...res, lists } })
+    dispatch({ type: "SET_BOARD", payload: { ...res, lists, tags, itemTags } })
     updateBoards(boards.map((b) => (b.id === res.id ? newBoard : b)))
+  }
+
+  const addBoardTag = async () => {
+    const board = getBoardOrDie()
+    const tag = await db.addTag(board.id)
+    dispatch({
+      type: "SET_BOARD",
+      payload: { ...board, tags: [...board.tags, tag] },
+    })
+  }
+
+  const updateBoardTag = async (payload: Tag) => {
+    const board = getBoardOrDie()
+    const tag = await db.updateTag(payload)
+    const newBoard = {
+      ...board,
+      tags: board.tags.map((t) => (t.id === payload.id ? tag : t)),
+    }
+    dispatch({ type: "SET_BOARD", payload: newBoard })
+  }
+
+  const removeBoardTag = async (payload: { tag: Tag; itemTags: ItemTag[] }) => {
+    const board = getBoardOrDie()
+    await db.deleteTag(payload.tag, payload.itemTags)
+    const newBoard = {
+      ...board,
+      tags: board.tags.filter((t) => t.id !== payload.tag.id),
+      itemTags: board.itemTags.filter(
+        (it) => !payload.itemTags.some((t) => t.id === it.id)
+      ),
+    }
+    dispatch({ type: "SET_BOARD", payload: newBoard })
   }
 
   const handleBoardRemoved = async (board: Board) => {
@@ -336,6 +373,33 @@ export function useBoard() {
     dispatch({ type: "UPDATE_LIST", payload: newList })
   }
 
+  const addItemTag = async ({
+    itemId,
+    tagId,
+  }: {
+    itemId: number
+    tagId: number
+  }) => {
+    const board = getBoardOrDie()
+    const itemTag = await db.addItemTag(board.id, itemId, tagId)
+
+    dispatch({
+      type: "SET_BOARD",
+      payload: { ...board, itemTags: [...board.itemTags, itemTag] },
+    })
+  }
+  const removeItemTag = async (id: number) => {
+    const board = getBoardOrDie()
+    await db.deleteitemTag(id)
+    dispatch({
+      type: "SET_BOARD",
+      payload: {
+        ...board,
+        itemTags: board.itemTags.filter((it) => it.id !== id),
+      },
+    })
+  }
+
   return {
     board: selectedBoard,
     updateSelectedBoard,
@@ -354,6 +418,12 @@ export function useBoard() {
     archiveItem,
     updateItem,
     restoreItem,
+    addItemTag,
+    removeItemTag,
+
+    addBoardTag,
+    removeBoardTag,
+    updateBoardTag,
 
     handleItemDrop,
     handleListDrop,

@@ -14,6 +14,20 @@ export interface GlobalState {
   boards: Board[]
 }
 
+export interface ItemTag {
+  id: number
+  itemId: number
+  tagId: number
+  boardId: number
+}
+
+export interface Tag {
+  id: number
+  boardId: number
+  title: string
+  color: string
+}
+
 export interface ListItem {
   id: number
   listId: number
@@ -87,5 +101,7 @@ export interface SelectedBoardList extends List {
 }
 
 export interface SelectedBoard extends Board {
+  tags: Tag[]
+  itemTags: ItemTag[]
   lists: SelectedBoardList[]
 }

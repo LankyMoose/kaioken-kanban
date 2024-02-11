@@ -119,7 +119,9 @@
   padding: 0.5rem 1rem;
   border-radius: var(--radius);
   display: flex;
-  gap: .5rem;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
   margin-top: 0;
   transition: margin-top .15s ease;
   background: rgba(255, 255, 255, .025);
@@ -131,6 +133,11 @@
   position: absolute;
   width: calc(100% - 1rem);
   background: rgba(255, 255, 255, .035);
+}
+
+
+.list-item * {
+  pointer-events: none;
 }
 
 #item-clone {

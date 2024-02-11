@@ -1,7 +1,7 @@
 import { useModel, useState, useEffect, ElementProps } from "kaioken"
 import { deleteItem, deleteList, loadItems, loadLists } from "../idb"
 import { useBoard } from "../state/board"
-import { SelectedBoard, List, ListItem } from "../types"
+import { SelectedBoard, List, ListItem, Tag } from "../types"
 import { Button } from "./atoms/Button"
 import { Input } from "./atoms/Input"
 import { Spinner } from "./atoms/Spinner"
@@ -9,7 +9,7 @@ import { DialogHeader } from "./dialog/DialogHeader"
 import { useGlobal } from "../state/global"
 import { ActionMenu } from "./ActionMenu"
 import { MoreIcon } from "./icons/MoreIcon"
-import { maxBoardNameLength } from "../constants"
+import { maxBoardNameLength, maxTagNameLength } from "../constants"
 
 export function BoardEditor() {
   const { setMainDrawerOpen } = useGlobal()
@@ -86,6 +86,8 @@ export function BoardEditor() {
         </Button>
       </div>
       <br />
+      <BoardTagsEditor board={board} />
+      <br />
       {false && (
         <button onclick={() => ensureCorrectListOrders()}>
           fix list orders
@@ -95,6 +97,60 @@ export function BoardEditor() {
       <br />
       <ArchivedItems board={board} />
     </>
+  )
+}
+
+function BoardTagsEditor({ board }: { board: SelectedBoard | null }) {
+  if (!board) return null
+  const { addBoardTag } = useBoard()
+
+  return (
+    <ListContainer>
+      <ListTitle>Board Tags</ListTitle>
+
+      <div className="mb-2">
+        {board.tags.map((tag) => (
+          <BoardTagEditor tag={tag} />
+        ))}
+      </div>
+      <div className="flex">
+        <Button variant="link" className="ml-auto" onclick={addBoardTag}>
+          Add Tag
+        </Button>
+      </div>
+    </ListContainer>
+  )
+}
+
+function BoardTagEditor({ tag }: { tag: Tag }) {
+  const { updateBoardTag } = useBoard()
+
+  const handleTitleChange = (e: Event) => {
+    const title = (e.target as HTMLInputElement).value
+    updateBoardTag({ ...tag, title })
+  }
+
+  const handleColorChange = (e: Event) => {
+    const color = (e.target as HTMLInputElement).value
+    updateBoardTag({ ...tag, color })
+  }
+
+  return (
+    <ListItemContainer className="items-center">
+      <Input
+        value={tag.title}
+        onchange={handleTitleChange}
+        placeholder="(Unnamed Tag)"
+        className="border-0 text-sm flex-grow"
+        maxLength={maxTagNameLength}
+      />
+      <input
+        value={tag.color}
+        onchange={handleColorChange}
+        type="color"
+        className="cursor-pointer"
+      />
+    </ListItemContainer>
   )
 }
 
@@ -127,7 +183,7 @@ function ArchivedItems({ board }: { board: SelectedBoard | null }) {
   }
 
   return (
-    <div className="p-3 bg-black bg-opacity-15">
+    <ListContainer>
       <ListTitle>Archived Items</ListTitle>
       {loading ? (
         <div className="flex justify-center">
@@ -156,7 +212,7 @@ function ArchivedItems({ board }: { board: SelectedBoard | null }) {
           </ListItemContainer>
         ))
       )}
-    </div>
+    </ListContainer>
   )
 }
 
@@ -180,7 +236,7 @@ function ArchivedLists({ board }: { board: SelectedBoard | null }) {
   }
 
   return (
-    <div className="p-3 bg-black bg-opacity-15">
+    <ListContainer>
       <ListTitle>Archived Lists</ListTitle>
       {loading ? (
         <div className="flex justify-center">
@@ -204,8 +260,12 @@ function ArchivedLists({ board }: { board: SelectedBoard | null }) {
           </ListItemContainer>
         ))
       )}
-    </div>
+    </ListContainer>
   )
+}
+
+function ListContainer({ children }: ElementProps<"div">) {
+  return <div className="p-3 bg-black bg-opacity-15">{children}</div>
 }
 
 function ListTitle({ children }: ElementProps<"div">) {
@@ -216,9 +276,13 @@ function ListTitle({ children }: ElementProps<"div">) {
   )
 }
 
-function ListItemContainer({ children }: ElementProps<"div">) {
+function ListItemContainer({ children, className }: ElementProps<"div">) {
   return (
-    <div className="flex gap-4 p-2 justify-between bg-white bg-opacity-5 border-b border-black border-opacity-30 last:border-b-0">
+    <div
+      className={`flex gap-4 p-2 justify-between bg-white bg-opacity-5 border-b border-black border-opacity-30 last:border-b-0 ${
+        className || ""
+      }`}
+    >
       {children}
     </div>
   )

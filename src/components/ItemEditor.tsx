@@ -38,7 +38,14 @@ export function ItemEditorModal() {
 
 function ItemEditor() {
   const { setClickedItem, clickedItem } = useGlobal()
-  const { updateItem, removeItem, archiveItem } = useBoard()
+  const {
+    updateItem,
+    removeItem,
+    archiveItem,
+    board,
+    addItemTag,
+    removeItemTag,
+  } = useBoard()
   const [titleRef, title] = useModel<HTMLInputElement, string>(
     clickedItem?.item.title || ""
   )
@@ -46,7 +53,17 @@ function ItemEditor() {
     clickedItem?.item.content || ""
   )
 
+  const savedTagIds =
+    board?.itemTags
+      .filter((t) => t.itemId === clickedItem?.id)
+      .map((i) => i.tagId) ?? []
+
   const [ctxOpen, setCtxOpen] = useState(false)
+  const [itemTagIds, setItemTagIds] = useState(savedTagIds)
+
+  const addedItemTagIds = itemTagIds.filter((id) => !savedTagIds.includes(id))
+  const removedItemTagIds = savedTagIds.filter((id) => !itemTagIds.includes(id))
+  const itemTagIdsChanged = addedItemTagIds.length || removedItemTagIds.length
 
   useEffect(() => {
     if (clickedItem?.sender && clickedItem.sender instanceof KeyboardEvent) {
@@ -56,18 +73,48 @@ function ItemEditor() {
 
   async function saveChanges() {
     if (!clickedItem) return
-    const newItem = { ...clickedItem.item, content, title }
-    await updateItem(newItem)
-    setClickedItem({
-      ...clickedItem,
-      item: newItem,
-    })
+    if (
+      content !== clickedItem.item.content ||
+      title !== clickedItem.item.title
+    ) {
+      const newItem = { ...clickedItem.item, content, title }
+      await updateItem(newItem)
+      setClickedItem({
+        ...clickedItem,
+        item: newItem,
+      })
+    }
+
+    if (addedItemTagIds.length || removedItemTagIds.length) {
+      await Promise.all([
+        ...addedItemTagIds.map((it) =>
+          addItemTag({ itemId: clickedItem.id, tagId: it })
+        ),
+        ...removedItemTagIds
+          .map(
+            (it) =>
+              board!.itemTags.find(
+                (t) => t.tagId === it && t.itemId === clickedItem.id
+              )!.id
+          )
+          .map(removeItemTag),
+      ])
+    }
   }
 
   async function handleCtxAction(action: "delete" | "archive") {
     if (!clickedItem) return
     await (action === "delete" ? removeItem : archiveItem)(clickedItem.item)
     setClickedItem(null)
+  }
+
+  async function handleItemTagChange(e: Event, id: number) {
+    const checked = (e.target as HTMLInputElement).checked
+    const newTagIds = checked
+      ? [...itemTagIds, id]
+      : itemTagIds.filter((item) => item !== id)
+
+    setItemTagIds(newTagIds)
   }
 
   return (
@@ -97,8 +144,32 @@ function ItemEditor() {
         </div>
       </DialogHeader>
       <DialogBody>
-        <label className="text-sm font-semibold">Description</label>
-        <textarea ref={contentRef} className="w-full border-0 resize-none" />
+        <div>
+          <label className="text-sm font-semibold">Description</label>
+          <textarea ref={contentRef} className="w-full border-0 resize-none" />
+        </div>
+        <div>
+          <label className="text-sm font-semibold">Tags</label>
+          <ul>
+            {board?.tags.map((t) => (
+              <li className="flex items-center gap-2">
+                <input
+                  id={`item-tag-${t.id}`}
+                  type={"checkbox"}
+                  checked={itemTagIds?.includes(t.id)}
+                  onchange={(e) => handleItemTagChange(e, t.id)}
+                />
+                <label
+                  className="text-sm text-gray-200"
+                  htmlFor={`item-tag-${t.id}`}
+                >
+                  {t.title}
+                </label>
+                <input type="color" value={t.color} disabled />
+              </li>
+            ))}
+          </ul>
+        </div>
       </DialogBody>
       <DialogFooter>
         <span></span>
@@ -107,7 +178,8 @@ function ItemEditor() {
           onclick={saveChanges}
           disabled={
             title === clickedItem?.item.title &&
-            content === clickedItem?.item.content
+            content === clickedItem?.item.content &&
+            !itemTagIdsChanged
           }
         >
           Save changes

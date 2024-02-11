@@ -1,5 +1,5 @@
 import { idb, model, Field } from "async-idb-orm"
-import { List, ListItem, Board } from "./types"
+import { List, ListItem, Board, Tag, ItemTag } from "./types"
 
 export {
   // boards
@@ -20,16 +20,20 @@ export {
   addItem,
   deleteItem,
   archiveItem,
+  // tags
+  loadTags,
+  updateTag,
+  addTag,
+  deleteTag,
+  addItemTag,
+  deleteitemTag,
 }
 
-const items = model({
+const boards = model({
   id: Field.number({ primaryKey: true }),
-  listId: Field.number(),
   title: Field.string({ default: () => "" }),
-  content: Field.string({ default: () => "" }),
   created: Field.date({ default: () => new Date() }),
   archived: Field.boolean({ default: () => false }),
-  refereceItems: Field.array(Field.number()),
   order: Field.number({ default: () => 0 }),
 })
 
@@ -42,15 +46,32 @@ const lists = model({
   order: Field.number({ default: () => 0 }),
 })
 
-const boards = model({
+const items = model({
   id: Field.number({ primaryKey: true }),
+  listId: Field.number(),
   title: Field.string({ default: () => "" }),
+  content: Field.string({ default: () => "" }),
   created: Field.date({ default: () => new Date() }),
   archived: Field.boolean({ default: () => false }),
+  refereceItems: Field.array(Field.number()),
   order: Field.number({ default: () => 0 }),
 })
 
-const db = idb("kanban", { boards, lists, items })
+const tags = model({
+  id: Field.number({ primaryKey: true }),
+  boardId: Field.number(),
+  title: Field.string({ default: () => "" }),
+  color: Field.string({ default: () => "#402579" }),
+})
+
+const itemTags = model({
+  id: Field.number({ primaryKey: true }),
+  itemId: Field.number(),
+  tagId: Field.number(),
+  boardId: Field.number(),
+})
+
+const db = idb("kanban", { boards, lists, items, tags, itemTags }, 3)
 
 // Boards
 
@@ -105,3 +126,37 @@ const deleteItem = (item: ListItem) => db.items.delete(item.id) as Promise<void>
 
 const archiveItem = (item: ListItem) =>
   db.items.update({ ...item, archived: true }) as Promise<ListItem>
+
+// Tags
+
+const loadTags = async (
+  boardId: number
+): Promise<{ tags: Tag[]; itemTags: ItemTag[] }> => {
+  const [tags, itemTags] = await Promise.all([
+    db.tags.findMany((t) => t.boardId === boardId),
+    db.itemTags.findMany((t) => t.boardId === boardId),
+  ])
+  return {
+    tags,
+    itemTags,
+  }
+}
+
+const updateTag = (tag: Tag) => db.tags.update(tag) as Promise<Tag>
+
+const addTag = (boardId: number) => db.tags.create({ boardId }) as Promise<Tag>
+
+const deleteTag = async (tag: Tag, itemTags: ItemTag[]) =>
+  Promise.all([
+    itemTags.map((it) => db.itemTags.delete(it.id)),
+    db.tags.delete(tag.id),
+  ])
+
+const addItemTag = (boardId: number, itemId: number, tagId: number) =>
+  db.itemTags.create({
+    boardId,
+    itemId,
+    tagId,
+  }) as Promise<ItemTag>
+
+const deleteitemTag = (id: number) => db.itemTags.delete(id)

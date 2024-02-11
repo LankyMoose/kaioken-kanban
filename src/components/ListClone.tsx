@@ -8,13 +8,13 @@ export function ListClone({ list }: { list: ClickedList }) {
 
   useEffect(() => {
     if (!ref.current) return
-    ref.current.innerHTML = list.element.outerHTML || ""
+    ref.current.innerHTML = list.element?.outerHTML || ""
   }, [ref.current])
 
   function getStyle() {
-    const x = mousePos.x - list.mouseOffset.x || 0
-    const y = mousePos.y - list.mouseOffset.y || 0
-    return `transform: translate(calc(${x}px - var(--list-header-padding-x)), calc(${y}px - var(--list-header-padding-y))); width: ${list.domRect.width}px; height: ${list.domRect.height}px;`
+    const x = mousePos.x - (list.mouseOffset?.x ?? 0)
+    const y = mousePos.y - (list.mouseOffset?.y ?? 0)
+    return `transform: translate(calc(${x}px - var(--list-header-padding-x)), calc(${y}px - var(--list-header-padding-y))); width: ${list.domRect?.width}px; height: ${list.domRect?.height}px;`
   }
 
   return <div ref={ref} id="list-clone" style={getStyle()}></div>

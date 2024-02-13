@@ -27,6 +27,8 @@ export {
   deleteTag,
   addItemTag,
   deleteitemTag,
+  // import/export
+  JsonUtils,
 }
 
 const boards = model({
@@ -72,6 +74,45 @@ const itemTags = model({
 })
 
 const db = idb("kanban", { boards, lists, items, tags, itemTags }, 3)
+
+const JsonUtils = {
+  export: async () => {
+    const [boards, lists, items, tags, itemTags] = await Promise.all([
+      db.boards.all(),
+      db.lists.all(),
+      db.items.all(),
+      db.tags.all(),
+      db.itemTags.all(),
+    ])
+    return JSON.stringify({
+      boards,
+      lists,
+      items,
+      tags,
+      itemTags,
+    })
+  },
+  import: async (data: string) => {
+    try {
+      const parsed = JSON.parse(data)
+      ;["boards", "lists", "items", "tags", "itemTags"].forEach((store) => {
+        if (!(store in parsed))
+          throw new Error(`store '${store}' not found in import data`)
+      })
+
+      const { boards, lists, items, tags, itemTags } = parsed
+      await Promise.all([
+        ...boards.map(db.boards.create),
+        ...lists.map(db.lists.create),
+        ...items.map(db.items.create),
+        ...tags.map(db.tags.create),
+        ...itemTags.map(db.itemTags.create),
+      ])
+    } catch (error) {
+      alert("an error occured while importing your data: " + error)
+    }
+  },
+}
 
 // Boards
 

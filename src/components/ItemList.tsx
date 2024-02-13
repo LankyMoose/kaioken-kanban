@@ -158,7 +158,7 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
     >
       <div className="list-header" ref={headerRef} onpointerdown={selectList}>
         <h3 className="list-title text-base font-bold">
-          {list.title || `(Unnamed List)`}
+          {list.title || `(Unnamed list)`}
         </h3>
         <button
           className="p-2"

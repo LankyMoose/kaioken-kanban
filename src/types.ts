@@ -12,6 +12,7 @@ export interface GlobalState {
   listDragTarget: ListDragTarget | null
   dragging: boolean
   boards: Board[]
+  boardsLoaded: boolean
 }
 
 export interface ItemTag {
@@ -50,6 +51,7 @@ export interface List {
 
 export interface Board {
   id: number
+  uuid: string
   title: string
   created: Date
   archived: boolean

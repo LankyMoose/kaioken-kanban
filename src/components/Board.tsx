@@ -1,7 +1,7 @@
 import "./Board.css"
-import { Portal, useEffect, useRef, useState } from "kaioken"
+import { Link, Portal, useEffect, useRef, useState } from "kaioken"
 import { ItemList } from "./ItemList"
-import type { Board, Vector2 } from "../types"
+import type { Board, SelectedBoard, Vector2 } from "../types"
 import { useGlobal } from "../state/global"
 import { useBoard } from "../state/board"
 import { Button } from "./atoms/Button"
@@ -11,10 +11,12 @@ import { ListItemClone } from "./ListItemClone"
 import { ListClone } from "./ListClone"
 import { MouseCtx } from "../state/mouse"
 import { BoardEditorDrawer } from "./BoardEditor"
+import { ChevronLeftIcon } from "./icons/ChevronLeftIcon"
+import { MoreIcon } from "./icons/MoreIcon"
 
 const autoScrollSpeed = 10
 
-export function Board() {
+export function Board({ boardId }: { boardId: string }) {
   const {
     rootElement,
     clickedItem,
@@ -34,6 +36,22 @@ export function Board() {
   const [autoScrollVec, setAutoScrollVec] = useState<Vector2>({ x: 0, y: 0 })
   const { board, handleItemDrop, handleListDrop } = useBoard()
   const boardInnerRef = useRef<HTMLDivElement>(null)
+
+  const { boards, boardsLoaded } = useGlobal()
+  const { selectBoard } = useBoard()
+
+  useEffect(() => {
+    if (!boardsLoaded) return
+    const board = boards.find(
+      (b) => String(b.id) === boardId || b.uuid === boardId
+    )
+    if (!board) {
+      // @ts-ignore
+      window.location = "/"
+      return
+    }
+    selectBoard(board)
+  }, [boardsLoaded])
 
   useEffect(() => {
     const v = getAutoScrollVec()
@@ -125,6 +143,7 @@ export function Board() {
 
   return (
     <MouseCtx.Provider value={{ current: mousePos, setValue: setMousePos }}>
+      <Nav board={board} />
       <div
         id="board"
         onpointerdown={handleMouseDown}
@@ -192,5 +211,22 @@ function AddList() {
         Add a list...
       </Button>
     </div>
+  )
+}
+
+function Nav({ board }: { board: SelectedBoard | null }) {
+  const { setBoardEditorOpen } = useGlobal()
+  return (
+    <nav className="p-4 flex justify-between items-center">
+      <div className="flex items-center gap-2">
+        <Link to="/" className="p-2">
+          <ChevronLeftIcon />
+        </Link>
+      </div>
+      <h1 className="text-lg font-bold">{board?.title || "(Unnamed board)"}</h1>
+      <button onclick={() => setBoardEditorOpen(true)} className="py-2 px-3">
+        <MoreIcon />
+      </button>
+    </nav>
   )
 }

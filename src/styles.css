@@ -211,4 +211,6 @@ label {
   right: 0;
   height: 100%;
   width: 420px;
+  max-width: calc(100% - 50px);
+  overflow-y: auto;
 }

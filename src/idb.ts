@@ -33,6 +33,7 @@ export {
 
 const boards = model({
   id: Field.number({ primaryKey: true }),
+  uuid: Field.string({ default: () => crypto.randomUUID() }),
   title: Field.string({ default: () => "" }),
   created: Field.date({ default: () => new Date() }),
   archived: Field.boolean({ default: () => false }),
@@ -116,7 +117,12 @@ const JsonUtils = {
 
 // Boards
 
-const loadBoards = () => db.boards.all() as Promise<Board[]>
+const loadBoards = async () => {
+  return (await db.boards.all()).map((board) => {
+    if (!board.uuid) board.uuid = String(board.id)
+    return board
+  })
+}
 
 const updateBoard = (board: Board) => db.boards.update(board) as Promise<Board>
 

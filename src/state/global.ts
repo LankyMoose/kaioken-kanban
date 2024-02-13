@@ -8,6 +8,7 @@ import {
   ListDragTarget,
   Board,
 } from "../types"
+import { addBoard as addBoardDb } from "../idb"
 
 export const GlobalCtx = createContext<GlobalState>(null)
 export const GlobalDispatchCtx =
@@ -43,6 +44,11 @@ export function useGlobal() {
     }
 
     setListDragTarget({ index })
+  }
+
+  const addBoard = async () => {
+    const newBoard = await addBoardDb()
+    dispatch({ type: "ADD_BOARD", payload: newBoard })
   }
 
   function handleItemDrag(
@@ -85,6 +91,7 @@ export function useGlobal() {
 
   return {
     ...useContext(GlobalCtx),
+    addBoard,
     setRootElement: (payload: HTMLDivElement) =>
       dispatch({ type: "SET_ROOT_EL", payload }),
     setBoardEditorOpen,
@@ -112,6 +119,7 @@ type GlobalDispatchAction =
   | { type: "SET_LIST_DRAG_TARGET"; payload: ListDragTarget | null }
   | { type: "SET_BOARDS"; payload: Board[] }
   | { type: "SET_ROOT_EL"; payload: HTMLDivElement }
+  | { type: "ADD_BOARD"; payload: Board }
 
 export function globalStateReducer(
   state: GlobalState,
@@ -160,6 +168,13 @@ export function globalStateReducer(
       return {
         ...state,
         boards: action.payload,
+        boardsLoaded: true,
+      }
+    }
+    case "ADD_BOARD": {
+      return {
+        ...state,
+        boards: [...state.boards, action.payload],
       }
     }
     default: {
@@ -177,4 +192,5 @@ export const defaultGlobalState: GlobalState = {
   clickedList: null,
   listDragTarget: null,
   boards: [],
+  boardsLoaded: false,
 }

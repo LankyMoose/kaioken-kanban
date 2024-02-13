@@ -1,4 +1,4 @@
-import { createContext, useContext } from "kaioken"
+import { createContext, navigate, useContext } from "kaioken"
 import {
   Board,
   ClickedItem,
@@ -20,7 +20,8 @@ export const BoardDispatchContext =
   createContext<(action: BoardDispatchAction) => void>(null)
 
 export function useBoard() {
-  const { boards, updateBoards, setClickedItem, setClickedList } = useGlobal()
+  const { boards, updateBoards, setClickedItem, setClickedList, addBoard } =
+    useGlobal()
   const dispatch = useContext(BoardDispatchContext)
   const selectedBoard = useContext(BoardContext)
 
@@ -48,7 +49,6 @@ export function useBoard() {
       ),
     }
 
-    localStorage.setItem("kaioban-board-id", board.id.toString())
     dispatch({ type: "SET_BOARD", payload: selectedBoard })
   }
   const updateSelectedBoard = async (payload: Partial<Board>) => {
@@ -93,17 +93,8 @@ export function useBoard() {
 
   const handleBoardRemoved = async (board: Board) => {
     const newBoards = boards.filter((b) => b.id !== board.id)
-    let newBoard = newBoards.at(board.order - 1)
-
-    if (newBoards.length) {
-      if (!newBoard) newBoard = newBoards[0]
-    } else {
-      newBoard = await db.addBoard()
-      newBoards.push(newBoard)
-    }
-
     updateBoards(newBoards)
-    selectBoard(newBoard)
+    navigate("/")
   }
   const deleteBoard = async (board: Board) => {
     await db.deleteBoard(board)
@@ -406,6 +397,7 @@ export function useBoard() {
     selectBoard,
     deleteBoard,
     archiveBoard,
+    addBoard,
 
     addList,
     removeList,

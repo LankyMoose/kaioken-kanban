@@ -1,6 +1,12 @@
 import { type ElementProps } from "kaioken"
 
-type ButtonVariant = "primary" | "secondary" | "danger" | "success" | "link"
+type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "danger"
+  | "success"
+  | "link"
+  | "default"
 
 export function PrimaryButton({
   className,

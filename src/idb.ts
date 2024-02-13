@@ -117,12 +117,7 @@ const JsonUtils = {
 
 // Boards
 
-const loadBoards = async () => {
-  return (await db.boards.all()).map((board) => {
-    if (!board.uuid) board.uuid = String(board.id)
-    return board
-  })
-}
+const loadBoards = async (): Promise<Board[]> => await db.boards.all()
 
 const updateBoard = (board: Board) => db.boards.update(board) as Promise<Board>
 

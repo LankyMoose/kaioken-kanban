@@ -4,14 +4,14 @@ import { Drawer } from "./dialog/Drawer"
 import { BoardEditor } from "./BoardEditor"
 
 export function MainDrawer() {
-  const { mainDrawerOpen, setMainDrawerOpen } = useGlobal()
+  const { boardEditorOpen, setBoardEditorOpen } = useGlobal()
   return (
     <Transition
-      in={mainDrawerOpen}
+      in={boardEditorOpen}
       timings={[40, 150, 150, 150]}
       element={(state) =>
         state === "exited" ? null : (
-          <Drawer state={state} close={() => setMainDrawerOpen(false)}>
+          <Drawer state={state} close={() => setBoardEditorOpen(false)}>
             <BoardEditor />
           </Drawer>
         )

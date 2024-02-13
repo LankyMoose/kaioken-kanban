@@ -10,9 +10,28 @@ import { useGlobal } from "../state/global"
 import { ActionMenu } from "./ActionMenu"
 import { MoreIcon } from "./icons/MoreIcon"
 import { maxBoardNameLength, maxTagNameLength } from "../constants"
+import { Transition } from "kaioken"
+import { Drawer } from "./dialog/Drawer"
 
-export function BoardEditor() {
-  const { setMainDrawerOpen } = useGlobal()
+export function BoardEditorDrawer() {
+  const { boardEditorOpen, setBoardEditorOpen } = useGlobal()
+  return (
+    <Transition
+      in={boardEditorOpen}
+      timings={[40, 150, 150, 150]}
+      element={(state) =>
+        state === "exited" ? null : (
+          <Drawer state={state} close={() => setBoardEditorOpen(false)}>
+            <BoardEditor />
+          </Drawer>
+        )
+      }
+    />
+  )
+}
+
+function BoardEditor() {
+  const { setBoardEditorOpen } = useGlobal()
   const {
     board,
     updateSelectedBoard,
@@ -38,13 +57,13 @@ export function BoardEditor() {
       })
     )
 
-    setMainDrawerOpen(false)
+    setBoardEditorOpen(false)
   }
 
   async function handleArchiveClick() {
     if (!board) return
     await archiveBoard(board)
-    setMainDrawerOpen(false)
+    setBoardEditorOpen(false)
   }
 
   return (
@@ -196,10 +215,10 @@ function ArchivedItems({ board }: { board: SelectedBoard | null }) {
       ) : (
         items.map((item) => (
           <ListItemContainer>
-            <span className="text-sm">{item.title}</span>
+            <span className="text-sm">{item.title || "(Unnamed item)"}</span>
             <div className="flex flex-col items-end">
               <span className="text-xs align-super text-gray-400 text-nowrap mb-2">
-                {item.list || "(Unnamed Item)"}
+                {item.list || "(Unnamed list)"}
               </span>
               <Button
                 variant="link"

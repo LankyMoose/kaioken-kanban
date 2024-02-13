@@ -4,7 +4,7 @@ export type Vector2 = {
 }
 
 export interface GlobalState {
-  mainDrawerOpen: boolean
+  boardEditorOpen: boolean
   rootElement: HTMLElement | null
   clickedItem: ClickedItem | null
   itemDragTarget: ItemDragTarget | null
@@ -48,6 +48,14 @@ export interface List {
   order: number
 }
 
+export interface Board {
+  id: number
+  title: string
+  created: Date
+  archived: boolean
+  order: number
+}
+
 export interface ItemDragTarget {
   index: number
   listId: number
@@ -86,14 +94,6 @@ export interface ClickedList {
     x: number
     y: number
   }
-}
-
-export interface Board {
-  id: number
-  title: string
-  created: Date
-  archived: boolean
-  order: number
 }
 
 export interface SelectedBoardList extends List {

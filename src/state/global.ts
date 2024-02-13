@@ -79,15 +79,15 @@ export function useGlobal() {
     })
   }
 
-  function setMainDrawerOpen(value: boolean) {
-    dispatch({ type: "SET_MAIN_DRAWER_OPEN", payload: value })
+  function setBoardEditorOpen(value: boolean) {
+    dispatch({ type: "SET_BOARD_EDITOR_OPEN", payload: value })
   }
 
   return {
     ...useContext(GlobalCtx),
     setRootElement: (payload: HTMLDivElement) =>
       dispatch({ type: "SET_ROOT_EL", payload }),
-    setMainDrawerOpen,
+    setBoardEditorOpen,
     setDragging: (dragging: boolean) =>
       dispatch({ type: "SET_DRAGGING", payload: { dragging } }),
     setClickedItem: (payload: ClickedItem | null) =>
@@ -104,7 +104,7 @@ export function useGlobal() {
 }
 
 type GlobalDispatchAction =
-  | { type: "SET_MAIN_DRAWER_OPEN"; payload: boolean }
+  | { type: "SET_BOARD_EDITOR_OPEN"; payload: boolean }
   | { type: "SET_DRAGGING"; payload: { dragging: boolean } }
   | { type: "SET_CLICKED_ITEM"; payload: ClickedItem | null }
   | { type: "SET_ITEM_DRAG_TARGET"; payload: ItemDragTarget | null }
@@ -121,8 +121,8 @@ export function globalStateReducer(
     case "SET_ROOT_EL": {
       return { ...state, rootElement: action.payload }
     }
-    case "SET_MAIN_DRAWER_OPEN": {
-      return { ...state, mainDrawerOpen: action.payload }
+    case "SET_BOARD_EDITOR_OPEN": {
+      return { ...state, boardEditorOpen: action.payload }
     }
 
     case "SET_DRAGGING": {
@@ -169,7 +169,7 @@ export function globalStateReducer(
 }
 
 export const defaultGlobalState: GlobalState = {
-  mainDrawerOpen: false,
+  boardEditorOpen: false,
   rootElement: null,
   dragging: false,
   clickedItem: null,

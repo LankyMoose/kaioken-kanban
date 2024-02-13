@@ -7,10 +7,10 @@ import { useBoard } from "../state/board"
 import { Button } from "./atoms/Button"
 import { ItemEditorModal } from "./ItemEditor"
 import { ListEditorModal } from "./ListEditor"
-import { MainDrawer } from "./MainDrawer"
 import { ListItemClone } from "./ListItemClone"
 import { ListClone } from "./ListClone"
 import { MouseCtx } from "../state/mouse"
+import { BoardEditorDrawer } from "./BoardEditor"
 
 const autoScrollSpeed = 10
 
@@ -162,7 +162,7 @@ export function Board() {
           {clickedList?.dragging && <ListClone list={clickedList} />}
           <ItemEditorModal />
           <ListEditorModal />
-          <MainDrawer />
+          <BoardEditorDrawer />
         </Portal>
       </div>
     </MouseCtx.Provider>

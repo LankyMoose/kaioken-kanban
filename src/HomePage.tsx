@@ -36,6 +36,7 @@ export function HomePage() {
           </button>
           <ActionMenu
             open={menuOpen}
+            close={() => setMenuOpen(false)}
             items={[
               {
                 text: `${showArchived ? "Hide" : "Show"} archived boards`,

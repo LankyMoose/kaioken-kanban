@@ -44,9 +44,7 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
   const [ctxOpen, setCtxOpen] = useState(false)
 
   useEffect(() => {
-    if (clickedList?.sender && clickedList.sender instanceof KeyboardEvent) {
-      titleRef.current?.focus()
-    }
+    titleRef.current?.focus()
   }, [])
 
   async function saveChanges() {
@@ -54,7 +52,7 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
     const list = board?.lists.find((l) => l.id === clickedList.id)
     if (!list) throw new Error("no list, wah wah")
     await updateList({ ...list, title })
-    setClickedList({ ...clickedList, list: { ...clickedList.list, title } })
+    setClickedList(null)
   }
 
   async function handleCtxAction(action: "delete" | "archive") {
@@ -83,7 +81,7 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
           placeholder="(Unnamed List)"
           onfocus={(e) => (e.target as HTMLInputElement)?.select()}
         />
-        <div className="flex justify-center items-center relative">
+        <div className="relative">
           <button
             onclick={() => setCtxOpen((prev) => !prev)}
             className="w-9 flex justify-center items-center h-full"
@@ -92,6 +90,7 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
           </button>
           <ActionMenu
             open={ctxOpen}
+            close={() => setCtxOpen(false)}
             items={[
               { text: "Archive", onclick: () => handleCtxAction("archive") },
               { text: "Delete", onclick: () => handleCtxAction("delete") },
@@ -106,7 +105,7 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
           onclick={saveChanges}
           disabled={title === clickedList?.list.title}
         >
-          Save changes
+          Save & close
         </Button>
       </DialogFooter>
     </>

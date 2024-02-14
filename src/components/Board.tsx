@@ -224,7 +224,7 @@ function Nav({ board }: { board: SelectedBoard | null }) {
         </Link>
       </div>
       <h1 className="text-lg font-bold">{board?.title || "(Unnamed board)"}</h1>
-      <button onclick={() => setBoardEditorOpen(true)} className="py-2 px-3">
+      <button onclick={() => setBoardEditorOpen(true)} className="p-2">
         <MoreIcon />
       </button>
     </nav>

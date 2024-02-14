@@ -66,24 +66,11 @@ function ItemEditor() {
   const itemTagIdsChanged = addedItemTagIds.length || removedItemTagIds.length
 
   useEffect(() => {
-    if (clickedItem?.sender && clickedItem.sender instanceof KeyboardEvent) {
-      titleRef.current?.focus()
-    }
+    titleRef.current?.focus()
   }, [])
 
   async function saveChanges() {
     if (!clickedItem) return
-    if (
-      content !== clickedItem.item.content ||
-      title !== clickedItem.item.title
-    ) {
-      const newItem = { ...clickedItem.item, content, title }
-      await updateItem(newItem)
-      setClickedItem({
-        ...clickedItem,
-        item: newItem,
-      })
-    }
 
     if (addedItemTagIds.length || removedItemTagIds.length) {
       await Promise.all([
@@ -100,6 +87,15 @@ function ItemEditor() {
           .map(removeItemTag),
       ])
     }
+
+    if (
+      content !== clickedItem.item.content ||
+      title !== clickedItem.item.title
+    ) {
+      const newItem = { ...clickedItem.item, content, title }
+      await updateItem(newItem)
+    }
+    setClickedItem(null)
   }
 
   async function handleCtxAction(action: "delete" | "archive") {
@@ -127,7 +123,7 @@ function ItemEditor() {
           className="w-full border-0"
           onfocus={(e) => (e.target as HTMLInputElement)?.select()}
         />
-        <div className="flex justify-center items-center relative">
+        <div className="relative">
           <button
             onclick={() => setCtxOpen((prev) => !prev)}
             className="w-9 flex justify-center items-center h-full"
@@ -136,6 +132,7 @@ function ItemEditor() {
           </button>
           <ActionMenu
             open={ctxOpen}
+            close={() => setCtxOpen(false)}
             items={[
               { text: "Archive", onclick: () => handleCtxAction("archive") },
               { text: "Delete", onclick: () => handleCtxAction("delete") },
@@ -182,7 +179,7 @@ function ItemEditor() {
             !itemTagIdsChanged
           }
         >
-          Save changes
+          Save & close
         </Button>
       </DialogFooter>
     </>

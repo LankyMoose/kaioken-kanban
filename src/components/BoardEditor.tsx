@@ -40,8 +40,14 @@ function BoardEditor() {
     restoreBoard,
     ensureCorrectListOrders,
   } = useBoard()
-  const [titleRef, title] = useModel(board?.title || "")
+  const [titleRef, title] = useModel<HTMLInputElement, string>(
+    board?.title || ""
+  )
   const [ctxMenuOpen, setCtxMenuOpen] = useState(false)
+
+  useEffect(() => {
+    titleRef.current?.focus()
+  }, [])
 
   function handleSubmit() {
     updateSelectedBoard({ ...board, title })
@@ -77,10 +83,15 @@ function BoardEditor() {
       <DialogHeader>
         Board Details
         <div className="relative">
-          <button onclick={() => setCtxMenuOpen((prev) => !prev)}>
+          <button
+            className="w-9 flex justify-center items-center h-full"
+            onclick={() => setCtxMenuOpen((prev) => !prev)}
+          >
             <MoreIcon />
           </button>
           <ActionMenu
+            open={ctxMenuOpen}
+            close={() => setCtxMenuOpen(false)}
             items={[
               board?.archived
                 ? {
@@ -96,7 +107,6 @@ function BoardEditor() {
                 onclick: handleDeleteClick,
               },
             ]}
-            open={ctxMenuOpen}
           />
         </div>
       </DialogHeader>

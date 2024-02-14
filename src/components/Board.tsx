@@ -223,7 +223,9 @@ function Nav({ board }: { board: SelectedBoard | null }) {
           <ChevronLeftIcon />
         </Link>
       </div>
-      <h1 className="text-lg font-bold">{board?.title || "(Unnamed board)"}</h1>
+      <h1 className="text-lg font-bold select-none">
+        {board?.title || "(Unnamed board)"}
+      </h1>
       <button onclick={() => setBoardEditorOpen(true)} className="p-2">
         <MoreIcon />
       </button>

@@ -174,7 +174,8 @@ select option {
   background-color: #222;
 }
 
-label {
+label,
+.text-muted {
   color: #aaa;
 }
 

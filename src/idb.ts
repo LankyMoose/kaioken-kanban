@@ -101,13 +101,27 @@ const JsonUtils = {
           throw new Error(`store '${store}' not found in import data`)
       })
 
-      const { boards, lists, items, tags, itemTags } = parsed
       await Promise.all([
-        ...boards.map(db.boards.create),
-        ...lists.map(db.lists.create),
-        ...items.map(db.items.create),
-        ...tags.map(db.tags.create),
-        ...itemTags.map(db.itemTags.create),
+        db.boards.clear(),
+        db.lists.clear(),
+        db.items.clear(),
+        db.tags.clear(),
+        db.itemTags.clear(),
+      ])
+
+      const { boards, lists, items, tags, itemTags } = parsed as {
+        boards: Board[]
+        lists: List[]
+        items: ListItem[]
+        tags: Tag[]
+        itemTags: ItemTag[]
+      }
+      await Promise.all([
+        ...boards.map((b) => db.boards.create(b)),
+        ...lists.map((l) => db.lists.create(l)),
+        ...items.map((i) => db.items.create(i)),
+        ...tags.map((t) => db.tags.create(t)),
+        ...itemTags.map((it) => db.itemTags.create(it)),
       ])
     } catch (error) {
       alert("an error occured while importing your data: " + error)

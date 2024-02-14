@@ -67,7 +67,6 @@ export function useBoard() {
       payload: { ...board, tags: [...board.tags, tag] },
     })
   }
-
   const updateBoardTag = async (payload: Tag) => {
     const board = getBoardOrDie()
     const tag = await db.updateTag(payload)
@@ -77,7 +76,6 @@ export function useBoard() {
     }
     dispatch({ type: "SET_BOARD", payload: newBoard })
   }
-
   const removeBoardTag = async (payload: { tag: Tag; itemTags: ItemTag[] }) => {
     const board = getBoardOrDie()
     await db.deleteTag(payload.tag, payload.itemTags)
@@ -91,18 +89,23 @@ export function useBoard() {
     dispatch({ type: "SET_BOARD", payload: newBoard })
   }
 
-  const handleBoardRemoved = async (board: Board) => {
+  const deleteBoard = async () => {
+    const board = getBoardOrDie()
+    await db.deleteBoard(board)
     const newBoards = boards.filter((b) => b.id !== board.id)
     updateBoards(newBoards)
     navigate("/")
   }
-  const deleteBoard = async (board: Board) => {
-    await db.deleteBoard(board)
-    await handleBoardRemoved(board)
+  const archiveBoard = async () => {
+    const board = getBoardOrDie()
+    const newBoard = await db.archiveBoard(board)
+    const newBoards = boards.map((b) => (b.id !== board.id ? b : newBoard))
+    updateBoards(newBoards)
+    navigate("/")
   }
-  const archiveBoard = async (board: Board) => {
-    await db.archiveBoard(board)
-    await handleBoardRemoved(board)
+  const restoreBoard = async () => {
+    const board = getBoardOrDie()
+    await updateSelectedBoard({ ...board, archived: false })
   }
 
   const ensureCorrectListOrders = async () => {
@@ -398,6 +401,7 @@ export function useBoard() {
     deleteBoard,
     archiveBoard,
     addBoard,
+    restoreBoard,
 
     addList,
     removeList,

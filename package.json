@@ -17,7 +17,7 @@
     "vite-plugin-kaioken": "^0.0.4"
   },
   "dependencies": {
-    "async-idb-orm": "^1.0.2",
-    "kaioken": "^0.4.1"
+    "async-idb-orm": "^1.0.3",
+    "kaioken": "^0.4.2"
   }
 }

@@ -37,6 +37,7 @@ function BoardEditor() {
     updateSelectedBoard,
     deleteBoard,
     archiveBoard,
+    restoreBoard,
     ensureCorrectListOrders,
   } = useBoard()
   const [titleRef, title] = useModel(board?.title || "")
@@ -49,7 +50,7 @@ function BoardEditor() {
   async function handleDeleteClick() {
     if (!board) return
     if (!confirm("Are you sure? This can't be undone!")) return
-    await deleteBoard(board)
+    await deleteBoard()
     await Promise.all(
       board.lists.map(async (l) => {
         await Promise.all(l.items.map(deleteItem))
@@ -61,8 +62,13 @@ function BoardEditor() {
   }
 
   async function handleArchiveClick() {
+    await archiveBoard()
+    setBoardEditorOpen(false)
+  }
+
+  async function handleRestoreClick() {
     if (!board) return
-    await archiveBoard(board)
+    await restoreBoard()
     setBoardEditorOpen(false)
   }
 
@@ -76,10 +82,15 @@ function BoardEditor() {
           </button>
           <ActionMenu
             items={[
-              {
-                text: "Archive",
-                onclick: handleArchiveClick,
-              },
+              board?.archived
+                ? {
+                    text: "Restore",
+                    onclick: handleRestoreClick,
+                  }
+                : {
+                    text: "Archive",
+                    onclick: handleArchiveClick,
+                  },
               {
                 text: "Delete",
                 onclick: handleDeleteClick,

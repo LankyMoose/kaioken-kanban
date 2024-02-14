@@ -6,11 +6,11 @@ settings:
 
 dependencies:
   async-idb-orm:
-    specifier: ^1.0.2
-    version: 1.0.2
+    specifier: ^1.0.3
+    version: 1.0.3
   kaioken:
-    specifier: ^0.4.1
-    version: 0.4.1
+    specifier: ^0.4.2
+    version: 0.4.2
 
 devDependencies:
   autoprefixer:
@@ -462,8 +462,8 @@ packages:
     resolution: {integrity: sha512-PYjyFOLKQ9y57JvQ6QLo8dAgNqswh8M1RMJYdQduT6xbWSgK36P/Z/v+p888pM69jMMfS8Xd8F6I1kQ/I9HUGg==}
     dev: true
 
-  /async-idb-orm@1.0.2:
-    resolution: {integrity: sha512-NI8a46CVe2VgLGxtDe/mZxYznKdzZMKSgoPPo8oSx+VrX/s3wFRy5rd5JdREV5sSq7O3W3GRzXEDWk8TzObB9w==}
+  /async-idb-orm@1.0.3:
+    resolution: {integrity: sha512-DTIAjkHO7xA4I1vTTJ76Cd2MFNLvfd6lVoieLC6JXHaFD7uW7vhqxVmN4jYL56efroqMzdlpgxXhIXt2Uhsy5g==}
     dev: false
 
   /autoprefixer@10.4.17(postcss@8.4.33):
@@ -764,8 +764,8 @@ packages:
     hasBin: true
     dev: true
 
-  /kaioken@0.4.1:
-    resolution: {integrity: sha512-gtjRelEB4EtkBsOELypQbQp4vffB8DcUy0nfWQICS3XlajPbmq98+FrQiv5WnVQIM7qnTbu2ukP64VYt8W/A6w==}
+  /kaioken@0.4.2:
+    resolution: {integrity: sha512-DNI1upxvgN6JCFPKQObLZwVtvhBI0AL9sZX+Ys+8H7M36QbKGdb96awYWKvMMfMLE6X116jnUoS4O4M312+AKw==}
     dev: false
 
   /lilconfig@2.1.0:

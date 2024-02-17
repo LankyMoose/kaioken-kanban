@@ -7,7 +7,11 @@ import { Button } from "./atoms/Button"
 import { useItemsStore } from "../state/items"
 import { useBoardTagsStore } from "../state/boardTags"
 
-type InteractionEvent = MouseEvent | KeyboardEvent | TouchEvent
+type InteractionEvent = MouseEvent | PointerEvent | KeyboardEvent
+
+function isMouseEvt(evt: InteractionEvent): evt is MouseEvent {
+  return evt instanceof PointerEvent && evt.pointerType === "mouse"
+}
 
 export function ItemList({ list }: { list: List }) {
   const headerRef = useRef<HTMLDivElement>(null)
@@ -62,7 +66,7 @@ export function ItemList({ list }: { list: List }) {
     const element = listRef.current?.cloneNode(true) as HTMLDivElement
     if (!element) return
 
-    const isMouse = e instanceof MouseEvent && !(e instanceof TouchEvent)
+    const isMouse = isMouseEvt(e)
     if (isMouse && e.buttons !== 1) return
     if (e instanceof KeyboardEvent) {
       if (e.key !== "Enter" && e.key !== " ") return
@@ -238,7 +242,7 @@ function Item({
     const element = ref.current?.cloneNode(true) as HTMLButtonElement
     if (!element) return console.error("selectItem fail, no element")
 
-    const isMouse = e instanceof MouseEvent && !(e instanceof TouchEvent)
+    const isMouse = isMouseEvt(e)
     if (isMouse && e.buttons !== 1) return // check if left click
     if (e instanceof KeyboardEvent) {
       // check if either 'enter' or 'space' key

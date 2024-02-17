@@ -7,11 +7,7 @@ import { Button } from "./atoms/Button"
 import { useItemsStore } from "../state/items"
 import { useBoardTagsStore } from "../state/boardTags"
 
-type InteractionEvent = MouseEvent | PointerEvent | KeyboardEvent
-
-function isMouseEvt(evt: InteractionEvent): evt is MouseEvent {
-  return evt instanceof PointerEvent && evt.pointerType === "mouse"
-}
+type InteractionEvent = MouseEvent | TouchEvent | KeyboardEvent
 
 export function ItemList({ list }: { list: List }) {
   const headerRef = useRef<HTMLDivElement>(null)
@@ -62,12 +58,15 @@ export function ItemList({ list }: { list: List }) {
     setItemDragTarget(null)
   }
 
-  function selectList(e: InteractionEvent) {
+  function selectList(
+    e: InteractionEvent,
+    isMouse = false,
+    isLeftClick = false
+  ) {
     const element = listRef.current?.cloneNode(true) as HTMLDivElement
     if (!element) return
 
-    const isMouse = isMouseEvt(e)
-    if (isMouse && e.buttons !== 1) return
+    if (isMouse && !isLeftClick) return
     if (e instanceof KeyboardEvent) {
       if (e.key !== "Enter" && e.key !== " ") return
       e.preventDefault()
@@ -167,7 +166,12 @@ export function ItemList({ list }: { list: List }) {
       className={getListClassName()}
       data-id={list.id}
     >
-      <div className="list-header" ref={headerRef} onpointerdown={selectList}>
+      <div
+        className="list-header"
+        ref={headerRef}
+        onmousedown={(e) => selectList(e, true, e.buttons === 1)}
+        ontouchstart={selectList}
+      >
         <h3 className="list-title text-base font-bold">
           {list.title || `(Unnamed list)`}
         </h3>
@@ -238,17 +242,22 @@ function Item({
     return null
   }
 
-  function selectItem(e: InteractionEvent) {
+  function selectItem(
+    e: InteractionEvent,
+    isMouse = false,
+    isLeftClick = false
+  ) {
     const element = ref.current?.cloneNode(true) as HTMLButtonElement
     if (!element) return console.error("selectItem fail, no element")
 
-    const isMouse = isMouseEvt(e)
-    if (isMouse && e.buttons !== 1) return // check if left click
+    if (isMouse && !isLeftClick) return
     if (e instanceof KeyboardEvent) {
       // check if either 'enter' or 'space' key
       if (e.key !== "Enter" && e.key !== " ") return
       e.preventDefault()
     }
+
+    const mEvt = e as MouseEvent
 
     const rect = ref.current!.getBoundingClientRect()
     setClickedItem({
@@ -261,7 +270,9 @@ function Item({
       dialogOpen: !isMouse,
       element,
       domRect: rect,
-      mouseOffset: isMouse ? { x: e.offsetX, y: e.offsetY } : { x: 0, y: 0 },
+      mouseOffset: isMouse
+        ? { x: mEvt.offsetX, y: mEvt.offsetY }
+        : { x: 0, y: 0 },
     })
     if (isMouse) {
       setItemDragTarget({
@@ -316,7 +327,8 @@ function Item({
       ref={ref}
       className={getClassName()}
       style={getStyle()}
-      onpointerdown={selectItem}
+      onmousedown={(e) => selectItem(e, true, e.buttons === 1)}
+      ontouchstart={selectItem}
       onkeydown={selectItem}
       onclick={handleClick}
       data-id={item.id}

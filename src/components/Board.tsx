@@ -1,9 +1,8 @@
 import "./Board.css"
 import { Link, Portal, useEffect, useRef, useState } from "kaioken"
 import { ItemList } from "./ItemList"
-import type { Board, SelectedBoard, Vector2 } from "../types"
+import type { Board as BoardType, Vector2 } from "../types"
 import { useGlobal } from "../state/global"
-import { useBoard } from "../state/board"
 import { Button } from "./atoms/Button"
 import { ItemEditorModal } from "./ItemEditor"
 import { ListEditorModal } from "./ListEditor"
@@ -13,6 +12,9 @@ import { MouseCtx } from "../state/mouse"
 import { BoardEditorDrawer } from "./BoardEditor"
 import { ChevronLeftIcon } from "./icons/ChevronLeftIcon"
 import { MoreIcon } from "./icons/MoreIcon"
+import { useListsStore } from "../state/lists"
+import { useBoardStore } from "../state/board"
+import { useItemsStore } from "../state/items"
 
 const autoScrollSpeed = 10
 
@@ -34,11 +36,18 @@ export function Board({ boardId }: { boardId: string }) {
   const animFrameRef = useRef(-1)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const [autoScrollVec, setAutoScrollVec] = useState<Vector2>({ x: 0, y: 0 })
-  const { board, handleItemDrop, handleListDrop } = useBoard()
+  const {
+    value: { board },
+    selectBoard,
+  } = useBoardStore()
+  const { handleItemDrop } = useItemsStore()
+  const { handleListDrop } = useListsStore()
   const boardInnerRef = useRef<HTMLDivElement>(null)
 
   const { boards, boardsLoaded } = useGlobal()
-  const { selectBoard } = useBoard()
+  const {
+    value: { lists },
+  } = useListsStore()
 
   useEffect(() => {
     if (!boardsLoaded) return
@@ -169,11 +178,12 @@ export function Board({ boardId }: { boardId: string }) {
           }`}
           ref={boardInnerRef}
         >
-          {board?.lists &&
-            board.lists
-              .filter((list) => !list.archived)
-              .sort((a, b) => a.order - b.order)
-              .map((list) => <ItemList list={list} />)}
+          {lists
+            .filter((list) => !list.archived)
+            .sort((a, b) => a.order - b.order)
+            .map((list) => (
+              <ItemList list={list} />
+            ))}
           <AddList />
         </div>
         <Portal container={document.getElementById("portal")!}>
@@ -189,7 +199,10 @@ export function Board({ boardId }: { boardId: string }) {
 }
 
 function AddList() {
-  const { board, addList } = useBoard()
+  const {
+    value: { lists },
+    addList,
+  } = useListsStore()
   const { clickedList, listDragTarget } = useGlobal()
   return (
     <div
@@ -197,7 +210,7 @@ function AddList() {
         clickedList &&
         !clickedList.dialogOpen &&
         listDragTarget &&
-        listDragTarget.index === board?.lists.length
+        listDragTarget.index === lists.length
           ? "margin-left: calc(var(--selected-list-width) + var(--lists-gap));"
           : ""
       }
@@ -214,7 +227,7 @@ function AddList() {
   )
 }
 
-function Nav({ board }: { board: SelectedBoard | null }) {
+function Nav({ board }: { board: BoardType | null }) {
   const { setBoardEditorOpen } = useGlobal()
   return (
     <nav className="p-4 flex justify-between items-center">

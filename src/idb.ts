@@ -26,7 +26,7 @@ export {
   addTag,
   deleteTag,
   addItemTag,
-  deleteitemTag,
+  deleteItemTag,
   // import/export
   JsonUtils,
 }
@@ -202,11 +202,7 @@ const updateTag = (tag: Tag) => db.tags.update(tag) as Promise<Tag>
 
 const addTag = (boardId: number) => db.tags.create({ boardId }) as Promise<Tag>
 
-const deleteTag = async (tag: Tag, itemTags: ItemTag[]) =>
-  Promise.all([
-    itemTags.map((it) => db.itemTags.delete(it.id)),
-    db.tags.delete(tag.id),
-  ])
+const deleteTag = async (tag: Tag) => db.tags.delete(tag.id)
 
 const addItemTag = (boardId: number, itemId: number, tagId: number) =>
   db.itemTags.create({
@@ -215,4 +211,4 @@ const addItemTag = (boardId: number, itemId: number, tagId: number) =>
     tagId,
   }) as Promise<ItemTag>
 
-const deleteitemTag = (id: number) => db.itemTags.delete(id)
+const deleteItemTag = (itemTag: ItemTag) => db.itemTags.delete(itemTag.id)

@@ -1,17 +1,18 @@
 import "./ItemList.css"
 import { useRef, useEffect } from "kaioken"
-import { ListItem, SelectedBoardList, Tag } from "../types"
+import { List, ListItem, Tag } from "../types"
 import { useGlobal } from "../state/global"
-import { useBoard } from "../state/board"
 import { MoreIcon } from "./icons/MoreIcon"
 import { Button } from "./atoms/Button"
+import { useItemsStore } from "../state/items"
+import { useBoardTagsStore } from "../state/boardTags"
 
-export function ItemList({ list }: { list: SelectedBoardList }) {
+export function ItemList({ list }: { list: List }) {
   const headerRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
   const rect = useRef<DOMRect>(null)
   const dropAreaRef = useRef<HTMLDivElement>(null)
-  const { addItem } = useBoard()
+  const { addItem, getListItems } = useItemsStore()
   const {
     clickedItem,
     setClickedItem,
@@ -33,6 +34,8 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
   if (clickedList?.id === list.id && clickedList.dragging) {
     return null
   }
+
+  const items = getListItems(list.id)
 
   function handleMouseMove(e: MouseEvent) {
     if (e.buttons !== 1) return
@@ -100,7 +103,7 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
       if (
         clickedItem &&
         clickedItem.listId === list.id &&
-        clickedItem.index === list.items.length - 1 &&
+        clickedItem.index === items.length - 1 &&
         !clickedItem.dialogOpen
       ) {
         return `${className} last`
@@ -108,8 +111,7 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
       return className
     }
 
-    const empty =
-      list.items.length === 0 || (isOriginList && list.items.length === 1)
+    const empty = items.length === 0 || (isOriginList && items.length === 1)
 
     if (empty) {
       className += " empty"
@@ -117,7 +119,7 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
     if (itemDragTarget?.listId !== list.id) return className
 
     return `${className} ${clickedItem?.dragging ? "dragging" : ""} ${
-      itemDragTarget.index === list.items.length && !clickedItem.dialogOpen
+      itemDragTarget.index === items.length && !clickedItem.dialogOpen
         ? "last"
         : ""
     }`.trim()
@@ -176,7 +178,7 @@ export function ItemList({ list }: { list: SelectedBoardList }) {
         onmouseleave={handleMouseLeave}
       >
         <div ref={dropAreaRef} className="list-items-inner">
-          {list.items
+          {items
             .sort((a, b) => a.order - b.order)
             .map((item, i) => (
               <Item item={item} idx={i} listId={list.id} />
@@ -208,12 +210,12 @@ function Item({
   const ref = useRef<HTMLButtonElement>(null)
   const { clickedItem, setClickedItem, itemDragTarget, setItemDragTarget } =
     useGlobal()
-  const { board } = useBoard()
-  const tags: Tag[] = !board
-    ? []
-    : board.itemTags
-        .filter((it) => it.itemId === item.id)
-        .map((it) => board.tags.find((t) => t.id === it.tagId)!)
+  const {
+    value: { tags, itemTags },
+  } = useBoardTagsStore()
+  const itemItemTags: Tag[] = itemTags
+    .filter((it) => it.itemId === item.id)
+    .map((it) => tags.find((t) => t.id === it.tagId)!)
 
   if (clickedItem?.id === item.id && clickedItem.dragging) {
     return null
@@ -296,7 +298,7 @@ function Item({
     >
       <span>{item.title || "(Unnamed Item)"}</span>
       <div className="flex gap-2 flex-wrap">
-        {tags.map((tag) => (
+        {itemItemTags.map((tag) => (
           <span
             className="px-[4px] py-[1px] text-xs"
             style={{ backgroundColor: tag.color }}

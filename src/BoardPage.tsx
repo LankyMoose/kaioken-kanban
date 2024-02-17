@@ -1,6 +1,5 @@
 import { useRef, useEffect } from "kaioken"
 import { Board } from "./components/Board"
-import { BoardProvider } from "./state/BoardProvider"
 import { useGlobal } from "./state/global"
 
 export function BoardPage({ params }: { params: Record<string, any> }) {
@@ -14,10 +13,8 @@ export function BoardPage({ params }: { params: Record<string, any> }) {
 
   const { boardId } = params
   return (
-    <BoardProvider>
-      <main ref={rootElementRef}>
-        <Board boardId={boardId} />
-      </main>
-    </BoardProvider>
+    <main ref={rootElementRef}>
+      <Board boardId={boardId} />
+    </main>
   )
 }

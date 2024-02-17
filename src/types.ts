@@ -97,13 +97,3 @@ export interface ClickedList {
     y: number
   }
 }
-
-export interface SelectedBoardList extends List {
-  items: ListItem[]
-}
-
-export interface SelectedBoard extends Board {
-  tags: Tag[]
-  itemTags: ItemTag[]
-  lists: SelectedBoardList[]
-}

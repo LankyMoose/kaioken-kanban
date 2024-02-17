@@ -1,5 +1,4 @@
 import { Transition, useEffect, useModel, useState } from "kaioken"
-import { useBoard } from "../state/board"
 import { ClickedList } from "../types"
 import { Input } from "./atoms/Input"
 import { DialogHeader } from "./dialog/DialogHeader"
@@ -10,6 +9,7 @@ import { ActionMenu } from "./ActionMenu"
 import { DialogFooter } from "./dialog/DialogFooter"
 import { Button } from "./atoms/Button"
 import { maxListNameLength } from "../constants"
+import { useListsStore } from "../state/lists"
 
 export function ListEditorModal() {
   const { clickedList, setClickedList } = useGlobal()
@@ -36,7 +36,7 @@ export function ListEditorModal() {
 
 function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
   const { setClickedList } = useGlobal()
-  const { updateList, removeList, archiveList, board } = useBoard()
+  const { updateList, getList, deleteList, archiveList } = useListsStore()
   const [titleRef, title] = useModel<HTMLInputElement, string>(
     clickedList?.list.title || ""
   )
@@ -49,7 +49,7 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
 
   async function saveChanges() {
     if (!clickedList) return
-    const list = board?.lists.find((l) => l.id === clickedList.id)
+    const list = getList(clickedList.id)
     if (!list) throw new Error("no list, wah wah")
     await updateList({ ...list, title })
     setClickedList(null)
@@ -59,7 +59,7 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
     if (!clickedList) return
     switch (action) {
       case "delete": {
-        await removeList(clickedList.id)
+        await deleteList(clickedList.id)
         setClickedList(null)
         break
       }

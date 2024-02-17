@@ -1,5 +1,4 @@
 import { Transition, useEffect, useModel, useState } from "kaioken"
-import { useBoard } from "../state/board"
 import { Input } from "./atoms/Input"
 import { DialogBody } from "./dialog/DialogBody"
 import { DialogHeader } from "./dialog/DialogHeader"
@@ -10,6 +9,9 @@ import { ActionMenu } from "./ActionMenu"
 import { Button } from "./atoms/Button"
 import { DialogFooter } from "./dialog/DialogFooter"
 import { maxItemNameLength } from "../constants"
+import { useBoardTagsStore } from "../state/boardTags"
+import { useBoardStore } from "../state/board"
+import { useItemsStore } from "../state/items"
 
 export function ItemEditorModal() {
   const { clickedItem, setClickedItem } = useGlobal()
@@ -39,13 +41,15 @@ export function ItemEditorModal() {
 function ItemEditor() {
   const { setClickedItem, clickedItem } = useGlobal()
   const {
-    updateItem,
-    removeItem,
-    archiveItem,
-    board,
+    value: { board },
+  } = useBoardStore()
+  const {
+    value: { tags, itemTags },
     addItemTag,
     removeItemTag,
-  } = useBoard()
+  } = useBoardTagsStore()
+  const { updateItem, deleteItem, archiveItem } = useItemsStore()
+
   const [titleRef, title] = useModel<HTMLInputElement, string>(
     clickedItem?.item.title || ""
   )
@@ -54,9 +58,8 @@ function ItemEditor() {
   )
 
   const savedTagIds =
-    board?.itemTags
-      .filter((t) => t.itemId === clickedItem?.id)
-      .map((i) => i.tagId) ?? []
+    itemTags.filter((t) => t.itemId === clickedItem?.id).map((i) => i.tagId) ??
+    []
 
   const [ctxOpen, setCtxOpen] = useState(false)
   const [itemTagIds, setItemTagIds] = useState(savedTagIds)
@@ -75,16 +78,18 @@ function ItemEditor() {
     if (addedItemTagIds.length || removedItemTagIds.length) {
       await Promise.all([
         ...addedItemTagIds.map((it) =>
-          addItemTag({ itemId: clickedItem.id, tagId: it })
+          addItemTag({ boardId: board!.id, itemId: clickedItem.id, tagId: it })
         ),
         ...removedItemTagIds
           .map(
             (it) =>
-              board!.itemTags.find(
+              itemTags.find(
                 (t) => t.tagId === it && t.itemId === clickedItem.id
               )!.id
           )
-          .map(removeItemTag),
+          .map((id) => {
+            return removeItemTag(itemTags.find((it) => it.id === id)!)
+          }),
       ])
     }
 
@@ -100,7 +105,7 @@ function ItemEditor() {
 
   async function handleCtxAction(action: "delete" | "archive") {
     if (!clickedItem) return
-    await (action === "delete" ? removeItem : archiveItem)(clickedItem.item)
+    await (action === "delete" ? deleteItem : archiveItem)(clickedItem.item)
     setClickedItem(null)
   }
 
@@ -148,7 +153,7 @@ function ItemEditor() {
         <div>
           <label className="text-sm font-semibold">Tags</label>
           <ul>
-            {board?.tags.map((t) => (
+            {tags.map((t) => (
               <li className="flex items-center gap-2">
                 <input
                   id={`item-tag-${t.id}`}

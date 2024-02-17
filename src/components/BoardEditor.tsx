@@ -1,7 +1,7 @@
 import { useModel, useState, useEffect, ElementProps } from "kaioken"
-import { deleteItem, deleteList, loadItems, loadLists } from "../idb"
-import { useBoard } from "../state/board"
-import { SelectedBoard, List, ListItem, Tag } from "../types"
+import { loadItems, loadLists } from "../idb"
+import { useBoardStore } from "../state/board"
+import { List, ListItem, Tag, Board } from "../types"
 import { Button } from "./atoms/Button"
 import { Input } from "./atoms/Input"
 import { Spinner } from "./atoms/Spinner"
@@ -12,6 +12,9 @@ import { MoreIcon } from "./icons/MoreIcon"
 import { maxBoardNameLength, maxTagNameLength } from "../constants"
 import { Transition } from "kaioken"
 import { Drawer } from "./dialog/Drawer"
+import { useListsStore } from "../state/lists"
+import { useBoardTagsStore } from "../state/boardTags"
+import { useItemsStore } from "../state/items"
 
 export function BoardEditorDrawer() {
   const { boardEditorOpen, setBoardEditorOpen } = useGlobal()
@@ -33,13 +36,13 @@ export function BoardEditorDrawer() {
 function BoardEditor() {
   const { setBoardEditorOpen } = useGlobal()
   const {
-    board,
-    updateSelectedBoard,
+    value: { board },
     deleteBoard,
     archiveBoard,
     restoreBoard,
-    ensureCorrectListOrders,
-  } = useBoard()
+    updateSelectedBoard,
+  } = useBoardStore()
+
   const [titleRef, title] = useModel<HTMLInputElement, string>(
     board?.title || ""
   )
@@ -55,15 +58,7 @@ function BoardEditor() {
 
   async function handleDeleteClick() {
     if (!board) return
-    if (!confirm("Are you sure? This can't be undone!")) return
     await deleteBoard()
-    await Promise.all(
-      board.lists.map(async (l) => {
-        await Promise.all(l.items.map(deleteItem))
-        return deleteList(l)
-      })
-    )
-
     setBoardEditorOpen(false)
   }
 
@@ -128,11 +123,6 @@ function BoardEditor() {
       <br />
       <BoardTagsEditor board={board} />
       <br />
-      {false && (
-        <button onclick={() => ensureCorrectListOrders()}>
-          fix list orders
-        </button>
-      )}
       <ArchivedLists board={board} />
       <br />
       <ArchivedItems board={board} />
@@ -140,21 +130,28 @@ function BoardEditor() {
   )
 }
 
-function BoardTagsEditor({ board }: { board: SelectedBoard | null }) {
-  if (!board) return null
-  const { addBoardTag } = useBoard()
+function BoardTagsEditor({ board }: { board: Board | null }) {
+  const {
+    addTag,
+    value: { tags },
+  } = useBoardTagsStore()
+
+  function handleAddTagClick() {
+    if (!board) return
+    addTag(board.id)
+  }
 
   return (
     <ListContainer>
       <ListTitle>Board Tags</ListTitle>
 
       <div className="mb-2">
-        {board.tags.map((tag) => (
+        {tags.map((tag) => (
           <BoardTagEditor tag={tag} />
         ))}
       </div>
       <div className="flex">
-        <Button variant="link" className="ml-auto" onclick={addBoardTag}>
+        <Button variant="link" className="ml-auto" onclick={handleAddTagClick}>
           Add Tag
         </Button>
       </div>
@@ -163,16 +160,16 @@ function BoardTagsEditor({ board }: { board: SelectedBoard | null }) {
 }
 
 function BoardTagEditor({ tag }: { tag: Tag }) {
-  const { updateBoardTag } = useBoard()
+  const { updateTag } = useBoardTagsStore()
 
   const handleTitleChange = (e: Event) => {
     const title = (e.target as HTMLInputElement).value
-    updateBoardTag({ ...tag, title })
+    updateTag({ ...tag, title })
   }
 
   const handleColorChange = (e: Event) => {
     const color = (e.target as HTMLInputElement).value
-    updateBoardTag({ ...tag, color })
+    updateTag({ ...tag, color })
   }
 
   return (
@@ -194,17 +191,20 @@ function BoardTagEditor({ tag }: { tag: Tag }) {
   )
 }
 
-function ArchivedItems({ board }: { board: SelectedBoard | null }) {
+function ArchivedItems({ board }: { board: Board | null }) {
   const [loading, setLoading] = useState(false)
   const [items, setItems] = useState<(ListItem & { list: string })[]>([])
-  const { restoreItem } = useBoard()
+  const { restoreItem } = useItemsStore()
+  const {
+    value: { lists },
+  } = useListsStore()
 
   useEffect(() => {
     if (!board) return
     setLoading(true)
     ;(async () => {
       const res = await Promise.all(
-        board.lists.map(async (list) => {
+        lists.map(async (list) => {
           return (await loadItems(list.id, true)).map((item) => ({
             ...item,
             list: list.title,
@@ -256,10 +256,10 @@ function ArchivedItems({ board }: { board: SelectedBoard | null }) {
   )
 }
 
-function ArchivedLists({ board }: { board: SelectedBoard | null }) {
+function ArchivedLists({ board }: { board: Board | null }) {
   const [loading, setLoading] = useState(false)
   const [lists, setLists] = useState<List[]>([])
-  const { restoreList } = useBoard()
+  const { restoreList } = useListsStore()
   useEffect(() => {
     if (!board) return
     setLoading(true)

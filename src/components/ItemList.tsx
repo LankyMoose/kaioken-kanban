@@ -9,6 +9,11 @@ import { useBoardTagsStore } from "../state/boardTags"
 
 type InteractionEvent = MouseEvent | TouchEvent | KeyboardEvent
 
+function isTouchEvent(e: Event): boolean {
+  if (!Object.hasOwn(window, "TouchEvent")) return false
+  return e instanceof TouchEvent
+}
+
 export function ItemList({ list }: { list: List }) {
   const headerRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
@@ -58,15 +63,12 @@ export function ItemList({ list }: { list: List }) {
     setItemDragTarget(null)
   }
 
-  function selectList(
-    e: InteractionEvent,
-    isMouse = false,
-    isLeftClick = false
-  ) {
+  function selectList(e: InteractionEvent) {
     const element = listRef.current?.cloneNode(true) as HTMLDivElement
     if (!element) return
 
-    if (isMouse && !isLeftClick) return
+    const isMouse = e instanceof MouseEvent && !isTouchEvent(e)
+    if (isMouse && e.buttons !== 1) return
     if (e instanceof KeyboardEvent) {
       if (e.key !== "Enter" && e.key !== " ") return
       e.preventDefault()
@@ -166,12 +168,7 @@ export function ItemList({ list }: { list: List }) {
       className={getListClassName()}
       data-id={list.id}
     >
-      <div
-        className="list-header"
-        ref={headerRef}
-        onmousedown={(e) => selectList(e, true, e.buttons === 1)}
-        ontouchstart={selectList}
-      >
+      <div className="list-header" ref={headerRef} onpointerdown={selectList}>
         <h3 className="list-title text-base font-bold">
           {list.title || `(Unnamed list)`}
         </h3>
@@ -242,15 +239,12 @@ function Item({
     return null
   }
 
-  function selectItem(
-    e: InteractionEvent,
-    isMouse = false,
-    isLeftClick = false
-  ) {
+  function selectItem(e: InteractionEvent) {
     const element = ref.current?.cloneNode(true) as HTMLButtonElement
     if (!element) return console.error("selectItem fail, no element")
 
-    if (isMouse && !isLeftClick) return
+    const isMouse = e instanceof MouseEvent && !isTouchEvent(e)
+    if (isMouse && e.buttons !== 1) return
     if (e instanceof KeyboardEvent) {
       // check if either 'enter' or 'space' key
       if (e.key !== "Enter" && e.key !== " ") return
@@ -327,8 +321,7 @@ function Item({
       ref={ref}
       className={getClassName()}
       style={getStyle()}
-      onmousedown={(e) => selectItem(e, true, e.buttons === 1)}
-      ontouchstart={selectItem}
+      onpointerdown={selectItem}
       onkeydown={selectItem}
       onclick={handleClick}
       data-id={item.id}

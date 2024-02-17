@@ -7,6 +7,8 @@ import { Button } from "./atoms/Button"
 import { useItemsStore } from "../state/items"
 import { useBoardTagsStore } from "../state/boardTags"
 
+type InteractionEvent = MouseEvent | KeyboardEvent | TouchEvent
+
 export function ItemList({ list }: { list: List }) {
   const headerRef = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
@@ -56,14 +58,17 @@ export function ItemList({ list }: { list: List }) {
     setItemDragTarget(null)
   }
 
-  function selectList(e: MouseEvent | KeyboardEvent) {
-    if (e instanceof MouseEvent && e.buttons !== 1) return
+  function selectList(e: InteractionEvent) {
+    const element = listRef.current?.cloneNode(true) as HTMLDivElement
+    if (!element) return
+
+    const isMouse = e instanceof MouseEvent && !(e instanceof TouchEvent)
+    if (isMouse && e.buttons !== 1) return
     if (e instanceof KeyboardEvent) {
       if (e.key !== "Enter" && e.key !== " ") return
       e.preventDefault()
     }
-    const element = listRef.current?.cloneNode(true) as HTMLDivElement
-    if (!element) return
+
     const rect = listRef.current!.getBoundingClientRect()
     const mouseOffset =
       e instanceof MouseEvent
@@ -81,12 +86,12 @@ export function ItemList({ list }: { list: List }) {
       id: list.id,
       index: list.order,
       dragging: false,
-      dialogOpen: e instanceof KeyboardEvent,
+      dialogOpen: !isMouse,
       element,
       domRect: rect,
       mouseOffset,
     })
-    if (e instanceof MouseEvent) {
+    if (isMouse) {
       setListDragTarget({ index: list.order + 1 })
     }
   }
@@ -166,7 +171,15 @@ export function ItemList({ list }: { list: List }) {
           className="p-2"
           onkeydown={selectList}
           onclick={() =>
-            clickedList && setClickedList({ ...clickedList, dialogOpen: true })
+            setClickedList({
+              ...(clickedList ?? {
+                list,
+                id: list.id,
+                index: list.order,
+                dragging: false,
+              }),
+              dialogOpen: true,
+            })
           }
         >
           <MoreIcon />
@@ -221,14 +234,18 @@ function Item({
     return null
   }
 
-  function selectItem(e: MouseEvent | KeyboardEvent) {
-    if (e instanceof MouseEvent && e.buttons !== 1) return
+  function selectItem(e: InteractionEvent) {
+    const element = ref.current?.cloneNode(true) as HTMLButtonElement
+    if (!element) return console.error("selectItem fail, no element")
+
+    const isMouse = e instanceof MouseEvent && !(e instanceof TouchEvent)
+    if (isMouse && e.buttons !== 1) return // check if left click
     if (e instanceof KeyboardEvent) {
+      // check if either 'enter' or 'space' key
       if (e.key !== "Enter" && e.key !== " ") return
       e.preventDefault()
     }
-    const element = ref.current?.cloneNode(true) as HTMLButtonElement
-    if (!element) return
+
     const rect = ref.current!.getBoundingClientRect()
     setClickedItem({
       sender: e,
@@ -237,24 +254,28 @@ function Item({
       listId: listId,
       index: idx,
       dragging: false,
-      dialogOpen: e instanceof KeyboardEvent,
+      dialogOpen: !isMouse,
       element,
       domRect: rect,
-      mouseOffset:
-        e instanceof MouseEvent
-          ? { x: e.offsetX, y: e.offsetY }
-          : { x: 0, y: 0 },
+      mouseOffset: isMouse ? { x: e.offsetX, y: e.offsetY } : { x: 0, y: 0 },
     })
-    if (e instanceof KeyboardEvent) return
-    setItemDragTarget({
-      index: idx + 1,
-      listId,
-    })
+    if (isMouse) {
+      setItemDragTarget({
+        index: idx + 1,
+        listId,
+      })
+    }
   }
 
   function handleClick() {
     setClickedItem({
-      ...clickedItem!,
+      ...(clickedItem ?? {
+        item,
+        id: item.id,
+        listId: listId,
+        index: idx,
+        dragging: false,
+      }),
       dialogOpen: true,
     })
   }

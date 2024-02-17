@@ -111,7 +111,8 @@
   transition: none;
 }
 
-.list:hover .list-items:not(.dragging) .list-items-inner {
+.list:hover .list-items:not(.dragging) .list-items-inner,
+[inputMode="touch"] .list .list-items:not(.dragging) .list-items-inner {
   transition: none;
 }
 

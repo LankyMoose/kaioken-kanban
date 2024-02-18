@@ -2,8 +2,9 @@
 .add-list {
   display: flex;
   flex-direction: column;
-  width: 270px;
+  width: 290px;
   transition: margin-left .15s ease;
+  scroll-snap-align: center;
 }
 
 .add-list {

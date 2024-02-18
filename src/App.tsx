@@ -11,8 +11,8 @@ export function App() {
         <Route path="/" element={HomePage} />
         <Route path="/boards/:boardId" element={BoardPage} />
       </Router>
-      <footer className="fixed bottom-0 w-full px-3 py-2">
-        <div className="text-right">
+      <footer className="fixed bottom-0 right-0 p-3">
+        <div className="text-right flex">
           <a
             href="https://github.com/robby6strings/kaioken-kanban"
             target="_blank"

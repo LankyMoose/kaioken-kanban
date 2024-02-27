@@ -7,4 +7,4 @@ document.addEventListener("touchstart", () => {
 })
 
 const root = document.querySelector<HTMLDivElement>("#app")!
-mount(App, root)
+mount(App, { root, maxFrameMs: 16 })

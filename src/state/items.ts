@@ -116,9 +116,7 @@ const useItemsStore = createStore(
         archived: false,
         order: maxListOrder + 1,
       })
-      set(({ items }) => ({
-        items: items.map((item) => (item.id === newItem.id ? newItem : item)),
-      }))
+      set(({ items }) => ({ items: [...items, newItem] }))
     }
     const deleteItem = async (payload: ListItem) => {
       const confirmDelete = confirm(

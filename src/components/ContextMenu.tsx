@@ -116,7 +116,7 @@ function ContextMenuDisplay() {
         Archive
       </button>
       <div className="context-menu-item tag-selector">
-        <span className="text-xs header">Tags</span>
+        <span className="header">Tags</span>
         <div className="p-2 tag-selector">
           {tags.map((tag) => {
             const selected = itemTags.some((it) => it.tagId === tag.id)

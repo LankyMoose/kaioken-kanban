@@ -12,6 +12,7 @@
   text-align: left;
   padding: .25rem;
   border-bottom: 1px solid rgba(0, 0, 0, .3);
+  font-size: small;
 }
 
 button.context-menu-item:hover {

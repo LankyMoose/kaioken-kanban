@@ -1,5 +1,5 @@
 import "./ItemList.css"
-import { useRef, useEffect } from "kaioken"
+import { useRef, useEffect, useMemo } from "kaioken"
 import { List, ListItem, Tag } from "../types"
 import { useGlobal } from "../state/global"
 import { MoreIcon } from "./icons/MoreIcon"
@@ -232,9 +232,12 @@ function Item({
   const {
     value: { tags, itemTags },
   } = useBoardTagsStore()
-  const itemItemTags: Tag[] = itemTags
-    .filter((it) => it.itemId === item.id)
-    .map((it) => tags.find((t) => t.id === it.tagId)!)
+
+  const itemItemTags: Tag[] = useMemo(() => {
+    return itemTags
+      .filter((it) => it.itemId === item.id)
+      .map((it) => tags.find((t) => t.id === it.tagId)!)
+  }, [itemTags])
 
   if (clickedItem?.id === item.id && clickedItem.dragging) {
     return null
@@ -254,6 +257,7 @@ function Item({
             y: e.clientY,
           },
           open: true,
+          item,
         })
       }
       return

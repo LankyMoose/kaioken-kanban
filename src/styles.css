@@ -7,6 +7,7 @@
   color: #eee6ff;
   color-scheme: light dark;
   --primary: rgb(64 37 121);
+  --primary-light: rgb(90 53 153);
   --radius: 4px;
   --color: #e6e6e6;
   --item-height: 80px;

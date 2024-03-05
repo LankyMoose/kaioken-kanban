@@ -15,6 +15,7 @@ import { MoreIcon } from "./icons/MoreIcon"
 import { useListsStore } from "../state/lists"
 import { useBoardStore } from "../state/board"
 import { useItemsStore } from "../state/items"
+import { ContextMenu } from "./ContextMenu"
 
 const autoScrollSpeed = 10
 
@@ -192,6 +193,7 @@ export function Board({ boardId }: { boardId: string }) {
           <ItemEditorModal />
           <ListEditorModal />
           <BoardEditorDrawer />
+          <ContextMenu />
         </Portal>
       </div>
     </MouseCtx.Provider>

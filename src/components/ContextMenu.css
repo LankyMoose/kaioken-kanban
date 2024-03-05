@@ -1,0 +1,7 @@
+#context-menu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 1rem;
+  background-color: var(--dialog-background);
+}

@@ -6,6 +6,7 @@ import { MoreIcon } from "./icons/MoreIcon"
 import { Button } from "./atoms/Button"
 import { useItemsStore } from "../state/items"
 import { useBoardTagsStore } from "../state/boardTags"
+import { useContextMenu } from "../state/contextMenu"
 
 type InteractionEvent = MouseEvent | TouchEvent | KeyboardEvent
 
@@ -244,7 +245,19 @@ function Item({
     if (!element) return console.error("selectItem fail, no element")
 
     const isMouse = e instanceof MouseEvent && !isTouchEvent(e)
-    if (isMouse && e.buttons !== 1) return
+    if (isMouse && e.buttons !== 1) {
+      if (e.buttons == 2) {
+        useContextMenu.setState({
+          rightClickHandled: true,
+          click: {
+            x: e.clientX,
+            y: e.clientY,
+          },
+          open: true,
+        })
+      }
+      return
+    }
     if (e instanceof KeyboardEvent) {
       // check if either 'enter' or 'space' key
       if (e.key !== "Enter" && e.key !== " ") return

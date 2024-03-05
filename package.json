@@ -18,6 +18,6 @@
   },
   "dependencies": {
     "async-idb-orm": "^1.0.3",
-    "kaioken": "^0.8.4"
+    "kaioken": "^0.9.3"
   }
 }

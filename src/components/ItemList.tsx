@@ -231,13 +231,16 @@ function Item({
     useGlobal()
   const {
     value: { tags, itemTags },
-  } = useBoardTagsStore()
+  } = useBoardTagsStore((state) => [
+    ...state.tags,
+    ...state.itemTags.filter((it) => it.itemId === item.id),
+  ])
 
   const itemItemTags: Tag[] = useMemo(() => {
     return itemTags
       .filter((it) => it.itemId === item.id)
       .map((it) => tags.find((t) => t.id === it.tagId)!)
-  }, [itemTags])
+  }, [itemTags, item.id])
 
   if (clickedItem?.id === item.id && clickedItem.dragging) {
     return null

@@ -1,6 +1,6 @@
 import "./ItemList.css"
-import { useRef, useEffect, useMemo } from "kaioken"
-import { List, ListItem, Tag } from "../types"
+import { useRef, useEffect } from "kaioken"
+import { List, ListItem } from "../types"
 import { useGlobal } from "../state/global"
 import { MoreIcon } from "./icons/MoreIcon"
 import { Button } from "./atoms/Button"
@@ -20,7 +20,9 @@ export function ItemList({ list }: { list: List }) {
   const listRef = useRef<HTMLDivElement>(null)
   const rect = useRef<DOMRect>(null)
   const dropAreaRef = useRef<HTMLDivElement>(null)
-  const { addItem, getListItems } = useItemsStore()
+  const { value: items, addItem } = useItemsStore((state) =>
+    state.items.filter((i) => i.listId === list.id)
+  )
   const {
     clickedItem,
     setClickedItem,
@@ -42,8 +44,6 @@ export function ItemList({ list }: { list: List }) {
   if (clickedList?.id === list.id && clickedList.dragging) {
     return null
   }
-
-  const items = getListItems(list.id)
 
   function handleMouseMove(e: MouseEvent) {
     if (e.buttons !== 1) return
@@ -230,17 +230,12 @@ function Item({
   const { clickedItem, setClickedItem, itemDragTarget, setItemDragTarget } =
     useGlobal()
   const {
-    value: { tags, itemTags },
-  } = useBoardTagsStore((state) => [
-    ...state.tags,
-    ...state.itemTags.filter((it) => it.itemId === item.id),
-  ])
-
-  const itemItemTags: Tag[] = useMemo(() => {
-    return itemTags
+    value: { itemItemTags },
+  } = useBoardTagsStore(({ tags, itemTags }) => ({
+    itemItemTags: itemTags
       .filter((it) => it.itemId === item.id)
-      .map((it) => tags.find((t) => t.id === it.tagId)!)
-  }, [itemTags, item.id])
+      .map((it) => tags.find((t) => t.id === it.tagId)!),
+  }))
 
   if (clickedItem?.id === item.id && clickedItem.dragging) {
     return null

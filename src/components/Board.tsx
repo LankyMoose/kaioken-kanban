@@ -201,11 +201,11 @@ export function Board({ boardId }: { boardId: string }) {
 }
 
 function AddList() {
+  const { setClickedList, clickedList, listDragTarget } = useGlobal()
   const {
     value: { lists },
     addList,
   } = useListsStore()
-  const { clickedList, listDragTarget } = useGlobal()
   return (
     <div
       style={
@@ -221,7 +221,16 @@ function AddList() {
       <Button
         variant="primary"
         className="text-sm font-semibold py-4 border-2 border-transparent"
-        onclick={() => addList()}
+        onclick={async () => {
+          const newList = await addList()
+          setClickedList({
+            list: newList,
+            dialogOpen: true,
+            dragging: false,
+            id: newList.id,
+            index: newList.order,
+          })
+        }}
       >
         Add a list...
       </Button>

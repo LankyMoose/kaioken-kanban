@@ -34,7 +34,7 @@ export function BoardEditorDrawer() {
 }
 
 function BoardEditor() {
-  const { setBoardEditorOpen } = useGlobal()
+  const { setBoardEditorOpen, boards, updateBoards } = useGlobal()
   const {
     value: { board },
     deleteBoard,
@@ -53,18 +53,21 @@ function BoardEditor() {
     titleRef.current?.focus()
   }, [])
 
-  function handleSubmit() {
-    updateSelectedBoard({ ...board, title })
+  async function handleSubmit() {
+    const res = await updateSelectedBoard({ ...board, title })
+    updateBoards(boards.map((b) => (b.id === res.id ? res : b)))
   }
 
   async function handleDeleteClick() {
     if (!board) return
     await deleteBoard()
+    updateBoards(boards.filter((b) => b.id !== board.id))
     setBoardEditorOpen(false)
   }
 
   async function handleArchiveClick() {
-    await archiveBoard()
+    const res = await archiveBoard()
+    updateBoards(boards.map((b) => (b.id === res.id ? res : b)))
     setBoardEditorOpen(false)
   }
 

@@ -1,6 +1,5 @@
 import { createStore, navigate } from "kaioken"
 import type { Board } from "../types"
-import { useGlobal } from "./global"
 import { useBoardTagsStore } from "./boardTags"
 import { useItemsStore } from "./items"
 import * as db from "../idb"
@@ -25,12 +24,11 @@ export const useBoardStore = createStore(
       setListItemsState(listItems)
     }
     const updateSelectedBoard = async (payload: Partial<Board>) => {
-      const { boards, updateBoards } = useGlobal()
       const board = get().board!
       const newBoard = { ...board, ...payload }
       const res = await db.updateBoard(newBoard)
-      updateBoards(boards.map((b) => (b.id === res.id ? newBoard : b)))
       set({ board: res })
+      return board
     }
     const deleteBoard = async () => {
       const board = get().board!
@@ -39,7 +37,6 @@ export const useBoardStore = createStore(
         "Are you sure you want to delete this board and all of its data? This can't be undone!"
       )
       if (!confirmDelete) return
-      const { boards, updateBoards } = useGlobal()
 
       const { items } = useItemsStore.getState()
       const { tags, itemTags } = useBoardTagsStore.getState()
@@ -52,16 +49,14 @@ export const useBoardStore = createStore(
         db.deleteBoard(board),
       ])
 
-      updateBoards(boards.filter((b) => b.id !== board.id))
       set({ board: null })
       navigate("/")
     }
     const archiveBoard = async () => {
-      const { boards, updateBoards } = useGlobal()
       const board = get().board!
       const newBoard = await db.archiveBoard(board)
-      updateBoards(boards.map((b) => (b.id === board.id ? newBoard : b)))
       navigate("/")
+      return newBoard
     }
     const restoreBoard = async () => {
       const board = get()!

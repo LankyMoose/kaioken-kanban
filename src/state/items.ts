@@ -1,6 +1,5 @@
 import { createStore } from "kaioken"
 import { ListItem, ClickedItem, ItemDragTarget } from "../types"
-import { useGlobal } from "./global"
 import * as db from "../idb"
 import { useBoardTagsStore } from "./boardTags"
 
@@ -89,19 +88,10 @@ const useItemsStore = createStore(
       }
     }
     const addItem = async (listId: number) => {
-      const { setClickedItem } = useGlobal()
       const maxListOrder = getMaxListOrder(listId)
       const item = await db.addItem(listId, maxListOrder + 1)
       set(({ items }) => ({ items: [...items, item] }))
-
-      setClickedItem({
-        item,
-        id: item.id,
-        dialogOpen: true,
-        dragging: false,
-        listId,
-        index: item.order,
-      })
+      return item
     }
     const updateItem = async (payload: ListItem) => {
       const newItem = await db.updateItem(payload)

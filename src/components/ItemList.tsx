@@ -20,6 +20,7 @@ export function ItemList({ list }: { list: List }) {
   const listRef = useRef<HTMLDivElement>(null)
   const rect = useRef<DOMRect>(null)
   const dropAreaRef = useRef<HTMLDivElement>(null)
+
   const { value: items, addItem } = useItemsStore((state) =>
     state.items.filter((i) => i.listId === list.id)
   )
@@ -208,7 +209,17 @@ export function ItemList({ list }: { list: List }) {
         <Button
           variant="primary"
           className="flex-grow py-2 text-sm font-semibold"
-          onclick={() => addItem(list.id)}
+          onclick={async () => {
+            const item = await addItem(list.id)
+            setClickedItem({
+              item,
+              id: item.id,
+              dialogOpen: true,
+              dragging: false,
+              listId: list.id,
+              index: item.order,
+            })
+          }}
         >
           Add Item
         </Button>

@@ -1,7 +1,6 @@
 import { createStore } from "kaioken"
 import type { List, ClickedList, ListDragTarget } from "../types"
 import { useBoardStore } from "./board"
-import { useGlobal } from "./global"
 import { getListItems } from "./items"
 import * as db from "../idb"
 import { useBoardTagsStore } from "./boardTags"
@@ -33,18 +32,10 @@ const useListsStore = createStore({ lists: [] as List[] }, function (set, get) {
     get().lists.find((list) => list.id === listId)
 
   const addList = async () => {
-    const { setClickedList } = useGlobal()
     const maxListOrder = getMaxListOrder()
     const newList = await db.addList(getBoardOrDie().id, maxListOrder + 1)
     set(({ lists }) => ({ lists: [...lists, { ...newList, items: [] }] }))
-
-    setClickedList({
-      list: newList,
-      dialogOpen: true,
-      dragging: false,
-      id: newList.id,
-      index: newList.order,
-    })
+    return newList
   }
   const archiveList = async (id: number) => {
     const list = getList(id)

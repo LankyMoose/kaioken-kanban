@@ -24,8 +24,6 @@ export function HomePage() {
   const activeBoards = boards.filter((b) => !b.archived)
   const archivedBoards = boards.filter((b) => b.archived)
 
-  console.log("HomePage Render", menuOpen)
-
   return (
     <main className="p-8">
       <header className="flex gap-2 justify-between items-center">

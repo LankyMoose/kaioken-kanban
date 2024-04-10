@@ -10,9 +10,22 @@ import {
 } from "../types"
 import { addBoard as addBoardDb } from "../idb"
 
-export const GlobalCtx = createContext<GlobalState>(null)
-export const GlobalDispatchCtx =
-  createContext<(action: GlobalDispatchAction) => void>(null)
+export const defaultGlobalState: GlobalState = {
+  boardEditorOpen: false,
+  rootElement: null,
+  dragging: false,
+  clickedItem: null,
+  itemDragTarget: null,
+  clickedList: null,
+  listDragTarget: null,
+  boards: [],
+  boardsLoaded: false,
+}
+
+export const GlobalCtx = createContext<GlobalState>(defaultGlobalState)
+export const GlobalDispatchCtx = createContext<
+  (action: GlobalDispatchAction) => void
+>(() => {})
 
 export function useGlobal() {
   const dispatch = useContext(GlobalDispatchCtx)
@@ -181,16 +194,4 @@ export function globalStateReducer(
       return state
     }
   }
-}
-
-export const defaultGlobalState: GlobalState = {
-  boardEditorOpen: false,
-  rootElement: null,
-  dragging: false,
-  clickedItem: null,
-  itemDragTarget: null,
-  clickedList: null,
-  listDragTarget: null,
-  boards: [],
-  boardsLoaded: false,
 }

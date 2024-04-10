@@ -6,7 +6,7 @@ import { MoreIcon } from "./components/icons/MoreIcon"
 import { JsonUtils } from "./idb"
 import { useGlobal } from "./state/global"
 import { Board } from "./types"
-import { Link, useState } from "kaioken"
+import { Link, useRef, useState } from "kaioken"
 
 function readFile(file: Blob): Promise<string> {
   return new Promise((resolve) => {
@@ -19,9 +19,12 @@ function readFile(file: Blob): Promise<string> {
 export function HomePage() {
   const [showArchived, setShowArchived] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const menuBtnRef = useRef<HTMLButtonElement>(null)
   const { boards, addBoard } = useGlobal()
   const activeBoards = boards.filter((b) => !b.archived)
   const archivedBoards = boards.filter((b) => b.archived)
+
+  console.log("HomePage Render", menuOpen)
 
   return (
     <main className="p-8">
@@ -31,10 +34,11 @@ export function HomePage() {
           <span>Kaioban</span>
         </h1>
         <div className="relative">
-          <button onclick={() => setMenuOpen((prev) => !prev)}>
+          <button ref={menuBtnRef} onclick={() => setMenuOpen((prev) => !prev)}>
             <MoreIcon width="1.5rem" />
           </button>
           <ActionMenu
+            btn={menuBtnRef}
             open={menuOpen}
             close={() => setMenuOpen(false)}
             items={[
@@ -43,6 +47,7 @@ export function HomePage() {
                 onclick: () => {
                   setShowArchived((prev) => !prev)
                   setMenuOpen(false)
+                  //console.log("setMenuOpen false")
                 },
               },
               {

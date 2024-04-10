@@ -1,4 +1,4 @@
-import { Transition, useEffect, useModel, useState } from "kaioken"
+import { Transition, useEffect, useModel, useRef, useState } from "kaioken"
 import { ClickedList } from "../types"
 import { Input } from "./atoms/Input"
 import { DialogHeader } from "./dialog/DialogHeader"
@@ -42,6 +42,7 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
   )
 
   const [ctxOpen, setCtxOpen] = useState(false)
+  const ctxMenuButtonRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     titleRef.current?.focus()
@@ -83,12 +84,14 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
         />
         <div className="relative">
           <button
+            ref={ctxMenuButtonRef}
             onclick={() => setCtxOpen((prev) => !prev)}
             className="w-9 flex justify-center items-center h-full"
           >
             <MoreIcon />
           </button>
           <ActionMenu
+            btn={ctxMenuButtonRef}
             open={ctxOpen}
             close={() => setCtxOpen(false)}
             items={[

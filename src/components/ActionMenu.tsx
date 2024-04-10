@@ -8,12 +8,13 @@ type ActionMenuItem = {
 }
 
 interface ActionMenuProps {
+  btn: Kaioken.Ref<HTMLButtonElement>
   items: ActionMenuItem[]
   open: boolean
   close: () => void
 }
 
-export function ActionMenu({ open, items, close }: ActionMenuProps) {
+export function ActionMenu({ btn, open, items, close }: ActionMenuProps) {
   const ref = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -26,9 +27,10 @@ export function ActionMenu({ open, items, close }: ActionMenuProps) {
   }, [])
 
   function handleClickOutside(e: MouseEvent) {
-    if (!ref.current || !e.target) return
+    if (!ref.current || !e.target || !btn.current) return
     const tgt = e.target as Node
-    if (!ref.current.contains(tgt)) {
+    if (!ref.current.contains(tgt) && !btn.current.contains(tgt)) {
+      console.log("click outside", e.target, ref.current)
       close()
     }
   }

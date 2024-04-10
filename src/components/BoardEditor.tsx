@@ -1,4 +1,4 @@
-import { useModel, useState, useEffect, ElementProps } from "kaioken"
+import { useModel, useState, useEffect, ElementProps, useRef } from "kaioken"
 import { loadItems, loadLists } from "../idb"
 import { useBoardStore } from "../state/board"
 import { List, ListItem, Tag, Board } from "../types"
@@ -47,6 +47,7 @@ function BoardEditor() {
     board?.title || ""
   )
   const [ctxMenuOpen, setCtxMenuOpen] = useState(false)
+  const ctxMenuButtonRef = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     titleRef.current?.focus()
@@ -79,12 +80,14 @@ function BoardEditor() {
         Board Details
         <div className="relative">
           <button
+            ref={ctxMenuButtonRef}
             className="w-9 flex justify-center items-center h-full"
             onclick={() => setCtxMenuOpen((prev) => !prev)}
           >
             <MoreIcon />
           </button>
           <ActionMenu
+            btn={ctxMenuButtonRef}
             open={ctxMenuOpen}
             close={() => setCtxMenuOpen(false)}
             items={[

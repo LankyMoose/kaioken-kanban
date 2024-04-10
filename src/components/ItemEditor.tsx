@@ -1,4 +1,4 @@
-import { Transition, useEffect, useModel, useState } from "kaioken"
+import { Transition, useEffect, useModel, useRef, useState } from "kaioken"
 import { Input } from "./atoms/Input"
 import { DialogBody } from "./dialog/DialogBody"
 import { DialogHeader } from "./dialog/DialogHeader"
@@ -62,6 +62,7 @@ function ItemEditor() {
     []
 
   const [ctxOpen, setCtxOpen] = useState(false)
+  const ctxMenuButtonRef = useRef<HTMLButtonElement>(null)
   const [itemTagIds, setItemTagIds] = useState(savedTagIds)
 
   const addedItemTagIds = itemTagIds.filter((id) => !savedTagIds.includes(id))
@@ -130,12 +131,14 @@ function ItemEditor() {
         />
         <div className="relative">
           <button
+            ref={ctxMenuButtonRef}
             onclick={() => setCtxOpen((prev) => !prev)}
             className="w-9 flex justify-center items-center h-full"
           >
             <MoreIcon />
           </button>
           <ActionMenu
+            btn={ctxMenuButtonRef}
             open={ctxOpen}
             close={() => setCtxOpen(false)}
             items={[

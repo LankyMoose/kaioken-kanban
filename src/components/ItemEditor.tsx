@@ -26,7 +26,7 @@ export function ItemEditorModal() {
   return (
     <Transition
       in={clickedItem?.dialogOpen || false}
-      timings={[40, 150, 150, 150]}
+      duration={{ in: 40, out: 150 }}
       element={(state) => {
         return (
           <Modal state={state} close={handleClose}>

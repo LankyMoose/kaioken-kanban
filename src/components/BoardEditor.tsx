@@ -21,7 +21,10 @@ export function BoardEditorDrawer() {
   return (
     <Transition
       in={boardEditorOpen}
-      timings={[40, 150, 150, 150]}
+      duration={{
+        in: 40,
+        out: 150,
+      }}
       element={(state) =>
         state === "exited" ? null : (
           <Drawer state={state} close={() => setBoardEditorOpen(false)}>

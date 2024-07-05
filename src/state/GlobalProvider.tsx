@@ -7,7 +7,7 @@ import {
 } from "./global"
 import { loadBoards } from "../idb"
 
-export function GlobalProvider({ children }: { children?: JSX.Element[] }) {
+export function GlobalProvider({ children }: { children: JSX.Children }) {
   const [state, dispatch] = useReducer(globalStateReducer, defaultGlobalState)
   useEffect(() => {
     ;(async () => {

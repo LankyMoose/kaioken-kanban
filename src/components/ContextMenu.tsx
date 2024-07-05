@@ -37,7 +37,10 @@ export function ContextMenu() {
 
   return (
     <Transition
-      timings={[30, 150, 150, 150]}
+      duration={{
+        in: 30,
+        out: 150,
+      }}
       in={open}
       element={(state) => {
         if (state === "exited") return null

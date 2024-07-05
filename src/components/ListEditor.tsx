@@ -17,7 +17,7 @@ export function ListEditorModal() {
   return (
     <Transition
       in={clickedList?.dialogOpen || false}
-      timings={[40, 150, 150, 150]}
+      duration={{ in: 40, out: 150 }}
       element={(state) => (
         <Modal
           state={state}

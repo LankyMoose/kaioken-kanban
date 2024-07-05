@@ -4,7 +4,7 @@ import { Backdrop } from "./Backdrop"
 type ModalProps = {
   state: TransitionState
   close: () => void
-  children?: JSX.Element[]
+  children: JSX.Children
 }
 
 export function Modal({ state, close, children }: ModalProps) {

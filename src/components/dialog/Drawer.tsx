@@ -4,7 +4,7 @@ import { Backdrop } from "./Backdrop"
 type DrawerProps = {
   state: TransitionState
   close: () => void
-  children?: JSX.Element[]
+  children: JSX.Children
 }
 
 export function Drawer({ state, close, children }: DrawerProps) {

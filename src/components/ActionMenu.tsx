@@ -46,7 +46,10 @@ export function ActionMenu({ btn, open, items, close }: ActionMenuProps) {
     <>
       <Transition
         in={open}
-        timings={[40, 150, 150, 150]}
+        duration={{
+          in: 40,
+          out: 150,
+        }}
         element={(state) => {
           if (state == "exited") return null
           const opacity = state === "entered" ? "1" : "0"

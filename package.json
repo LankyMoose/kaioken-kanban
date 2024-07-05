@@ -14,10 +14,10 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5.3.3",
     "vite": "^5.0.8",
-    "vite-plugin-kaioken": "^0.2.3"
+    "vite-plugin-kaioken": "^0.5.2"
   },
   "dependencies": {
     "async-idb-orm": "^1.0.3",
-    "kaioken": "0.14.1-1"
+    "kaioken": "0.21.1"
   }
 }

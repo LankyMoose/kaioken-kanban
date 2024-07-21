@@ -42,7 +42,7 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
   )
 
   const [ctxOpen, setCtxOpen] = useState(false)
-  const ctxMenuButtonRef = useRef<HTMLButtonElement>(null)
+  const ctxMenuButtonRef = useRef<HTMLButtonElement | null>(null)
 
   useEffect(() => {
     titleRef.current?.focus()

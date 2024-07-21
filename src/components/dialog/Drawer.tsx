@@ -8,7 +8,7 @@ type DrawerProps = {
 }
 
 export function Drawer({ state, close, children }: DrawerProps) {
-  const wrapperRef = useRef<HTMLDivElement>(null)
+  const wrapperRef = useRef<HTMLDivElement | null>(null)
   if (state == "exited") return null
   const opacity = state === "entered" ? "1" : "0"
   const translateX = state === "entered" ? 0 : 100

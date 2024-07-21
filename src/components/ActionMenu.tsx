@@ -8,14 +8,14 @@ type ActionMenuItem = {
 }
 
 interface ActionMenuProps {
-  btn: Kaioken.Ref<HTMLButtonElement>
+  btn: Kaioken.Ref<HTMLButtonElement | null>
   items: ActionMenuItem[]
   open: boolean
   close: () => void
 }
 
 export function ActionMenu({ btn, open, items, close }: ActionMenuProps) {
-  const ref = useRef<HTMLDivElement>(null)
+  const ref = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     window.addEventListener("click", handleClickOutside)

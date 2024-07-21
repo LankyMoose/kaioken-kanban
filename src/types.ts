@@ -1,3 +1,5 @@
+import { Board, List, ListItem } from "./idb"
+
 export type Vector2 = {
   x: number
   y: number
@@ -13,49 +15,6 @@ export interface GlobalState {
   dragging: boolean
   boards: Board[]
   boardsLoaded: boolean
-}
-
-export interface ItemTag {
-  id: number
-  itemId: number
-  tagId: number
-  boardId: number
-}
-
-export interface Tag {
-  id: number
-  boardId: number
-  title: string
-  color: string
-}
-
-export interface ListItem {
-  id: number
-  listId: number
-  title: string
-  content: string
-  archived: boolean
-  created: Date
-  order: number
-  refereceItems: number[]
-}
-
-export interface List {
-  id: number
-  boardId: number
-  title: string
-  archived: boolean
-  created: Date
-  order: number
-}
-
-export interface Board {
-  id: number
-  uuid: string
-  title: string
-  created: Date
-  archived: boolean
-  order: number
 }
 
 export interface ItemDragTarget {

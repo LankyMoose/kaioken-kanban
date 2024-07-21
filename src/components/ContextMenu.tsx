@@ -4,10 +4,10 @@ import "./ContextMenu.css"
 import { useBoardTagsStore } from "../state/boardTags"
 import { useItemsStore } from "../state/items"
 import { useBoardStore } from "../state/board"
-import { Tag } from "../types"
+import { Tag } from "../idb"
 
 export function ContextMenu() {
-  const menuRef = useRef<HTMLDivElement>(null)
+  const menuRef = useRef<HTMLDivElement | null>(null)
   const {
     value: { open, click },
     setOpen,

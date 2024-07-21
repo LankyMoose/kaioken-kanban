@@ -1,9 +1,10 @@
 import { createStore } from "kaioken"
-import type { List, ClickedList, ListDragTarget } from "../types"
+import type { ClickedList, ListDragTarget } from "../types"
 import { useBoardStore } from "./board"
 import { getListItems } from "./items"
 import * as db from "../idb"
 import { useBoardTagsStore } from "./boardTags"
+import { List } from "../idb"
 
 export { useListsStore }
 

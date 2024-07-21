@@ -1,9 +1,9 @@
 import { createStore, navigate } from "kaioken"
-import type { Board } from "../types"
 import { useBoardTagsStore } from "./boardTags"
 import { useItemsStore } from "./items"
 import * as db from "../idb"
 import { useListsStore } from "./lists"
+import { Board } from "../idb"
 
 export const useBoardStore = createStore(
   { board: null as Board | null },

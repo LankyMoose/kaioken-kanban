@@ -1,7 +1,8 @@
 import "./Board.css"
+import type { Board as BoardType } from "../idb"
 import { Link, Portal, useEffect, useRef, useState } from "kaioken"
 import { ItemList } from "./ItemList"
-import type { Board as BoardType, Vector2 } from "../types"
+import type { Vector2 } from "../types"
 import { useGlobal } from "../state/global"
 import { Button } from "./atoms/Button"
 import { ItemEditorModal } from "./ItemEditor"
@@ -43,7 +44,7 @@ export function Board({ boardId }: { boardId: string }) {
   } = useBoardStore()
   const { handleItemDrop } = useItemsStore()
   const { handleListDrop } = useListsStore()
-  const boardInnerRef = useRef<HTMLDivElement>(null)
+  const boardInnerRef = useRef<HTMLDivElement | null>(null)
 
   const { boards, boardsLoaded } = useGlobal()
   const {

@@ -1,5 +1,5 @@
 import { createStore } from "kaioken"
-import type { ListItem } from "../types"
+import { ListItem } from "../idb"
 
 type ContextMenuState = {
   open: boolean

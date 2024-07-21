@@ -62,7 +62,7 @@ function ItemEditor() {
     []
 
   const [ctxOpen, setCtxOpen] = useState(false)
-  const ctxMenuButtonRef = useRef<HTMLButtonElement>(null)
+  const ctxMenuButtonRef = useRef<HTMLButtonElement | null>(null)
   const [itemTagIds, setItemTagIds] = useState(savedTagIds)
 
   const addedItemTagIds = itemTagIds.filter((id) => !savedTagIds.includes(id))

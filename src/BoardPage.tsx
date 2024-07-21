@@ -3,7 +3,7 @@ import { Board } from "./components/Board"
 import { useGlobal } from "./state/global"
 
 export function BoardPage({ params }: { params: Record<string, any> }) {
-  const rootElementRef = useRef<HTMLDivElement>(null)
+  const rootElementRef = useRef<HTMLDivElement | null>(null)
   const { setRootElement } = useGlobal()
 
   useEffect(() => {

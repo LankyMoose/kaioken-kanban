@@ -3,9 +3,8 @@ import { ActionMenu } from "./components/ActionMenu"
 import { Button } from "./components/atoms/Button"
 import { LogoIcon } from "./components/icons/LogoIcon"
 import { MoreIcon } from "./components/icons/MoreIcon"
-import { JsonUtils } from "./idb"
+import { Board, JsonUtils } from "./idb"
 import { useGlobal } from "./state/global"
-import { Board } from "./types"
 import { Link, useRef, useState } from "kaioken"
 
 function readFile(file: Blob): Promise<string> {
@@ -19,7 +18,7 @@ function readFile(file: Blob): Promise<string> {
 export function HomePage() {
   const [showArchived, setShowArchived] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
-  const menuBtnRef = useRef<HTMLButtonElement>(null)
+  const menuBtnRef = useRef<HTMLButtonElement | null>(null)
   const { boards, addBoard } = useGlobal()
   const activeBoards = boards.filter((b) => !b.archived)
   const archivedBoards = boards.filter((b) => b.archived)

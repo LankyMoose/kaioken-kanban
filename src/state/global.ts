@@ -3,12 +3,10 @@ import {
   ClickedItem,
   ItemDragTarget,
   GlobalState,
-  List,
   ClickedList,
   ListDragTarget,
-  Board,
 } from "../types"
-import { addBoard as addBoardDb } from "../idb"
+import { addBoard as addBoardDb, Board, List } from "../idb"
 
 export const defaultGlobalState: GlobalState = {
   boardEditorOpen: false,

@@ -1,12 +1,12 @@
 import "./ItemList.css"
 import { useRef, useEffect } from "kaioken"
-import { List, ListItem } from "../types"
 import { useGlobal } from "../state/global"
 import { MoreIcon } from "./icons/MoreIcon"
 import { Button } from "./atoms/Button"
 import { useItemsStore } from "../state/items"
 import { useBoardTagsStore } from "../state/boardTags"
 import { useContextMenu } from "../state/contextMenu"
+import { List, ListItem } from "../idb"
 
 type InteractionEvent = MouseEvent | TouchEvent | KeyboardEvent
 
@@ -16,10 +16,10 @@ function isTouchEvent(e: Event): boolean {
 }
 
 export function ItemList({ list }: { list: List }) {
-  const headerRef = useRef<HTMLDivElement>(null)
-  const listRef = useRef<HTMLDivElement>(null)
-  const rect = useRef<DOMRect>(null)
-  const dropAreaRef = useRef<HTMLDivElement>(null)
+  const headerRef = useRef<HTMLDivElement | null>(null)
+  const listRef = useRef<HTMLDivElement | null>(null)
+  const rect = useRef<DOMRect | null>(null)
+  const dropAreaRef = useRef<HTMLDivElement | null>(null)
 
   const { value: items, addItem } = useItemsStore((state) =>
     state.items.filter((i) => i.listId === list.id)
@@ -237,7 +237,7 @@ function Item({
   idx: number
   listId: number
 }) {
-  const ref = useRef<HTMLButtonElement>(null)
+  const ref = useRef<HTMLButtonElement | null>(null)
   const { clickedItem, setClickedItem, itemDragTarget, setItemDragTarget } =
     useGlobal()
   const {

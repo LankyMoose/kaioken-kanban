@@ -4,7 +4,7 @@ import { useMouse } from "../state/mouse"
 
 export function ListItemClone({ item }: { item: ClickedItem }) {
   const { current: mousePos } = useMouse()
-  const ref = useRef<HTMLDivElement>(null)
+  const ref = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     if (!ref.current) return

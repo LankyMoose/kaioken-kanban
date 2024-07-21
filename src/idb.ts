@@ -1,5 +1,4 @@
-import { idb, model, Field } from "async-idb-orm"
-import { List, ListItem, Board, Tag, ItemTag } from "./types"
+import { idb, model, Field, InferRecord, InferDto } from "async-idb-orm"
 
 export {
   // boards
@@ -32,16 +31,19 @@ export {
 }
 
 const boards = model({
-  id: Field.number({ primaryKey: true }),
-  uuid: Field.string({ default: () => crypto.randomUUID() }),
+  id: Field.number({ key: true }),
+  uuid: Field.string({ default: () => crypto.randomUUID() as string }),
   title: Field.string({ default: () => "" }),
   created: Field.date({ default: () => new Date() }),
   archived: Field.boolean({ default: () => false }),
   order: Field.number({ default: () => 0 }),
 })
 
+export type Board = InferRecord<typeof boards>
+export type BoardDTO = InferDto<typeof boards>
+
 const lists = model({
-  id: Field.number({ primaryKey: true }),
+  id: Field.number({ key: true }),
   boardId: Field.number(),
   title: Field.string({ default: () => "" }),
   created: Field.date({ default: () => new Date() }),
@@ -49,8 +51,11 @@ const lists = model({
   order: Field.number({ default: () => 0 }),
 })
 
+export type List = InferRecord<typeof lists>
+export type ListDTO = InferDto<typeof lists>
+
 const items = model({
-  id: Field.number({ primaryKey: true }),
+  id: Field.number({ key: true }),
   listId: Field.number(),
   title: Field.string({ default: () => "" }),
   content: Field.string({ default: () => "" }),
@@ -60,19 +65,28 @@ const items = model({
   order: Field.number({ default: () => 0 }),
 })
 
+export type ListItem = InferRecord<typeof items>
+export type ListItemDTO = InferDto<typeof items>
+
 const tags = model({
-  id: Field.number({ primaryKey: true }),
+  id: Field.number({ key: true }),
   boardId: Field.number(),
   title: Field.string({ default: () => "" }),
   color: Field.string({ default: () => "#402579" }),
 })
 
+export type Tag = InferRecord<typeof tags>
+export type TagDTO = InferDto<typeof tags>
+
 const itemTags = model({
-  id: Field.number({ primaryKey: true }),
+  id: Field.number({ key: true }),
   itemId: Field.number(),
   tagId: Field.number(),
   boardId: Field.number(),
 })
+
+export type ItemTag = InferRecord<typeof itemTags>
+export type ItemTagDTO = InferDto<typeof itemTags>
 
 const db = idb("kanban", { boards, lists, items, tags, itemTags }, 3)
 
@@ -131,22 +145,21 @@ const JsonUtils = {
 
 // Boards
 
-const loadBoards = async (): Promise<Board[]> => await db.boards.all()
+const loadBoards = async () => await db.boards.all()
 
 const updateBoard = (board: Board) => db.boards.update(board) as Promise<Board>
 
-const addBoard = async (): Promise<Board> => {
+const addBoard = async () => {
   const board = await db.boards.create({})
   if (!board) throw new Error("failed to create board")
   await addList(board.id)
   return board as Board
 }
 
-const deleteBoard = (board: Board) =>
-  db.boards.delete(board.id) as Promise<void>
+const deleteBoard = (board: Board) => db.boards.delete(board.id)
 
 const archiveBoard = (board: Board) =>
-  db.boards.update({ ...board, archived: true }) as Promise<Board>
+  db.boards.update({ ...board, archived: true })
 
 // Lists
 
@@ -160,7 +173,7 @@ const updateList = (list: List) => db.lists.update(list) as Promise<List>
 const addList = (boardId: number, order = 0) =>
   db.lists.create({ boardId, order }) as Promise<List>
 
-const deleteList = (list: List) => db.lists.delete(list.id) as Promise<void>
+const deleteList = (list: List) => db.lists.delete(list.id)
 
 const archiveList = (list: List) =>
   db.lists.update({ ...list, archived: true }) as Promise<List>
@@ -178,7 +191,7 @@ const updateItem = (item: ListItem) =>
 const addItem = (listId: number, order = 0) =>
   db.items.create({ listId, refereceItems: [], order }) as Promise<ListItem>
 
-const deleteItem = (item: ListItem) => db.items.delete(item.id) as Promise<void>
+const deleteItem = (item: ListItem) => db.items.delete(item.id)
 
 const archiveItem = (item: ListItem) =>
   db.items.update({ ...item, archived: true }) as Promise<ListItem>

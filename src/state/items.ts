@@ -1,7 +1,8 @@
 import { createStore } from "kaioken"
-import { ListItem, ClickedItem, ItemDragTarget } from "../types"
+import { ClickedItem, ItemDragTarget } from "../types"
 import * as db from "../idb"
 import { useBoardTagsStore } from "./boardTags"
+import { ListItem } from "../idb"
 
 export { useItemsStore, getListItems }
 
@@ -45,9 +46,10 @@ const useItemsStore = createStore(
       const moved =
         item.order !== targetIdx || item.listId !== itemDragTarget.listId
       if (!moved) return
-      const itemList = getListItems(item.listId)
+      const itemList = getListItems(item.listId).sort(
+        (a, b) => a.order - b.order
+      )
 
-      itemList.sort((a, b) => a.order - b.order)
       itemList.splice(clickedItem.index, 1)
 
       const applyItemOrder = (item: ListItem, idx: number) => {
@@ -63,7 +65,9 @@ const useItemsStore = createStore(
           items: items.map((i) => newItems.find((ni) => ni.id === i.id) ?? i),
         }))
       } else {
-        const targetList = getListItems(itemDragTarget.listId)
+        const targetList = getListItems(itemDragTarget.listId).sort(
+          (a, b) => a.order - b.order
+        )
         targetList.splice(targetIdx, 0, item)
         const newOriginItems = await Promise.all(itemList.map(applyItemOrder))
 

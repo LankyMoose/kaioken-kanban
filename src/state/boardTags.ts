@@ -1,6 +1,6 @@
 import { createStore } from "kaioken"
-import { Tag, ItemTag } from "../types"
 import * as db from "../idb"
+import { ItemTag, Tag } from "../idb"
 
 export { useBoardTagsStore }
 

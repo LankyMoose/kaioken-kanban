@@ -1,7 +1,6 @@
 import { useModel, useState, useEffect, ElementProps, useRef } from "kaioken"
-import { loadItems, loadLists } from "../idb"
+import { Board, List, ListItem, loadItems, loadLists, Tag } from "../idb"
 import { useBoardStore } from "../state/board"
-import { List, ListItem, Tag, Board } from "../types"
 import { Button } from "./atoms/Button"
 import { Input } from "./atoms/Input"
 import { Spinner } from "./atoms/Spinner"
@@ -50,7 +49,7 @@ function BoardEditor() {
     board?.title || ""
   )
   const [ctxMenuOpen, setCtxMenuOpen] = useState(false)
-  const ctxMenuButtonRef = useRef<HTMLButtonElement>(null)
+  const ctxMenuButtonRef = useRef<HTMLButtonElement | null>(null)
 
   useEffect(() => {
     titleRef.current?.focus()

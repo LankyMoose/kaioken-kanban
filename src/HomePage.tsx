@@ -101,7 +101,7 @@ export function HomePage() {
           {activeBoards.length > 0 && (
             <div className="p-4 mb-4 flex flex-wrap gap-4 bg-black bg-opacity-15 rounded">
               {activeBoards.map((board) => (
-                <BoardCard board={board} />
+                <BoardCard key={board.uuid} board={board} />
               ))}
             </div>
           )}
@@ -117,7 +117,9 @@ export function HomePage() {
             <h2 className="text-2xl mb-2">Archived Boards</h2>
             <div className="p-4 mb-4 flex flex-wrap gap-4 bg-black bg-opacity-15 rounded">
               {archivedBoards.length > 0 ? (
-                archivedBoards.map((board) => <BoardCard board={board} />)
+                archivedBoards.map((board) => (
+                  <BoardCard key={board.uuid} board={board} />
+                ))
               ) : (
                 <div>
                   <i className="text-muted">No archived boards</i>

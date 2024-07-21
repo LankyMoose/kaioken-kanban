@@ -67,7 +67,7 @@ export function ActionMenu({ btn, open, items, close }: ActionMenuProps) {
               }}
             >
               {items.map((item) => (
-                <div className="action-menu-item flex">
+                <div key={item.text} className="action-menu-item flex">
                   <Button
                     variant="primary"
                     className="text-xs font-normal text-nowrap px-5 py-2 flex-grow"

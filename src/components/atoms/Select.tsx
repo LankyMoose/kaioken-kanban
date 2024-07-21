@@ -33,7 +33,7 @@ export function Select(
       {props.options.map((item) => {
         const key = typeof item === "object" ? String(item.key) : item
         return (
-          <option value={key} selected={value?.toString() === key}>
+          <option key={key} value={key} selected={value?.toString() === key}>
             {typeof item === "object" ? item.text : item}
           </option>
         )

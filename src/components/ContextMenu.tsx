@@ -125,6 +125,7 @@ function ContextMenuDisplay() {
             const selected = itemTags.some((it) => it.tagId === tag.id)
             return (
               <button
+                key={tag.id}
                 className="px-[4px] py-[1px] text-xs border border-black border-opacity-30"
                 style={{
                   backgroundColor: selected ? tag.color : "#333",

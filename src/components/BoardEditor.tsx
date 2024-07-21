@@ -155,7 +155,7 @@ function BoardTagsEditor({ board }: { board: Board | null }) {
 
       <div className="mb-2">
         {tags.map((tag) => (
-          <BoardTagEditor tag={tag} />
+          <BoardTagEditor key={tag.id} tag={tag} />
         ))}
       </div>
       <div className="flex">
@@ -243,7 +243,7 @@ function ArchivedItems({ board }: { board: Board | null }) {
         </span>
       ) : (
         items.map((item) => (
-          <ListItemContainer>
+          <ListItemContainer key={item.id}>
             <span className="text-sm">{item.title || "(Unnamed item)"}</span>
             <div className="flex flex-col items-end">
               <span className="text-xs align-super text-gray-400 text-nowrap mb-2">
@@ -296,7 +296,7 @@ function ArchivedLists({ board }: { board: Board | null }) {
         </span>
       ) : (
         lists.map((list) => (
-          <ListItemContainer>
+          <ListItemContainer key={list.id}>
             <span className="text-sm">{list.title || "(Unnamed List)"}</span>
             <Button
               variant="link"

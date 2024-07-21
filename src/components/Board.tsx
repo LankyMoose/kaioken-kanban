@@ -184,7 +184,7 @@ export function Board({ boardId }: { boardId: string }) {
             .filter((list) => !list.archived)
             .sort((a, b) => a.order - b.order)
             .map((list) => (
-              <ItemList list={list} />
+              <ItemList key={list.id} list={list} />
             ))}
           <AddList />
         </div>

@@ -157,7 +157,7 @@ function ItemEditor() {
           <label className="text-sm font-semibold">Tags</label>
           <ul>
             {tags.map((t) => (
-              <li className="flex items-center gap-2">
+              <li key={t.id} className="flex items-center gap-2">
                 <input
                   id={`item-tag-${t.id}`}
                   type={"checkbox"}

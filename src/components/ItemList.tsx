@@ -201,7 +201,7 @@ export function ItemList({ list }: { list: List }) {
           {items
             .sort((a, b) => a.order - b.order)
             .map((item, i) => (
-              <Item item={item} idx={i} listId={list.id} />
+              <Item key={item.id} item={item} idx={i} listId={list.id} />
             ))}
         </div>
       </div>
@@ -356,6 +356,7 @@ function Item({
       <div className="flex gap-2 flex-wrap">
         {itemItemTags.map((tag) => (
           <span
+            key={tag.id}
             className="px-[4px] py-[1px] text-xs"
             style={{ backgroundColor: tag.color }}
           >

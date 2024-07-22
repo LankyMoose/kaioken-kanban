@@ -316,8 +316,10 @@ function Item({
   }
 
   function getStyle() {
-    if (itemDragTarget?.index === idx && itemDragTarget?.listId === listId)
+    if (itemDragTarget?.index === idx && itemDragTarget?.listId === listId) {
       return "margin-top: calc(var(--selected-item-height) + var(--items-gap));"
+    }
+
     if (clickedItem?.id !== item.id) return ""
     if (clickedItem.dialogOpen) return ""
     const dropArea = document.querySelector(

@@ -1,15 +1,8 @@
-import { useRef, useEffect } from "kaioken"
 import { ClickedItem } from "../types"
 import { useMouse } from "../state/mouse"
 
 export function ListItemClone({ item }: { item: ClickedItem }) {
   const { current: mousePos } = useMouse()
-  const ref = useRef<HTMLDivElement | null>(null)
-
-  useEffect(() => {
-    if (!ref.current) return
-    ref.current.innerHTML = item.element?.outerHTML || ""
-  }, [ref.current])
 
   function getStyle() {
     const x = mousePos.x - (item.mouseOffset?.x ?? 0)
@@ -19,5 +12,11 @@ export function ListItemClone({ item }: { item: ClickedItem }) {
     }px; height: ${item.domRect?.height || 0}px;`
   }
 
-  return <div ref={ref} id="item-clone" style={getStyle()}></div>
+  return (
+    <div
+      id="item-clone"
+      style={getStyle()}
+      innerHTML={item.element?.outerHTML || ""}
+    />
+  )
 }

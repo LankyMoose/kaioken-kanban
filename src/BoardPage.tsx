@@ -30,8 +30,6 @@ export function BoardPage() {
     )
   }
 
-  debugger
-
   return (
     <main ref={rootElementRef}>
       <Board board={board} />

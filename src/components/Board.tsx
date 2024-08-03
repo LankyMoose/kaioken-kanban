@@ -147,7 +147,7 @@ export function Board({ board }: { board: BoardType }) {
 
   return (
     <MouseCtx.Provider value={{ current: mousePos, setValue: setMousePos }}>
-      <Nav board={board} />
+      <Nav />
       <div
         id="board"
         onpointerdown={handleMouseDown}
@@ -245,8 +245,11 @@ function AddList() {
   )
 }
 
-function Nav({ board }: { board: BoardType | null }) {
+function Nav() {
   const { setBoardEditorOpen } = useGlobal()
+  const {
+    value: { board },
+  } = useBoardStore()
   return (
     <nav className="p-4 flex justify-between items-center">
       <div className="flex items-center gap-2">

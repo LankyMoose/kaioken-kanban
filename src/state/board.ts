@@ -28,7 +28,7 @@ export const useBoardStore = createStore(
       const newBoard = { ...board, ...payload }
       const res = await db.updateBoard(newBoard)
       set({ board: res })
-      return board
+      return res
     }
     const deleteBoard = async () => {
       const board = get().board!

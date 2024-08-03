@@ -1,6 +1,14 @@
 import "./Board.css"
 import type { Board as BoardType } from "../idb"
-import { Link, Portal, useEffect, useRef, useState } from "kaioken"
+import {
+  Link,
+  Portal,
+  Transition,
+  useAsync,
+  useEffect,
+  useRef,
+  useState,
+} from "kaioken"
 import { ItemList } from "./ItemList"
 import type { Vector2 } from "../types"
 import { useGlobal } from "../state/global"
@@ -14,13 +22,16 @@ import { BoardEditorDrawer } from "./BoardEditor"
 import { ChevronLeftIcon } from "./icons/ChevronLeftIcon"
 import { MoreIcon } from "./icons/MoreIcon"
 import { useListsStore } from "../state/lists"
-import { useBoardStore } from "../state/board"
 import { useItemsStore } from "../state/items"
 import { ContextMenu } from "./ContextMenu"
+import { useBoardStore } from "../state/board"
 
 const autoScrollSpeed = 10
 
-export function Board({ boardId }: { boardId: string }) {
+export function Board({ board }: { board: BoardType }) {
+  const { selectBoard } = useBoardStore()
+  useAsync(() => selectBoard(board), [board.id])
+
   const {
     rootElement,
     clickedItem,
@@ -38,31 +49,13 @@ export function Board({ boardId }: { boardId: string }) {
   const animFrameRef = useRef(-1)
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const [autoScrollVec, setAutoScrollVec] = useState<Vector2>({ x: 0, y: 0 })
-  const {
-    value: { board },
-    selectBoard,
-  } = useBoardStore()
   const { handleItemDrop } = useItemsStore()
   const { handleListDrop } = useListsStore()
   const boardInnerRef = useRef<HTMLDivElement | null>(null)
 
-  const { boards, boardsLoaded } = useGlobal()
   const {
     value: { lists },
   } = useListsStore()
-
-  useEffect(() => {
-    if (!boardsLoaded) return
-    const board = boards.find(
-      (b) => String(b.id) === boardId || b.uuid === boardId
-    )
-    if (!board) {
-      // @ts-ignore
-      window.location = "/"
-      return
-    }
-    selectBoard(board)
-  }, [boardsLoaded])
 
   useEffect(() => {
     const v = getAutoScrollVec()
@@ -172,22 +165,35 @@ export function Board({ boardId }: { boardId: string }) {
             : ""
         }`}
       >
-        <div
-          className={`inner ${
-            dragging || clickedItem?.dragging || clickedList?.dragging
-              ? "dragging"
-              : ""
-          }`}
-          ref={boardInnerRef}
-        >
-          {lists
-            .filter((list) => !list.archived)
-            .sort((a, b) => a.order - b.order)
-            .map((list) => (
-              <ItemList key={list.id} list={list} />
-            ))}
-          <AddList />
-        </div>
+        <Transition
+          in={true}
+          duration={10}
+          element={(state) => {
+            const opacity = state === "entered" ? "1" : "0"
+            return (
+              <div
+                style={{
+                  opacity,
+                }}
+                className={`inner transition-all ${
+                  dragging || clickedItem?.dragging || clickedList?.dragging
+                    ? "dragging"
+                    : ""
+                }`}
+                ref={boardInnerRef}
+              >
+                {lists
+                  .filter((list) => !list.archived)
+                  .sort((a, b) => a.order - b.order)
+                  .map((list) => (
+                    <ItemList key={list.id} list={list} />
+                  ))}
+                <AddList />
+              </div>
+            )
+          }}
+        />
+
         <Portal container={document.getElementById("portal")!}>
           {clickedItem?.dragging && <ListItemClone item={clickedItem} />}
           {clickedList?.dragging && <ListClone list={clickedList} />}

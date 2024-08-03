@@ -7,8 +7,8 @@ export function App() {
   return (
     <GlobalProvider>
       <Router>
-        <Route path="/" element={HomePage} />
-        <Route path="/boards/:boardId" element={BoardPage} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/boards/:boardId" element={<BoardPage />} />
       </Router>
     </GlobalProvider>
   )

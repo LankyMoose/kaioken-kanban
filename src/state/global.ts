@@ -7,6 +7,7 @@ import {
   ListDragTarget,
 } from "../types"
 import { addBoard as addBoardDb, Board, List } from "../idb"
+export { GlobalCtx, GlobalDispatchCtx }
 
 export const defaultGlobalState: GlobalState = {
   boardEditorOpen: false,
@@ -20,10 +21,12 @@ export const defaultGlobalState: GlobalState = {
   boardsLoaded: false,
 }
 
-export const GlobalCtx = createContext<GlobalState>(defaultGlobalState)
-export const GlobalDispatchCtx = createContext<
-  (action: GlobalDispatchAction) => void
->(() => {})
+const GlobalCtx = createContext<GlobalState>(defaultGlobalState)
+GlobalCtx.displayName = "GlobalCtx"
+const GlobalDispatchCtx = createContext<(action: GlobalDispatchAction) => void>(
+  () => {}
+)
+GlobalDispatchCtx.displayName = "GlobalDispatchCtx"
 
 export function useGlobal() {
   const dispatch = useContext(GlobalDispatchCtx)

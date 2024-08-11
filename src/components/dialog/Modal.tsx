@@ -9,23 +9,24 @@ type ModalProps = {
 
 export function Modal({ state, close, children }: ModalProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null)
+
+  useEffect(() => {
+    function handleKeyPress(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault()
+        if (state === "exited") return
+        close()
+      }
+    }
+    window.addEventListener("keyup", handleKeyPress)
+    return () => window.removeEventListener("keyup", handleKeyPress)
+  }, [state])
+
   if (state == "exited") return null
+
   const opacity = state === "entered" ? "1" : "0"
   const scale = state === "entered" ? 1 : 0.85
   const translateY = state === "entered" ? -50 : -25
-
-  useEffect(() => {
-    window.addEventListener("keyup", handleKeyPress)
-    return () => window.removeEventListener("keyup", handleKeyPress)
-  }, [])
-
-  function handleKeyPress(e: KeyboardEvent) {
-    if (e.key === "Escape") {
-      e.preventDefault()
-      if (state === "exited") return
-      close()
-    }
-  }
 
   return (
     <Backdrop

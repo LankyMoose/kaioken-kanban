@@ -15,11 +15,12 @@ import { useItemsStore } from "../state/items"
 
 export function ItemEditorModal() {
   const { clickedItem, setClickedItem } = useGlobal()
-  if (!clickedItem) return null
 
   const handleClose = () => {
-    const tgt = clickedItem.sender?.target
-    if (tgt && tgt instanceof HTMLElement) tgt.focus()
+    const tgt = clickedItem?.sender?.target
+    if (tgt && tgt instanceof HTMLElement) {
+      tgt.focus()
+    }
     setClickedItem(null)
   }
 
@@ -73,10 +74,19 @@ function ItemEditor() {
     titleRef.current?.focus()
   }, [])
 
+  const close = () => {
+    const tgt = clickedItem?.sender?.target
+    if (tgt && tgt instanceof HTMLElement) {
+      tgt.focus()
+    }
+    setClickedItem(null)
+  }
+
   async function saveChanges() {
     if (!clickedItem) return
-
+    let didChange = false
     if (addedItemTagIds.length || removedItemTagIds.length) {
+      didChange = true
       await Promise.all([
         ...addedItemTagIds.map((it) =>
           addItemTag({ boardId: board!.id, itemId: clickedItem.id, tagId: it })
@@ -98,16 +108,20 @@ function ItemEditor() {
       content !== clickedItem.item.content ||
       title !== clickedItem.item.title
     ) {
+      didChange = true
       const newItem = { ...clickedItem.item, content, title }
       await updateItem(newItem)
     }
-    setClickedItem(null)
+    if (!didChange) {
+      return
+    }
+    close()
   }
 
   async function handleCtxAction(action: "delete" | "archive") {
     if (!clickedItem) return
     await (action === "delete" ? deleteItem : archiveItem)(clickedItem.item)
-    setClickedItem(null)
+    close()
   }
 
   async function handleItemTagChange(e: Event, id: number) {
@@ -128,6 +142,7 @@ function ItemEditor() {
           placeholder="(Unnamed Item)"
           className="w-full border-0"
           onfocus={(e) => (e.target as HTMLInputElement)?.select()}
+          onkeyup={(e) => (e.key === "Enter" ? saveChanges() : null)}
         />
         <div className="relative">
           <button

@@ -9,9 +9,8 @@ import { ActionMenu } from "./ActionMenu"
 import { Button } from "./atoms/Button"
 import { DialogFooter } from "./dialog/DialogFooter"
 import { maxItemNameLength } from "../constants"
-import { useBoardTagsStore } from "../state/boardTags"
-import { useBoardStore } from "../state/board"
 import { useItemsStore } from "../state/items"
+import { MDEditor } from "./MDEditor"
 
 export function ItemEditorModal() {
   const { clickedItem, setClickedItem } = useGlobal()
@@ -41,34 +40,15 @@ export function ItemEditorModal() {
 
 function ItemEditor() {
   const { setClickedItem, clickedItem } = useGlobal()
-  const {
-    value: { board },
-  } = useBoardStore()
-  const {
-    value: { tags, itemTags },
-    addItemTag,
-    removeItemTag,
-  } = useBoardTagsStore()
   const { updateItem, deleteItem, archiveItem } = useItemsStore()
 
   const [titleRef, title] = useModel<HTMLInputElement, string>(
     clickedItem?.item.title || ""
   )
-  const [contentRef, content] = useModel<HTMLTextAreaElement, string>(
-    clickedItem?.item.content || ""
-  )
-
-  const savedTagIds =
-    itemTags.filter((t) => t.itemId === clickedItem?.id).map((i) => i.tagId) ??
-    []
+  const [content, setContent] = useState(clickedItem?.item.content ?? "")
 
   const [ctxOpen, setCtxOpen] = useState(false)
   const ctxMenuButtonRef = useRef<HTMLButtonElement | null>(null)
-  const [itemTagIds, setItemTagIds] = useState(savedTagIds)
-
-  const addedItemTagIds = itemTagIds.filter((id) => !savedTagIds.includes(id))
-  const removedItemTagIds = savedTagIds.filter((id) => !itemTagIds.includes(id))
-  const itemTagIdsChanged = addedItemTagIds.length || removedItemTagIds.length
 
   useEffect(() => {
     titleRef.current?.focus()
@@ -84,53 +64,20 @@ function ItemEditor() {
 
   async function saveChanges() {
     if (!clickedItem) return
-    let didChange = false
-    if (addedItemTagIds.length || removedItemTagIds.length) {
-      didChange = true
-      await Promise.all([
-        ...addedItemTagIds.map((it) =>
-          addItemTag({ boardId: board!.id, itemId: clickedItem.id, tagId: it })
-        ),
-        ...removedItemTagIds
-          .map(
-            (it) =>
-              itemTags.find(
-                (t) => t.tagId === it && t.itemId === clickedItem.id
-              )!.id
-          )
-          .map((id) => {
-            return removeItemTag(itemTags.find((it) => it.id === id)!)
-          }),
-      ])
-    }
-
     if (
       content !== clickedItem.item.content ||
       title !== clickedItem.item.title
     ) {
-      didChange = true
       const newItem = { ...clickedItem.item, content, title }
       await updateItem(newItem)
+      close()
     }
-    if (!didChange) {
-      return
-    }
-    close()
   }
 
   async function handleCtxAction(action: "delete" | "archive") {
     if (!clickedItem) return
     await (action === "delete" ? deleteItem : archiveItem)(clickedItem.item)
     close()
-  }
-
-  async function handleItemTagChange(e: Event, id: number) {
-    const checked = (e.target as HTMLInputElement).checked
-    const newTagIds = checked
-      ? [...itemTagIds, id]
-      : itemTagIds.filter((item) => item !== id)
-
-    setItemTagIds(newTagIds)
   }
 
   return (
@@ -166,29 +113,10 @@ function ItemEditor() {
       <DialogBody>
         <div>
           <label className="text-sm font-semibold">Description</label>
-          <textarea ref={contentRef} className="w-full border-0 resize-none" />
-        </div>
-        <div>
-          <label className="text-sm font-semibold">Tags</label>
-          <ul>
-            {tags.map((t) => (
-              <li key={t.id} className="flex items-center gap-2">
-                <input
-                  id={`item-tag-${t.id}`}
-                  type={"checkbox"}
-                  checked={itemTagIds?.includes(t.id)}
-                  onchange={(e) => handleItemTagChange(e, t.id)}
-                />
-                <label
-                  className="text-sm text-gray-200"
-                  htmlFor={`item-tag-${t.id}`}
-                >
-                  {t.title}
-                </label>
-                <input type="color" value={t.color} disabled />
-              </li>
-            ))}
-          </ul>
+          <MDEditor
+            initialValue={clickedItem?.item.content}
+            onChange={setContent}
+          />
         </div>
       </DialogBody>
       <DialogFooter>
@@ -198,8 +126,7 @@ function ItemEditor() {
           onclick={saveChanges}
           disabled={
             title === clickedItem?.item.title &&
-            content === clickedItem?.item.content &&
-            !itemTagIdsChanged
+            content === clickedItem?.item.content
           }
         >
           Save & close

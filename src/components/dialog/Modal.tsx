@@ -9,7 +9,7 @@ type ModalProps = {
 
 export function Modal({ state, close, children }: ModalProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null)
-
+  const didPtrDownBackdrop = useRef(false)
   useEffect(() => {
     function handleKeyPress(e: KeyboardEvent) {
       if (e.key === "Escape") {
@@ -31,7 +31,15 @@ export function Modal({ state, close, children }: ModalProps) {
   return (
     <Backdrop
       ref={wrapperRef}
-      onclick={(e) => e.target === wrapperRef.current && close()}
+      onpointerdown={(e) =>
+        e.target === wrapperRef.current && (didPtrDownBackdrop.current = true)
+      }
+      onpointerup={(e) =>
+        e.target === wrapperRef.current &&
+        didPtrDownBackdrop.current &&
+        ((didPtrDownBackdrop.current = false), close())
+      }
+      //onclick={(e) => e.target === wrapperRef.current && close()}
       style={{ opacity }}
     >
       <div

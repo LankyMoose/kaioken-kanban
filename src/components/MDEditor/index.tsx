@@ -52,7 +52,7 @@ export function MDEditor(props: MDEditorProps) {
   const editorElementRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [editorInstance, setEditorInstance] = useState<Editor | null>(null)
-  const stack = useRef(createStack(props.initialValue ?? ""))
+  const [stack] = useState(() => createStack(props.initialValue ?? ""))
 
   const handleEditorChange = useCallback((e: ChangeEvent) => {
     if (isHistoryEvt.current) {
@@ -60,7 +60,7 @@ export function MDEditor(props: MDEditorProps) {
       return
     }
     isHistoryEvt.current = false
-    stack.current.push(e.content)
+    stack.push(e.content)
     props.onChange?.(e.content)
   }, [])
 
@@ -94,16 +94,16 @@ export function MDEditor(props: MDEditorProps) {
     switch (e.key) {
       case "z": {
         e.preventDefault()
-        stack.current.undo()
+        stack.undo()
         // @ts-ignore
-        editorInstance!.setContent(stack.current.state.current)
+        editorInstance!.setContent(stack.state.current)
         break
       }
       case "y": {
         e.preventDefault()
-        stack.current.redo()
+        stack.redo()
         // @ts-ignore
-        editorInstance!.setContent(stack.current.state.current)
+        editorInstance!.setContent(stack.state.current)
         break
       }
     }

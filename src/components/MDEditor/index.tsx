@@ -1,5 +1,5 @@
 import "./md-editor.css"
-import { useCallback, useEffect, useRef } from "kaioken"
+import { useCallback, useEffect, useRef, useState } from "kaioken"
 import { Editor, type ChangeEvent } from "tiny-markdown-editor"
 
 type MDEditorProps = {
@@ -7,38 +7,117 @@ type MDEditorProps = {
   onChange?: (value: string) => void
 }
 
+function createStack<T>(current: T) {
+  const stack: T[] = [current]
+
+  let index = stack.length
+
+  const state = {
+    first: true,
+    last: true,
+    current,
+  }
+
+  function update() {
+    //current = stack[index - 1]
+    state.first = index === 1
+    state.last = index === stack.length
+    state.current = stack[index - 1]
+  }
+
+  return {
+    push: (value: T | ((current: T) => T)) => {
+      stack.length = index
+      stack[index++] = value instanceof Function ? value(current) : value
+      update()
+    },
+    undo: () => {
+      if (index > 1) {
+        index -= 1
+        update()
+      }
+    },
+    redo: () => {
+      if (index < stack.length) {
+        index += 1
+        update()
+      }
+    },
+    state,
+  }
+}
+
 export function MDEditor(props: MDEditorProps) {
-  const elementRef = useRef<any>(null)
-  //const historyStack = useRef()
+  const isHistoryEvt = useRef(false)
+  const editorElementRef = useRef<HTMLDivElement>(null)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const [editorInstance, setEditorInstance] = useState<Editor | null>(null)
+  const stack = useRef(createStack(props.initialValue ?? ""))
 
   const handleEditorChange = useCallback((e: ChangeEvent) => {
+    if (isHistoryEvt.current) {
+      isHistoryEvt.current = false
+      return
+    }
+    isHistoryEvt.current = false
+    stack.current.push(e.content)
     props.onChange?.(e.content)
   }, [])
 
   useEffect(() => {
-    if (!elementRef.current) return
     const editor = new Editor({
-      element: elementRef.current!,
+      element: editorElementRef.current!,
+      textarea: textareaRef.current!,
       content: props.initialValue || "",
     })
     editor.addEventListener("change", handleEditorChange)
+    setEditorInstance(editor)
   }, [])
 
-  const handleKeyUp = useCallback((e: KeyboardEvent) => {
+  const handleKeyDown = (e: KeyboardEvent) => {
     if (!e.ctrlKey) return
     switch (e.key) {
       case "z": {
         e.preventDefault()
-        console.log("undo")
+        isHistoryEvt.current = true
         break
       }
       case "y": {
         e.preventDefault()
-        console.log("redo")
+        isHistoryEvt.current = true
+      }
+    }
+  }
+
+  const handleKeyUp = (e: KeyboardEvent) => {
+    if (!e.ctrlKey) return
+    switch (e.key) {
+      case "z": {
+        e.preventDefault()
+        stack.current.undo()
+        // @ts-ignore
+        editorInstance!.setContent(stack.current.state.current)
+        break
+      }
+      case "y": {
+        e.preventDefault()
+        stack.current.redo()
+        // @ts-ignore
+        editorInstance!.setContent(stack.current.state.current)
         break
       }
     }
-  }, [])
+  }
 
-  return <div ref={elementRef} onkeyup={handleKeyUp}></div>
+  return (
+    <>
+      <textarea ref={textareaRef} />
+      <div
+        ref={editorElementRef}
+        //onkeypress={handleKeyPress}
+        onkeydown={handleKeyDown}
+        onkeyup={handleKeyUp}
+      ></div>
+    </>
+  )
 }

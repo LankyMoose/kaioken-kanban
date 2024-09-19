@@ -27,6 +27,14 @@ const useBoardTagsStore = createStore(
       }))
     }
 
+    const deleteTagAndRelations = async (tag: Tag) => {
+      await db.deleteTagAndRelations(tag)
+      set((prev) => ({
+        tags: prev.tags.filter((t) => t.id !== tag.id),
+        itemTags: prev.itemTags.filter((it) => it.tagId !== tag.id),
+      }))
+    }
+
     const addTag = async (boardId: number) => {
       const tag = await db.addTag(boardId)
       set((prev) => ({ ...prev, tags: [...prev.tags, tag] }))
@@ -53,6 +61,7 @@ const useBoardTagsStore = createStore(
       addItemTag,
       removeItemTag,
       setState,
+      deleteTagAndRelations,
       addTag,
       updateTag,
     }

@@ -26,6 +26,7 @@ export {
   deleteTag,
   addItemTag,
   deleteItemTag,
+  deleteTagAndRelations,
   // import/export
   JsonUtils,
 }
@@ -216,6 +217,12 @@ const updateTag = (tag: Tag) => db.tags.update(tag) as Promise<Tag>
 const addTag = (boardId: number) => db.tags.create({ boardId }) as Promise<Tag>
 
 const deleteTag = async (tag: Tag) => db.tags.delete(tag.id)
+
+const deleteTagAndRelations = async (tag: Tag) => {
+  await db.tags.delete(tag.id)
+  const iTags = await db.itemTags.findMany((it) => it.tagId === tag.id)
+  await Promise.all(iTags.map((iTag) => db.itemTags.delete(iTag.id)))
+}
 
 const addItemTag = (boardId: number, itemId: number, tagId: number) =>
   db.itemTags.create({

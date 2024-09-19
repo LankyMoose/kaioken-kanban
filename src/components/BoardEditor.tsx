@@ -37,6 +37,7 @@ export function BoardEditorDrawer() {
 
 function BoardEditor() {
   const { setBoardEditorOpen, boards, updateBoards } = useGlobal()
+
   const {
     value: { board },
     deleteBoard,
@@ -168,7 +169,7 @@ function BoardTagsEditor({ board }: { board: Board | null }) {
 }
 
 function BoardTagEditor({ tag }: { tag: Tag }) {
-  const { updateTag } = useBoardTagsStore()
+  const { updateTag, deleteTagAndRelations } = useBoardTagsStore()
 
   const handleTitleChange = (e: Event) => {
     const title = (e.target as HTMLInputElement).value
@@ -195,6 +196,7 @@ function BoardTagEditor({ tag }: { tag: Tag }) {
         type="color"
         className="cursor-pointer"
       />
+      <button onclick={() => deleteTagAndRelations(tag)}>Delete</button>
     </ListItemContainer>
   )
 }

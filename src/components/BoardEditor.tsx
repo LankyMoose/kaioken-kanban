@@ -240,7 +240,7 @@ function ArchivedItems({ board }: { board: Board | null }) {
           <Spinner />
         </div>
       ) : items.length === 0 ? (
-        <span className="text-sm text-gray-400">
+        <span className="text-sm text-gray-500">
           <i>No archived items</i>
         </span>
       ) : (
@@ -293,7 +293,7 @@ function ArchivedLists({ board }: { board: Board | null }) {
           <Spinner />
         </div>
       ) : lists.length === 0 ? (
-        <span>
+        <span className="text-sm text-gray-500">
           <i>No archived lists</i>
         </span>
       ) : (
@@ -320,7 +320,7 @@ function ListContainer({ children }: ElementProps<"div">) {
 
 function ListTitle({ children }: ElementProps<"div">) {
   return (
-    <h4 className="text-sm mb-2 pb-1 border-b border-white text-gray-400 border-opacity-10">
+    <h4 className="text-sm mb-2 pb-1 border-b border-white text-gray-300 border-opacity-10">
       {children}
     </h4>
   )

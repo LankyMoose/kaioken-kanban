@@ -30,11 +30,11 @@
 }
 
 .TinyMDE .TMMark_TMHR {
-  @apply flex items-center gap-2
+  @apply flex items-center gap-2 whitespace-nowrap;
 }
 
 .TinyMDE .TMMark_TMHR:after {
   content: "";
-  border-bottom: 2px solid #eee;
-  @apply w-full block border-b-2 border-b-white -mt-1;
+  border: 1px solid #eee;
+  @apply w-full block mt-1;
 }

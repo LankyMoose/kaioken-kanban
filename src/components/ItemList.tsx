@@ -1,5 +1,5 @@
 import "./ItemList.css"
-import { useRef, useEffect } from "kaioken"
+import { useRef, useEffect, useCallback, useMemo } from "kaioken"
 import { useGlobal } from "../state/global"
 import { MoreIcon } from "./icons/MoreIcon"
 import { Button } from "./atoms/Button"
@@ -7,6 +7,35 @@ import { useItemsStore } from "../state/items"
 import { useBoardTagsStore } from "../state/boardTags"
 import { useContextMenu } from "../state/contextMenu"
 import { List, ListItem } from "../idb"
+import { ClickedItem, ItemDragTarget } from "../types"
+
+function getItemStyle(
+  itemDragTarget: ItemDragTarget | null,
+  clickedItem: ClickedItem | null,
+  listId: number,
+  idx: number,
+  item: ListItem,
+  ref: Kaioken.RefObject<HTMLButtonElement>
+) {
+  if (itemDragTarget?.index === idx && itemDragTarget?.listId === listId) {
+    return "margin-top: calc(var(--selected-item-height) + var(--items-gap));"
+  }
+
+  if (clickedItem?.id !== item.id) return ""
+  if (clickedItem.dialogOpen) return ""
+  const dropArea = document.querySelector(
+    `#board .inner .list[data-id="${listId}"] .list-items-inner`
+  )!
+  const dropAreaRect = dropArea.getBoundingClientRect()
+  if (!dropAreaRect) return ""
+
+  if (!ref.current) return ""
+  const rect = ref.current.getBoundingClientRect()
+
+  const x = rect.x - dropAreaRect.x
+  const y = rect.y - dropAreaRect.y
+  return `transform: translate(calc(${x}px - .5rem), ${y}px)`
+}
 
 type InteractionEvent = MouseEvent | TouchEvent | KeyboardEvent
 
@@ -252,57 +281,60 @@ function Item({
     return null
   }
 
-  function selectItem(e: InteractionEvent) {
-    const element = ref.current?.cloneNode(true) as HTMLButtonElement
-    if (!element) return console.error("selectItem fail, no element")
+  const selectItem = useCallback(
+    (e: InteractionEvent) => {
+      const element = ref.current?.cloneNode(true) as HTMLButtonElement
+      if (!element) return console.error("selectItem fail, no element")
 
-    const isMouse = e instanceof MouseEvent && !isTouchEvent(e)
-    if (isMouse && e.buttons !== 1) {
-      if (e.buttons == 2) {
-        useContextMenu.setState({
-          rightClickHandled: true,
-          click: {
-            x: e.clientX,
-            y: e.clientY,
-          },
-          open: true,
-          item,
+      const isMouse = e instanceof MouseEvent && !isTouchEvent(e)
+      if (isMouse && e.buttons !== 1) {
+        if (e.buttons == 2) {
+          useContextMenu.setState({
+            rightClickHandled: true,
+            click: {
+              x: e.clientX,
+              y: e.clientY,
+            },
+            open: true,
+            item,
+          })
+        }
+        return
+      }
+      if (e instanceof KeyboardEvent) {
+        // check if either 'enter' or 'space' key
+        if (e.key !== "Enter" && e.key !== " ") return
+        e.preventDefault()
+      }
+
+      const mEvt = e as MouseEvent
+
+      const rect = ref.current!.getBoundingClientRect()
+      setClickedItem({
+        sender: e,
+        item,
+        id: item.id,
+        listId: listId,
+        index: idx,
+        dragging: false,
+        dialogOpen: !isMouse,
+        element,
+        domRect: rect,
+        mouseOffset: isMouse
+          ? { x: mEvt.offsetX, y: mEvt.offsetY }
+          : { x: 0, y: 0 },
+      })
+      if (isMouse) {
+        setItemDragTarget({
+          index: idx + 1,
+          listId,
         })
       }
-      return
-    }
-    if (e instanceof KeyboardEvent) {
-      // check if either 'enter' or 'space' key
-      if (e.key !== "Enter" && e.key !== " ") return
-      e.preventDefault()
-    }
+    },
+    [item.id, listId, idx]
+  )
 
-    const mEvt = e as MouseEvent
-
-    const rect = ref.current!.getBoundingClientRect()
-    setClickedItem({
-      sender: e,
-      item,
-      id: item.id,
-      listId: listId,
-      index: idx,
-      dragging: false,
-      dialogOpen: !isMouse,
-      element,
-      domRect: rect,
-      mouseOffset: isMouse
-        ? { x: mEvt.offsetX, y: mEvt.offsetY }
-        : { x: 0, y: 0 },
-    })
-    if (isMouse) {
-      setItemDragTarget({
-        index: idx + 1,
-        listId,
-      })
-    }
-  }
-
-  function handleClick() {
+  const handleClick = useCallback(() => {
     setClickedItem({
       ...(clickedItem ?? {
         item,
@@ -313,42 +345,26 @@ function Item({
       }),
       dialogOpen: true,
     })
-  }
+  }, [clickedItem])
 
-  function getStyle() {
-    if (itemDragTarget?.index === idx && itemDragTarget?.listId === listId) {
-      return "margin-top: calc(var(--selected-item-height) + var(--items-gap));"
-    }
+  const style = useMemo(
+    () => getItemStyle(itemDragTarget, clickedItem, listId, idx, item, ref),
+    [itemDragTarget, clickedItem, listId, idx, item, ref]
+  )
 
-    if (clickedItem?.id !== item.id) return ""
-    if (clickedItem.dialogOpen) return ""
-    const dropArea = document.querySelector(
-      `#board .inner .list[data-id="${listId}"] .list-items-inner`
-    )!
-    const dropAreaRect = dropArea.getBoundingClientRect()
-    if (!dropAreaRect) return ""
-
-    if (!ref.current) return ""
-    const rect = ref.current.getBoundingClientRect()
-
-    const x = rect.x - dropAreaRect.x
-    const y = rect.y - dropAreaRect.y
-    return `transform: translate(calc(${x}px - .5rem), ${y}px)`
-  }
-
-  function getClassName() {
+  const className = useMemo(() => {
     let className = "list-item text-sm"
     if (clickedItem?.id === item.id && !clickedItem.dialogOpen) {
       className += " selected"
     }
     return className
-  }
+  }, [clickedItem?.id, item.id, clickedItem?.dialogOpen])
 
   return (
     <button
       ref={ref}
-      className={getClassName()}
-      style={getStyle()}
+      className={className}
+      style={style}
       onpointerdown={selectItem}
       onkeydown={selectItem}
       onclick={handleClick}

@@ -112,12 +112,16 @@ export function Board({ board }: { board: BoardType }) {
 
   async function handleMouseUp() {
     // item drag
-    clickedItem && itemDragTarget && handleItemDrop(clickedItem, itemDragTarget)
+    clickedItem &&
+      itemDragTarget &&
+      (await handleItemDrop(clickedItem, itemDragTarget))
     clickedItem && setClickedItem(null)
     itemDragTarget && setItemDragTarget(null)
 
     // list drag
-    clickedList && listDragTarget && handleListDrop(clickedList, listDragTarget)
+    clickedList &&
+      listDragTarget &&
+      (await handleListDrop(clickedList, listDragTarget))
     clickedList && setClickedList(null)
     listDragTarget && setListDragTarget(null)
 

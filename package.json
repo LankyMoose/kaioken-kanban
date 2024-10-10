@@ -9,16 +9,16 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.19",
-    "postcss": "^8.4.39",
-    "tailwindcss": "^3.4.6",
-    "typescript": "^5.5.3",
-    "vite": "^5.3.4",
-    "vite-plugin-kaioken": "0.10.7"
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.13",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.8",
+    "vite-plugin-kaioken": "0.13.1"
   },
   "dependencies": {
-    "async-idb-orm": "^2.0.0",
-    "kaioken": "0.29.5",
-    "tiny-markdown-editor": "^0.1.23"
+    "async-idb-orm": "^2.0.3",
+    "kaioken": "0.33.0",
+    "tiny-markdown-editor": "^0.1.27"
   }
 }

@@ -116,7 +116,7 @@ function BoardEditor() {
       </DialogHeader>
       <div className="flex gap-2">
         <Input
-          className="bg-opacity-15 bg-black w-full border-0"
+          className="bg-black/15 w-full border-0"
           ref={titleRef}
           maxLength={maxBoardNameLength}
           placeholder="(Unnamed Board)"
@@ -187,7 +187,7 @@ function BoardTagEditor({ tag }: { tag: Tag }) {
         value={tag.title}
         onchange={handleTitleChange}
         placeholder="(Unnamed Tag)"
-        className="border-0 text-sm flex-grow"
+        className="border-0 text-sm grow"
         maxLength={maxTagNameLength}
       />
       <input
@@ -315,12 +315,12 @@ function ArchivedLists({ board }: { board: Board | null }) {
 }
 
 function ListContainer({ children }: ElementProps<"div">) {
-  return <div className="p-3 bg-black bg-opacity-15">{children}</div>
+  return <div className="p-3 bg-black/15">{children}</div>
 }
 
 function ListTitle({ children }: ElementProps<"div">) {
   return (
-    <h4 className="text-sm mb-2 pb-1 border-b border-white text-gray-300 border-opacity-10">
+    <h4 className="text-sm mb-2 pb-1 border-b border-white/10 text-gray-300">
       {children}
     </h4>
   )
@@ -329,7 +329,7 @@ function ListTitle({ children }: ElementProps<"div">) {
 function ListItemContainer({ children, className }: ElementProps<"div">) {
   return (
     <div
-      className={`flex gap-4 p-2 justify-between bg-white bg-opacity-5 border-b border-black border-opacity-30 last:border-b-0 ${
+      className={`flex gap-4 p-2 justify-between bg-white/5 border-b border-black/30 last:border-b-0 ${
         className || ""
       }`}
     >

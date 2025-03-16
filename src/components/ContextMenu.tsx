@@ -126,7 +126,7 @@ function ContextMenuDisplay() {
             return (
               <button
                 key={tag.id}
-                className="px-[4px] py-[1px] text-xs border border-black border-opacity-30"
+                className="px-[4px] py-[1px] text-xs border border-black/30"
                 style={{
                   backgroundColor: selected ? tag.color : "#333",
                   opacity: selected ? "1" : ".5",

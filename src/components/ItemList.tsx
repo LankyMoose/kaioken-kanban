@@ -237,7 +237,7 @@ export function ItemList({ list }: { list: List }) {
       <div className="flex p-2">
         <Button
           variant="primary"
-          className="flex-grow py-2 text-sm font-semibold"
+          className="grow py-2 text-sm font-semibold"
           onclick={async () => {
             const item = await addItem(list.id)
             setClickedItem({

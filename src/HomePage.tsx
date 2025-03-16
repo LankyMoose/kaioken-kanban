@@ -99,7 +99,7 @@ export function HomePage() {
         <h2 className="text-2xl mb-2">Boards</h2>
         <div>
           {activeBoards.length > 0 && (
-            <div className="p-4 mb-4 flex flex-wrap gap-4 bg-black bg-opacity-15 rounded">
+            <div className="p-4 mb-4 flex flex-wrap gap-4 bg-black/15 rounded-sm">
               {activeBoards.map((board) => (
                 <BoardCard key={board.uuid} board={board} />
               ))}
@@ -115,7 +115,7 @@ export function HomePage() {
           <hr className="opacity-30 my-8" />
           <section>
             <h2 className="text-2xl mb-2">Archived Boards</h2>
-            <div className="p-4 mb-4 flex flex-wrap gap-4 bg-black bg-opacity-15 rounded">
+            <div className="p-4 mb-4 flex flex-wrap gap-4 bg-black/15 rounded-sm">
               {archivedBoards.length > 0 ? (
                 archivedBoards.map((board) => (
                   <BoardCard key={board.uuid} board={board} />
@@ -135,7 +135,10 @@ export function HomePage() {
 
 function BoardCard({ board }: { board: Board }) {
   return (
-    <Link to={`/boards/${board.uuid}`} className="board-item px-4 py-3 rounded">
+    <Link
+      to={`/boards/${board.uuid}`}
+      className="board-item px-4 py-3 rounded-sm"
+    >
       <span className="font-bold">{board.title || "(Unnamed board)"}</span>
     </Link>
   )

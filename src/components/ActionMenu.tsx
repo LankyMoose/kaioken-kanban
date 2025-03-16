@@ -70,7 +70,7 @@ export function ActionMenu({ btn, open, items, close }: ActionMenuProps) {
                 <div key={item.text} className="action-menu-item flex">
                   <Button
                     variant="primary"
-                    className="text-xs font-normal text-nowrap px-5 py-2 flex-grow"
+                    className="text-xs font-normal text-nowrap px-5 py-2 grow"
                     onclick={item.onclick}
                   >
                     {item.text}

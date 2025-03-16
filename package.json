@@ -10,15 +10,15 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.0.14",
-    "postcss": "^8.4.47",
+    "postcss": "^8.5.3",
     "tailwindcss": "^4.0.14",
-    "typescript": "^5.6.3",
-    "vite": "^5.4.8",
-    "vite-plugin-kaioken": "0.13.1"
+    "typescript": "^5.8.2",
+    "vite": "^6.2.2",
+    "vite-plugin-kaioken": "0.16.0"
   },
   "dependencies": {
     "async-idb-orm": "^2.0.3",
-    "kaioken": "0.33.0",
-    "tiny-markdown-editor": "^0.1.27"
+    "kaioken": "0.36.0",
+    "tiny-markdown-editor": "^0.1.31"
   }
 }

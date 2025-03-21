@@ -1,9 +1,8 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-primary: crimson;
-  --color-primary-highlight: #c32140;
-  --color-primary-highlight-dark: #9d112b;
+  --color-primary: rgb(64 37 121);
+  --color-primary-light: rgb(195 177 232);
 }
 
 /*
@@ -26,7 +25,11 @@
 }
 
 :root {
+  background-color: #222;
+  color: #eee6ff;
   color-scheme: light dark;
+  --primary: rgb(64 37 121);
+  --primary-light: rgb(90 53 153);
   --radius: 4px;
   --color: #e6e6e6;
   --item-height: 80px;
@@ -36,13 +39,6 @@
   --list-header-padding-x: 0.25rem;
   --list-header-padding-y: 0.5rem;
   --dialog-background: #221b30;
-  background-image: radial-gradient(#eee, #ddd);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    background-image: radial-gradient(#1a1a1a, #000);
-  }
 }
 
 * {
@@ -142,5 +138,108 @@ button {
 #app {
   display: flex;
   flex-direction: column;
-  min-height: 100dvh;
+  justify-content: center;
+  background-image: linear-gradient(169deg, #201a3c 0%, #290e1b 100%);
+}
+
+main {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 100vw;
+  min-height: 100vh;
+  max-height: 100vh;
+  max-width: 100vw;
+  overflow: auto;
+}
+
+nav {
+  max-width: 100vw;
+  position: sticky;
+  left: 0;
+  top: 0;
+  z-index: 1;
+  background-color: rgb(23 17 40);
+}
+
+button[disabled] {
+  opacity: .5;
+  filter: grayscale();
+  cursor: not-allowed;
+  transition: .3s;
+}
+
+input,
+textarea,
+[contenteditable] {
+  background-color: rgba(0, 0, 0, .15);
+}
+
+textarea {
+  width: 100%;
+  height: 100px;
+  padding: 10px;
+  resize: none;
+}
+
+select {
+  background: url("data:image/svg+xml,<svg height='10px' width='10px' viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'><path d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/></svg>") no-repeat;
+  background-position: calc(100% - 0.75rem) center !important;
+  -moz-appearance: none !important;
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  padding-right: 2rem !important;
+  background-color: rgba(255, 255, 255, .05);
+}
+
+select:not([disabled]) {
+  cursor: pointer;
+}
+
+select option {
+  /* background-color: #222; */
+  color: #FFF;
+  background-color: #222;
+}
+
+label,
+.text-muted {
+  color: #aaa;
+}
+
+.backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.45);
+  transition: opacity 150ms ease-in-out;
+  backdrop-filter: blur(1px);
+}
+
+.modal-content,
+.drawer-content {
+  position: absolute;
+  z-index: 1000;
+  max-width: 100%;
+  background-color: var(--dialog-background);
+  transition: transform 150ms ease-in-out;
+}
+
+.modal-content {
+  top: 50%;
+  left: 50%;
+  width: 500px;
+  border-radius: 5px;
+}
+
+.drawer-content {
+  top: 0;
+  right: 0;
+  height: 100%;
+  width: 420px;
+  max-width: calc(100% - 50px);
+  overflow-y: auto;
 }

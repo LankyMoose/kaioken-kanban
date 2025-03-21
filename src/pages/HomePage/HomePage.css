@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+
+.board-item__title {
+  @apply font-bold text-lg;
+}
+
+.board-item__actions {
+  @apply relative;
+}

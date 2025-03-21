@@ -1,15 +1,15 @@
 import { Route, Router } from "kaioken"
-import { GlobalProvider } from "./state/GlobalProvider"
-import { BoardPage } from "./BoardPage"
-import { HomePage } from "./HomePage"
+import { HomePage } from "./pages/HomePage/HomePage"
+import { BoardsProvider } from "./context/boardContext"
 
 export function App() {
   return (
-    <GlobalProvider>
+    <BoardsProvider>
       <Router>
         <Route path="/" element={<HomePage />} />
-        <Route path="/boards/:boardId" element={<BoardPage />} />
+
+        <Route path="*" element={<p>Route not found.</p>} />
       </Router>
-    </GlobalProvider>
+    </BoardsProvider>
   )
 }

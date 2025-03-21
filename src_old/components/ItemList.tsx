@@ -106,16 +106,6 @@ export function ItemList({ list }: { list: List }) {
     }
 
     const rect = listRef.current!.getBoundingClientRect()
-    const mouseOffset =
-      e instanceof MouseEvent
-        ? {
-            x: e.clientX - rect.x - 4,
-            y: e.clientY - rect.y - 8,
-          }
-        : {
-            x: 0,
-            y: 0,
-          }
     setClickedList({
       sender: e,
       list,
@@ -125,7 +115,9 @@ export function ItemList({ list }: { list: List }) {
       dialogOpen: !isMouse,
       element,
       domRect: rect,
-      mouseOffset,
+      mouseOffset: isMouse
+        ? { x: e.clientX - rect.x - 4, y: e.clientY - rect.y - 8 }
+        : { x: 0, y: 0 },
     })
     if (isMouse) {
       setListDragTarget({ index: list.order + 1 })

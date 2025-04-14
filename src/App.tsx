@@ -6,9 +6,9 @@ import { BoardPage } from "./pages/BoardPage/BoardPage"
 export function App() {
   return (
     <BoardsProvider>
-      <Router>
+      <Router transition>
         <Route path="/" element={<HomePage />} />
-        <Route path="/boards/:boardId" element={<BoardPage />} />
+        <Route path="/boards/:boardId" fallthrough element={<BoardPage />} />
 
         <Route path="*" element={<p>Route not found.</p>} />
       </Router>

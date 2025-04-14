@@ -1,6 +1,18 @@
 import { Button } from "$/components/atoms/Button/Button"
+import { ChevronLeftIcon } from "$/components/atoms/icons/ChevronLeftIcon"
+import { CircleXIcon } from "$/components/atoms/icons/CircleXIcon"
 import { Board, db, Item, List } from "$/db"
-import { useAsync, useEffect, useRouter } from "kaioken"
+import {
+  Link,
+  navigate,
+  Portal,
+  Route,
+  Router,
+  useAsync,
+  useEffect,
+  useRef,
+  useRouter,
+} from "kaioken"
 
 export function BoardPage() {
   const { params } = useRouter()
@@ -31,13 +43,66 @@ export function BoardPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="flex gap-2 justify-between items-center h-16 px-4 sm:px-8 bg-white/10">
-        <h1 className="text-2xl flex gap-2 items-end">{board.data.title}</h1>
+      <header className="flex gap-2 justify-between items-center h-16 px-4 sm:px-8 bg-white/5">
+        <div className="flex gap-2 items-center">
+          <Link to="/" children={<ChevronLeftIcon />} />
+          <h1 className="text-2xl flex gap-2 items-end">{board.data.title}</h1>
+        </div>
       </header>
       <div className="grow flex gap-2 items-start justify-start p-2 overflow-auto">
         <BoardLists boardId={params.boardId} />
       </div>
+      <Router transition>
+        <Route path="/items/:itemId" element={<ItemViewOverlay />} />
+      </Router>
     </div>
+  )
+}
+
+function ItemViewOverlay() {
+  const { params } = useRouter()
+  const item = useAsync(
+    () => db.collections.items.find(params.itemId),
+    [params.itemId]
+  )
+
+  const closeOverlay = () => {
+    navigate("/boards/" + params.boardId)
+  }
+
+  return (
+    <Portal container={() => document.getElementById("portal-root")!}>
+      <div
+        onclick={closeOverlay}
+        className={[
+          "fixed left-0 right-0 bottom-0 top-0",
+          "flex flex-col justify-end items-end",
+          "bg-black/50",
+        ]}
+      >
+        <div
+          onclick={(e) => e.stopPropagation()}
+          className={[
+            "flex flex-col gap-2 p-4",
+            "max-w-screen-sm w-full max-h-screen overflow-y-auto",
+            "bg-neutral-600",
+          ]}
+        >
+          {item.loading ? (
+            <div>Loading...</div>
+          ) : item.error ? (
+            <div>{item.error.message}</div>
+          ) : !item.data ? (
+            <div>Item not found</div>
+          ) : (
+            <>
+              <div>{item.data.title}</div>
+              <div>{item.data.content}</div>
+            </>
+          )}
+        </div>
+      </div>
+    </Portal>
   )
 }
 
@@ -94,7 +159,7 @@ type ListDisplayProps = {
 }
 function ListDisplay({ list }: ListDisplayProps) {
   return (
-    <div className="flex flex-col gap-2 p-2 min-w-64 basis-80 max-w-screen bg-white/10">
+    <div className="flex flex-col gap-2 p-2 min-w-64 basis-80 max-w-screen bg-white/5 rounded-lg">
       <div>{list.title}</div>
       <ListItemsDisplay listId={list.id} />
     </div>
@@ -105,34 +170,46 @@ type ListItemsDisplayProps = {
   listId: string
 }
 function ListItemsDisplay({ listId }: ListItemsDisplayProps) {
-  const items = useAsync(async () => {
+  const items = useRef<Item[]>([])
+  const loadState = useAsync(async () => {
     const res = await db.collections.items.findMany((i) => i.listId === listId)
-    return res.sort((a, b) => a.order - b.order)
+    items.current = res.sort((a, b) => a.order - b.order)
   }, [listId])
 
-  if (items.loading) {
-    return <div>Loading...</div>
-  }
-
-  if (items.error) {
-    return <div>{items.error.message}</div>
-  }
+  useEffect(() => {
+    const handleDelete = async (item: Item) => {
+      if (item.listId !== listId) return
+      loadState.invalidate()
+    }
+    db.collections.items.addEventListener("delete", handleDelete)
+    return () => {
+      db.collections.items.removeEventListener("delete", handleDelete)
+    }
+  }, [])
 
   return (
     <div className="flex flex-col gap-2">
       <div className={"flex flex-col gap-1 p-1 bg-black/30"}>
-        {items.data.map((item) => (
-          <ListItemDisplay key={item.id} item={item} />
-        ))}
+        {items.current.length ? (
+          items.current.map((item) => (
+            <ListItemDisplay key={item.id} item={item} />
+          ))
+        ) : loadState.loading ? (
+          <i className="text-neutral-300">Loading</i>
+        ) : loadState.error ? (
+          loadState.error.message
+        ) : (
+          <i className="text-neutral-300">No items</i>
+        )}
       </div>
       <Button
         variant="primary"
         onclick={async () => {
           await db.collections.items.create({
             listId,
-            order: items.data.length,
+            order: items.current.length,
           })
-          items.invalidate()
+          loadState.invalidate()
         }}
       >
         Add Item
@@ -145,7 +222,25 @@ type ListItemDisplayProps = {
   item: Item
 }
 function ListItemDisplay({ item }: ListItemDisplayProps) {
+  const { params } = useRouter()
   return (
-    <button className="p-2 bg-white/5 text-sm text-left">{item.title}</button>
+    <button
+      onclick={(e) => {
+        if (e.defaultPrevented) return
+        navigate(`/boards/${params.boardId}/items/${item.id}`)
+      }}
+      className="p-2 bg-white/5 text-sm flex gap-2 items-start"
+    >
+      <p className="flex-grow text-left">{item.title}</p>
+      <button
+        className="hover:text-red-500"
+        onclick={(e) => {
+          e.preventDefault()
+          db.collections.items.delete(item.id)
+        }}
+      >
+        <CircleXIcon />
+      </button>
+    </button>
   )
 }

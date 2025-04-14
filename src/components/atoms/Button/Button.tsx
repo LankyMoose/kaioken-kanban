@@ -1,5 +1,5 @@
 import "./Button.css"
-import { type ElementProps } from "kaioken"
+import { unwrap, type ElementProps } from "kaioken"
 
 type ButtonVariant =
   | "primary"
@@ -25,16 +25,16 @@ export function Button({
 }
 
 function ButtonBase({ className, ...props }: ElementProps<"button">) {
-  return <button className={"button" + ` ${className || ""}`} {...props} />
+  return <button className={["button", unwrap(className)].flat()} {...props} />
 }
 
 function PrimaryButton({ className, ...props }: ElementProps<"button">) {
   return (
     <ButtonBase
-      className={
-        `bg-primary hover:bg-primary-highlight dark:hover:bg-primary-highlight-dark` +
-        ` ${className || ""}`
-      }
+      className={[
+        "bg-primary hover:bg-primary-highlight dark:hover:bg-primary-highlight-dark",
+        unwrap(className),
+      ].flat()}
       {...props}
     />
   )
@@ -43,7 +43,7 @@ function PrimaryButton({ className, ...props }: ElementProps<"button">) {
 function SecondaryButton({ className, ...props }: ElementProps<"button">) {
   return (
     <ButtonBase
-      className={`bg-gray-500 hover:bg-gray-700` + ` ${className || ""}`}
+      className={["bg-gray-500 hover:bg-gray-700", unwrap(className)].flat()}
       {...props}
     />
   )
@@ -52,7 +52,7 @@ function SecondaryButton({ className, ...props }: ElementProps<"button">) {
 function DefaultButton({ className, ...props }: ElementProps<"button">) {
   return (
     <ButtonBase
-      className={`bg-gray-200 hover:bg-gray-400` + ` ${className || ""}`}
+      className={["bg-gray-200 hover:bg-gray-400", unwrap(className)].flat()}
       {...props}
     />
   )

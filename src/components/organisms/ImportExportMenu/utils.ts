@@ -1,4 +1,4 @@
-import { JsonUtils } from "$/db"
+import { importFromJSON, exportToJSON } from "$/db/jsonUtils"
 
 function readFile(file: Blob): Promise<string> {
   return new Promise((resolve) => {
@@ -9,7 +9,7 @@ function readFile(file: Blob): Promise<string> {
 }
 
 export async function jsonExport() {
-  const data = await JsonUtils.export()
+  const data = await exportToJSON()
   const dateStr = new Date().toLocaleString().split(",")[0].replaceAll("/", "-")
 
   const file = new Blob([data], { type: "application/json" })
@@ -32,7 +32,7 @@ export function jsonImport() {
       if (!file) return
       const data = await readFile(file)
       console.log("IMPORT", data)
-      await JsonUtils.import(data)
+      await importFromJSON(data)
     },
   })
   input.click()

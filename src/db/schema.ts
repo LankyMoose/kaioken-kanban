@@ -31,6 +31,9 @@ const boards = Collection.create<Board, BoardDTO>()
 
 const lists = Collection.create<List, ListDTO>()
   .withKeyPath("id")
+  .withForeignKeys((lists) => [
+    { ref: lists.boardId, collection: boards, onDelete: "cascade" },
+  ])
   .withTransformers({
     create(data) {
       return {
@@ -46,6 +49,9 @@ const lists = Collection.create<List, ListDTO>()
 
 const items = Collection.create<Item, ItemDTO>()
   .withKeyPath("id")
+  .withForeignKeys((items) => [
+    { ref: items.listId, collection: lists, onDelete: "cascade" },
+  ])
   .withTransformers({
     create(data) {
       return {
@@ -63,6 +69,9 @@ const items = Collection.create<Item, ItemDTO>()
 
 const tags = Collection.create<Tag, TagDTO>()
   .withKeyPath("id")
+  .withForeignKeys((tags) => [
+    { ref: tags.boardId, collection: boards, onDelete: "cascade" },
+  ])
   .withTransformers({
     create(data) {
       return {
@@ -76,6 +85,10 @@ const tags = Collection.create<Tag, TagDTO>()
 
 const itemTags = Collection.create<ItemTag, ItemTagDTO>()
   .withKeyPath("id")
+  .withForeignKeys((itemTags) => [
+    { collection: tags, ref: itemTags.tagId, onDelete: "cascade" },
+    { collection: items, ref: itemTags.itemId, onDelete: "cascade" },
+  ])
   .withTransformers({
     create(data) {
       return {

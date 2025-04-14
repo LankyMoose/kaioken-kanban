@@ -1,6 +1,6 @@
 import "./HomePage.css"
-import { Link, navigate, useSignal } from "kaioken"
-import { Board, dbMethods } from "$/db"
+import { navigate, useCallback, useSignal } from "kaioken"
+import { Board, db } from "$/db"
 import { LogoIcon } from "$/components/atoms/icons/LogoIcon"
 import { useBoards } from "$/context/boardContext"
 import { ImportExportMenu } from "$/components/organisms/ImportExportMenu/ImportExportMenu"
@@ -30,6 +30,13 @@ export function HomePage() {
 function BoardsList() {
   const { boards } = useBoards()
 
+  const createBoard = useCallback(() => {
+    db.transaction(async (ctx) => {
+      const board = await ctx.boards.create({})
+      await ctx.lists.create({ boardId: board.id, order: 0 })
+    })
+  }, [])
+
   return (
     <div className="flex flex-col grow max-h-[calc(100dvh-64px)] min-h-full overflow-y-auto px-4 sm:px-8">
       <div className="flex grow gap-2 flex-wrap content-start">
@@ -39,7 +46,7 @@ function BoardsList() {
       </div>
       <Button
         className="w-full sticky bottom-4"
-        onclick={dbMethods.boards.add}
+        onclick={createBoard}
         variant="primary"
       >
         + Create board
@@ -52,8 +59,8 @@ function BoardItem({ board }: { board: Board }) {
   const menuOpen = useSignal(false)
   return (
     <Card
-      className={"transition hover:scale-105 cursor-pointer"}
-      onclick={(e) => !e.defaultPrevented && navigate(`/board/${board.id}`)}
+      className={"transition hover:scale-105 cursor-pointer grow"}
+      onclick={(e) => !e.defaultPrevented && navigate(`/boards/${board.id}`)}
     >
       <CardHeader>
         <span className="board-item__title">
@@ -68,13 +75,16 @@ function BoardItem({ board }: { board: Board }) {
               {
                 text: "Delete",
                 onclick: async () => {
-                  await dbMethods.boards.delete(board)
+                  await db.collections.boards.delete(board.id)
                 },
               },
               {
                 text: "Archive",
                 onclick: async () => {
-                  await dbMethods.boards.archive(board)
+                  await db.collections.boards.update({
+                    ...board,
+                    archived: true,
+                  })
                 },
               },
             ]}

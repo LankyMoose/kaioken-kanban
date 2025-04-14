@@ -223,12 +223,11 @@ function ListItemDisplay({ item }: ListItemDisplayProps) {
 
   const handlePointerDown = useCallback((e: PointerEvent) => {
     if (e.currentTarget !== btnRef.current) return
-    const el = btnRef.current!
-    const timer = setTimeout(() => {
-      e.preventDefault()
+
+    const beginLongPress = () => {
       console.log("long press")
+      document.body.style.userSelect = "none"
       longPressing.current = true
-      //el.setPointerCapture(e.pointerId)
       const domRect = el.getBoundingClientRect()
       const element = el.cloneNode(true) as HTMLButtonElement
       element.style.width = `${domRect.width}px`
@@ -248,54 +247,56 @@ function ListItemDisplay({ item }: ListItemDisplayProps) {
           index: item.order,
         },
       }
-    }, 300)
+    }
+    const el = btnRef.current!
+    const timer = setTimeout(() => {
+      if (longPressing.current) return
+      beginLongPress()
+    }, 500)
 
-    const handlePointerMove = (e: PointerEvent) => {
+    const handlePointerMove = (e: TouchEvent | PointerEvent) => {
       console.log("move")
-      if (!longPressing.current || !itemDragState.value) return
+      if (!longPressing.current) {
+        return handlePointerUp()
+      }
+      if (!itemDragState.value) return
       const currentState = itemDragState.value
+      const pos = (
+        e.type === "touchmove" && "touches" in e ? e.touches[0] : e
+      ) as {
+        clientX: number
+        clientY: number
+      }
       itemDragState.value = {
         ...currentState,
         dragging: true,
-        mousePos: { x: e.clientX, y: e.clientY },
+        mousePos: { x: pos.clientX, y: pos.clientY },
       }
     }
-
-    const handleTouchMove = (e: TouchEvent) => {
-      console.log("move")
-      if (!longPressing.current || !itemDragState.value) return
-      const currentState = itemDragState.value
-      itemDragState.value = {
-        ...currentState,
-        dragging: true,
-        mousePos: { x: e.touches[0].clientX, y: e.touches[0].clientY },
-      }
-    }
-
-    window.addEventListener("pointermove", handlePointerMove)
-    window.addEventListener("touchmove", handleTouchMove)
-
     // ptr up event fires before click
-    const handlePtrUp = (upEvet: TouchEvent | PointerEvent) => {
+    const handlePointerUp = () => {
+      document.body.style.userSelect = "auto"
       clearTimeout(timer)
-      window.removeEventListener("touchend", handlePtrUp)
-      window.removeEventListener("touchmove", handleTouchMove)
+      window.removeEventListener("touchmove", handlePointerMove)
       window.removeEventListener("pointermove", handlePointerMove)
-      window.removeEventListener("pointerup", handlePtrUp)
-      console.log("up")
-      // if it was a long press and the event was not from a mouse,
-      // we need to handle it here
-      if (longPressing.current && e.pointerType !== "mouse") {
-        itemDragState.value = null
-        console.log(`longPressing.current && e.pointerType !== "mouse"`)
-      } else if (upEvet.target !== el) {
-        itemDragState.value = null
-        console.log(`upEvet.target !== el`)
-      }
+      window.removeEventListener("touchend", handlePointerUp)
+      window.removeEventListener("pointerup", handlePointerUp)
+      window.removeEventListener("contextmenu", handleContextMenu)
+      itemDragState.value = null
+      longPressing.current = false
     }
 
-    window.addEventListener("pointerup", handlePtrUp)
-    window.addEventListener("touchend", handlePtrUp)
+    // effectively handles 'long press' event for touch device
+    const handleContextMenu = () => {
+      if (longPressing.current) return
+      beginLongPress()
+    }
+
+    window.addEventListener("pointerup", handlePointerUp)
+    window.addEventListener("touchend", handlePointerUp)
+    window.addEventListener("touchmove", handlePointerMove)
+    window.addEventListener("pointermove", handlePointerMove)
+    window.addEventListener("contextmenu", handleContextMenu)
   }, [])
 
   const className = useComputed(() => {
@@ -308,13 +309,8 @@ function ListItemDisplay({ item }: ListItemDisplayProps) {
     <button
       ref={btnRef}
       onclick={(e) => {
+        console.log("click", e.defaultPrevented)
         if (e.defaultPrevented) return
-        if (longPressing.current) {
-          console.log("click")
-          longPressing.current = false
-          itemDragState.value = null
-          return
-        }
         navigate(`/boards/${params.boardId}/items/${item.id}`)
       }}
       onpointerdown={handlePointerDown}

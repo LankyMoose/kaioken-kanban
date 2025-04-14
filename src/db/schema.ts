@@ -42,7 +42,6 @@ const lists = Collection.create<List, ListDTO>()
         created: new Date(),
         archived: false,
         id: crypto.randomUUID(),
-        order: data.order ?? 0,
       }
     },
   })
@@ -62,7 +61,6 @@ const items = Collection.create<Item, ItemDTO>()
         archived: false,
         id: crypto.randomUUID(),
         refereceItems: [],
-        order: data.order ?? 0,
       }
     },
   })

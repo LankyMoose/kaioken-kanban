@@ -52,7 +52,7 @@ type Item = {
 type ItemDTO = {
   listId: string
   title?: string
-  order?: number
+  order: number
 }
 
 type Tag = {

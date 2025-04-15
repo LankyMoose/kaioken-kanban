@@ -20,7 +20,9 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+
+  .modal-content,
+  .drawer-content {
     background-color: #1e1e1e;
   }
 }

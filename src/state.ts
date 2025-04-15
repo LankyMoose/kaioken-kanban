@@ -27,3 +27,5 @@ type ListDragState = {
 }
 
 export const listDragState = signal<ListDragState | null>(null)
+
+export const selectedItem = signal<Item | null>(null)

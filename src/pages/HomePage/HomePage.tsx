@@ -1,14 +1,13 @@
-import "./HomePage.css"
 import { navigate, useCallback, useSignal } from "kaioken"
 import { Board, db } from "$/db"
-import { LogoIcon } from "$/components/atoms/icons/LogoIcon"
+import { LogoIcon } from "$/components/icons/LogoIcon"
 import { useBoards } from "$/context/boardContext"
 import { ImportExportMenu } from "$/components/organisms/ImportExportMenu/ImportExportMenu"
 import { Button } from "$/components/atoms/Button/Button"
 import { Card } from "$/components/molecules/Card/Card"
 import { CardHeader } from "$/components/atoms/Card/CardHeader"
 import { ActionMenu } from "$/components/molecules/ActionMenu/ActionMenu"
-import { MoreIcon } from "$/components/atoms/icons/MoreIcon"
+import { MoreIcon } from "$/components/icons/MoreIcon"
 
 export function HomePage() {
   return (
@@ -63,10 +62,10 @@ function BoardItem({ board }: { board: Board }) {
       onclick={(e) => !e.defaultPrevented && navigate(`/boards/${board.id}`)}
     >
       <CardHeader>
-        <span className="board-item__title">
+        <span className="font-bold text-lg">
           {board.title || "(Unnamed board)"}
         </span>
-        <div className={"board-item__actions"}>
+        <div className={"relative"}>
           <ActionMenu
             open={menuOpen.value}
             onActionClicked={(e) => e.preventDefault()}

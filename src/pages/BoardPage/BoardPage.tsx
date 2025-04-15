@@ -1,13 +1,10 @@
 import { Button } from "$/components/atoms/Button/Button"
-import { ChevronLeftIcon } from "$/components/atoms/icons/ChevronLeftIcon"
-import { TrashIcon } from "$/components/atoms/icons/TrashIcon"
+import { ChevronLeftIcon } from "$/components/icons/ChevronLeftIcon"
+import { TrashIcon } from "$/components/icons/TrashIcon"
 import { Board, db, Item, List } from "$/db"
 import {
   Link,
-  navigate,
   Portal,
-  Route,
-  Router,
   useAsync,
   useCallback,
   useComputed,
@@ -16,8 +13,8 @@ import {
   useRouter,
   useWatch,
 } from "kaioken"
-import { ItemViewOverlay } from "./ItemViewOverlay"
-import { itemDragState } from "./dragState"
+import { itemDragState, selectedItem } from "$/state"
+import { ItemEditorModal } from "$/components/organisms/ItemEditor"
 
 export function BoardPage() {
   const { params } = useRouter()
@@ -58,11 +55,9 @@ export function BoardPage() {
         <BoardLists boardId={params.boardId} />
         <Portal container={() => document.getElementById("portal-root")!}>
           <DraggedItemDisplay />
+          <ItemEditorModal />
         </Portal>
       </div>
-      <Router transition>
-        <Route path="/items/:itemId" element={<ItemViewOverlay />} />
-      </Router>
     </div>
   )
 }
@@ -218,7 +213,6 @@ type ListItemDisplayProps = {
 }
 function ListItemDisplay({ item }: ListItemDisplayProps) {
   const btnRef = useRef<HTMLButtonElement>(null)
-  const { params } = useRouter()
   const longPressing = useRef(false)
 
   const handlePointerDown = useCallback((e: PointerEvent) => {
@@ -254,6 +248,12 @@ function ListItemDisplay({ item }: ListItemDisplayProps) {
       beginLongPress()
     }, 500)
 
+    // effectively handles 'long press' event for touch device
+    const handleContextMenu = () => {
+      if (longPressing.current) return
+      beginLongPress()
+    }
+
     const handlePointerMove = (e: TouchEvent | PointerEvent) => {
       console.log("move")
       if (!longPressing.current) {
@@ -286,12 +286,6 @@ function ListItemDisplay({ item }: ListItemDisplayProps) {
       longPressing.current = false
     }
 
-    // effectively handles 'long press' event for touch device
-    const handleContextMenu = () => {
-      if (longPressing.current) return
-      beginLongPress()
-    }
-
     window.addEventListener("pointerup", handlePointerUp)
     window.addEventListener("touchend", handlePointerUp)
     window.addEventListener("touchmove", handlePointerMove)
@@ -311,7 +305,7 @@ function ListItemDisplay({ item }: ListItemDisplayProps) {
       onclick={(e) => {
         console.log("click", e.defaultPrevented)
         if (e.defaultPrevented) return
-        navigate(`/boards/${params.boardId}/items/${item.id}`)
+        selectedItem.value = item
       }}
       onpointerdown={handlePointerDown}
       className={className}

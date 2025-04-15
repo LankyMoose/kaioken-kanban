@@ -1,0 +1,42 @@
+@import 'tailwindcss';
+
+.TinyMDE {
+  max-height: calc(100vh - 200px);
+  overflow-y: auto;
+  padding: 10px;
+}
+
+
+.TinyMDE .TMH1 {
+  @apply text-5xl
+}
+
+.TinyMDE .TMH2 {
+  @apply text-4xl
+}
+
+.TinyMDE .TMH3 {
+  @apply text-3xl
+}
+
+.TinyMDE .TMH4 {
+  @apply text-2xl
+}
+
+.TinyMDE .TMH5 {
+  @apply text-xl
+}
+
+.TinyMDE .TMH6 {
+  @apply text-xl
+}
+
+.TinyMDE .TMMark_TMHR {
+  @apply flex items-center gap-2 whitespace-nowrap;
+}
+
+.TinyMDE .TMMark_TMHR:after {
+  content: "";
+  border: 1px solid #eee;
+  @apply w-full block mt-1;
+}

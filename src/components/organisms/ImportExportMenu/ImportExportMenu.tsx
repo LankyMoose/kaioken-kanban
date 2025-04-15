@@ -1,5 +1,5 @@
 import { useSignal } from "kaioken"
-import { MoreIcon } from "../../atoms/icons/MoreIcon"
+import { MoreIcon } from "../../icons/MoreIcon"
 import { ActionMenu } from "../../molecules/ActionMenu/ActionMenu"
 import { jsonExport, jsonImport } from "./utils"
 

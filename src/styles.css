@@ -35,7 +35,6 @@
   --scrollbar-thumb-hover: rgba(255, 255, 255, 0.4);
   --list-header-padding-x: 0.25rem;
   --list-header-padding-y: 0.5rem;
-  --dialog-background: #221b30;
   background-image: radial-gradient(#eee, #ddd);
 }
 

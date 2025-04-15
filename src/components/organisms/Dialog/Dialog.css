@@ -15,8 +15,14 @@
   position: absolute;
   z-index: 1000;
   max-width: 100%;
-  background-color: var(--dialog-background);
+  background-color: #eee;
   transition: transform 150ms ease-in-out;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    background-color: #1e1e1e;
+  }
 }
 
 .modal-content {

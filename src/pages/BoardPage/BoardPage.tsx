@@ -45,13 +45,24 @@ export function BoardPage() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <header className="flex gap-2 justify-between items-center h-16 px-4 sm:px-8 bg-white/5">
+      <header
+        className={[
+          "dark:bg-white/5",
+          "flex gap-2 justify-between items-center h-16 px-4 sm:px-8",
+        ]}
+      >
         <div className="flex gap-2 items-center">
           <Link to="/" children={<ChevronLeftIcon />} />
           <h1 className="text-2xl flex gap-2 items-end">{board.data.title}</h1>
         </div>
       </header>
-      <div className="grow flex gap-2 items-start justify-start p-2 overflow-auto">
+      <div
+        className={[
+          "grow flex gap-2 items-start justify-start p-2 overflow-auto",
+          "bg-black/5",
+          "dark:bg-transparent",
+        ]}
+      >
         <BoardLists boardId={params.boardId} />
         <Portal container={() => document.getElementById("portal-root")!}>
           <DraggedItemDisplay />
@@ -179,17 +190,27 @@ function ListItemsDisplay({ listId }: ListItemsDisplayProps) {
 
   return (
     <div className="flex flex-col gap-2">
-      <div className={"flex flex-col gap-1 p-1 bg-black/30"}>
+      <div
+        className={[
+          "bg-black/10",
+          "dark:bg-black/30",
+          "flex flex-col gap-1 p-1",
+        ]}
+      >
         {items.current.length ? (
           items.current.map((item) => (
             <ListItemDisplay key={item.id} item={item} />
           ))
         ) : loadState.loading ? (
-          <i className="text-neutral-300">Loading</i>
+          <i className={["text-neutral-600 p-1", "dark:text-neutral-300"]}>
+            Loading
+          </i>
         ) : loadState.error ? (
           loadState.error.message
         ) : (
-          <i className="text-neutral-300">No items</i>
+          <i className={["text-neutral-600 p-1", "dark:text-neutral-300"]}>
+            No items
+          </i>
         )}
       </div>
       <Button
@@ -293,12 +314,6 @@ function ListItemDisplay({ item }: ListItemDisplayProps) {
     window.addEventListener("contextmenu", handleContextMenu)
   }, [])
 
-  const className = useComputed(() => {
-    if (itemDragState.value?.item.id === item.id)
-      return "p-2 bg-[#202020] text-sm flex gap-2 items-start opacity-50"
-    return "p-2 bg-[#202020] text-sm flex gap-2 items-start"
-  })
-
   return (
     <button
       ref={btnRef}
@@ -308,7 +323,12 @@ function ListItemDisplay({ item }: ListItemDisplayProps) {
         selectedItem.value = item
       }}
       onpointerdown={handlePointerDown}
-      className={className}
+      className={[
+        "bg-[#ddd]",
+        "dark:bg-[#202020]",
+        "p-2 text-sm flex gap-2 items-start",
+        itemDragState.value?.item.id === item.id && "opacity-50",
+      ]}
     >
       <p className="flex-grow text-left">{item.title}</p>
       <button

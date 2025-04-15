@@ -7,13 +7,12 @@ import {
   Portal,
   useAsync,
   useCallback,
-  useComputed,
   useEffect,
   useRef,
   useRouter,
   useWatch,
 } from "kaioken"
-import { itemDragState, selectedItem } from "$/state"
+import { itemDragState, preferredTheme, selectedItem } from "$/state"
 import { ItemEditorModal } from "$/components/organisms/ItemEditor"
 
 export function BoardPage() {
@@ -47,6 +46,7 @@ export function BoardPage() {
     <div className="flex flex-col min-h-screen">
       <header
         className={[
+          "bg-[#eee]",
           "dark:bg-white/5",
           "flex gap-2 justify-between items-center h-16 px-4 sm:px-8",
         ]}
@@ -59,8 +59,6 @@ export function BoardPage() {
       <div
         className={[
           "grow flex gap-2 items-start justify-start p-2 overflow-auto",
-          "bg-black/5",
-          "dark:bg-transparent",
         ]}
       >
         <BoardLists boardId={params.boardId} />
@@ -99,7 +97,10 @@ function DraggedItemDisplay() {
       animTimeout.current = setTimeout(() => {
         element.style.rotate = "-5deg"
         element.style.scale = "1.1"
-        element.style.boxShadow = "0 0 10px rgba(0, 0, 0, 0.5)"
+        element.style.boxShadow =
+          preferredTheme.value === "dark"
+            ? "0 0 10px rgba(0, 0, 0, 0.5)"
+            : "0 0 10px rgba(0, 0, 0, 0.15)"
       }, 1)
     }
   })
@@ -160,7 +161,13 @@ type ListDisplayProps = {
 }
 function ListDisplay({ list }: ListDisplayProps) {
   return (
-    <div className="flex flex-col gap-2 p-2 min-w-64 basis-80 max-w-screen bg-white/5 rounded-lg">
+    <div
+      className={[
+        "bg-[#eee]",
+        "dark:bg-white/5",
+        "flex flex-col gap-2 p-2 min-w-64 basis-80 max-w-screen rounded-lg",
+      ]}
+    >
       <div>{list.title}</div>
       <ListItemsDisplay listId={list.id} />
     </div>
@@ -192,7 +199,7 @@ function ListItemsDisplay({ listId }: ListItemsDisplayProps) {
     <div className="flex flex-col gap-2">
       <div
         className={[
-          "bg-black/10",
+          "bg-black/6",
           "dark:bg-black/30",
           "flex flex-col gap-1 p-1",
         ]}
@@ -324,7 +331,7 @@ function ListItemDisplay({ item }: ListItemDisplayProps) {
       }}
       onpointerdown={handlePointerDown}
       className={[
-        "bg-[#ddd]",
+        "bg-[#eee]",
         "dark:bg-[#202020]",
         "p-2 text-sm flex gap-2 items-start",
         itemDragState.value?.item.id === item.id && "opacity-50",

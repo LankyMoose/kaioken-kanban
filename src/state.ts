@@ -29,3 +29,14 @@ type ListDragState = {
 export const listDragState = signal<ListDragState | null>(null)
 
 export const selectedItem = signal<Item | null>(null)
+export const selectedList = signal<List | null>(null)
+
+const prefersDark = window.matchMedia("(prefers-color-scheme: dark)")
+export const preferredTheme = signal<"dark" | "light">(
+  prefersDark.matches ? "dark" : "light"
+)
+
+prefersDark.addEventListener(
+  "change",
+  () => (preferredTheme.value = prefersDark.matches ? "dark" : "light")
+)

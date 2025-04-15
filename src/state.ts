@@ -1,5 +1,6 @@
 import { Item, List } from "$/db"
 import { signal } from "kaioken"
+import { PrevStateSignal } from "./prevStateSignal"
 
 type ItemDragState = {
   item: Item
@@ -13,7 +14,7 @@ type ItemDragState = {
   }
 }
 
-export const itemDragState = signal<ItemDragState | null>(null)
+export const itemDragState = new PrevStateSignal<ItemDragState | null>(null)
 
 type ListDragState = {
   list: List
@@ -26,13 +27,13 @@ type ListDragState = {
   }
 }
 
-export const listDragState = signal<ListDragState | null>(null)
+export const listDragState = new PrevStateSignal<ListDragState | null>(null)
 
 export const selectedItem = signal<Item | null>(null)
 export const selectedList = signal<List | null>(null)
 
 const prefersDark = window.matchMedia("(prefers-color-scheme: dark)")
-export const preferredTheme = signal<"dark" | "light">(
+export const preferredTheme = new PrevStateSignal<"dark" | "light">(
   prefersDark.matches ? "dark" : "light"
 )
 
@@ -40,3 +41,7 @@ prefersDark.addEventListener(
   "change",
   () => (preferredTheme.value = prefersDark.matches ? "dark" : "light")
 )
+
+preferredTheme.subscribe((theme) => {
+  console.log("theme changed", theme, preferredTheme.prev)
+})

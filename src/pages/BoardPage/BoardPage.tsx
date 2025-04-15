@@ -12,8 +12,32 @@ import {
   useRouter,
   useWatch,
 } from "kaioken"
-import { itemDragState, preferredTheme, selectedItem } from "$/state"
+import {
+  itemDragState,
+  listDragState,
+  preferredTheme,
+  selectedItem,
+} from "$/state"
 import { ItemEditorModal } from "$/components/organisms/ItemEditor"
+
+type BoardElementsMap = {
+  [listId: string]: {
+    listDropTarget: HTMLElement
+    items: HTMLElement[]
+  }
+}
+const boardElementsMap: BoardElementsMap = {}
+
+async function deleteItemAndReorder(items: Item[], item: Item) {
+  items.splice(item.order, 1)
+  if (items.some((item, idx) => item.order !== idx)) {
+    const newItems = items.map((item, idx) => ({ ...item, order: idx }))
+    console.log({ newItems })
+    await db.collections.items.upsert(...newItems)
+  }
+  await db.collections.items.delete(item.id)
+  boardElementsMap[item.listId].items.splice(item.order, 1)
+}
 
 export function BoardPage() {
   const { params } = useRouter()
@@ -24,6 +48,7 @@ export function BoardPage() {
   }, [params.boardId])
 
   useEffect(() => {
+    console.log("boardElementsMap", boardElementsMap)
     const onBoardChanged = (changedBoard: Board) => {
       if (changedBoard.id !== params.boardId) return
       board.invalidate()
@@ -71,7 +96,7 @@ export function BoardPage() {
   )
 }
 
-function DraggedItemDisplay() {
+function DraggedItemDisplay(): JSX.Element {
   const animTimeout = useRef(-1)
   const ref = useRef<HTMLDivElement>(null)
   useWatch(() => {
@@ -124,11 +149,43 @@ function BoardLists({ boardId }: BoardListsProps) {
       if (list.boardId !== boardId) return
       lists.invalidate()
     }
+    const onListDeleted = (list: List) => {
+      if (list.boardId !== boardId) return
+      delete boardElementsMap[list.id]
+    }
     db.collections.lists.addEventListener("write|delete", onListChanged)
+    db.collections.lists.addEventListener("delete", onListDeleted)
     return () => {
       db.collections.lists.removeEventListener("write|delete", onListChanged)
+      db.collections.lists.removeEventListener("delete", onListDeleted)
     }
   }, [boardId])
+
+  useWatch(() => {
+    const prevItemDrag = itemDragState.prev
+    const itemDrag = itemDragState.value
+
+    if (!itemDrag && prevItemDrag?.dragging) {
+      // handle item drop
+      console.log("DROP", prevItemDrag)
+      itemDragState.value = null // erase 'prev' state
+    } else if (itemDrag?.dragging) {
+      /**
+       * handle item drag calcs:
+       * - set auto scroll
+       * - apply 'drop target' styles to drag targets
+       */
+    }
+  })
+
+  useWatch(() => {
+    const prevListDrag = listDragState.prev
+    const listDrag = listDragState.value
+
+    if (!listDrag && prevListDrag) {
+      // handle list drop
+    }
+  })
 
   if (lists.loading) {
     return <div>Loading...</div>
@@ -195,9 +252,21 @@ function ListItemsDisplay({ listId }: ListItemsDisplayProps) {
     }
   }, [])
 
+  const dropTargetRef = useCallback((el: HTMLDivElement | null) => {
+    if (!el) {
+      delete boardElementsMap[listId]
+      return
+    }
+    boardElementsMap[listId] = {
+      listDropTarget: el,
+      items: [],
+    }
+  }, [])
+
   return (
     <div className="flex flex-col gap-2">
       <div
+        ref={dropTargetRef}
         className={[
           "bg-black/6",
           "dark:bg-black/30",
@@ -206,7 +275,13 @@ function ListItemsDisplay({ listId }: ListItemsDisplayProps) {
       >
         {items.current.length ? (
           items.current.map((item) => (
-            <ListItemDisplay key={item.id} item={item} />
+            <ListItemDisplay
+              key={item.id}
+              item={item}
+              handleDelete={() => {
+                deleteItemAndReorder([...items.current], item)
+              }}
+            />
           ))
         ) : loadState.loading ? (
           <i className={["text-neutral-600 p-1", "dark:text-neutral-300"]}>
@@ -238,17 +313,18 @@ function ListItemsDisplay({ listId }: ListItemsDisplayProps) {
 
 type ListItemDisplayProps = {
   item: Item
+  handleDelete: () => void
 }
-function ListItemDisplay({ item }: ListItemDisplayProps) {
+function ListItemDisplay({ item, handleDelete }: ListItemDisplayProps) {
   const btnRef = useRef<HTMLButtonElement>(null)
   const longPressing = useRef(false)
 
   const handlePointerDown = useCallback((e: PointerEvent) => {
     if (e.currentTarget !== btnRef.current) return
 
-    const beginLongPress = () => {
-      console.log("long press")
+    const beginDrag = () => {
       document.body.style.userSelect = "none"
+      document.body.style.cursor = "grabbing"
       longPressing.current = true
       const domRect = el.getBoundingClientRect()
       const element = el.cloneNode(true) as HTMLButtonElement
@@ -273,17 +349,16 @@ function ListItemDisplay({ item }: ListItemDisplayProps) {
     const el = btnRef.current!
     const timer = setTimeout(() => {
       if (longPressing.current) return
-      beginLongPress()
+      beginDrag()
     }, 500)
 
     // effectively handles 'long press' event for touch device
     const handleContextMenu = () => {
       if (longPressing.current) return
-      beginLongPress()
+      beginDrag()
     }
 
     const handlePointerMove = (e: TouchEvent | PointerEvent) => {
-      console.log("move")
       if (!longPressing.current) {
         return handlePointerUp()
       }
@@ -304,6 +379,7 @@ function ListItemDisplay({ item }: ListItemDisplayProps) {
     // ptr up event fires before click
     const handlePointerUp = () => {
       document.body.style.userSelect = "auto"
+      document.body.style.cursor = "default"
       clearTimeout(timer)
       window.removeEventListener("touchmove", handlePointerMove)
       window.removeEventListener("pointermove", handlePointerMove)
@@ -321,8 +397,13 @@ function ListItemDisplay({ item }: ListItemDisplayProps) {
     window.addEventListener("contextmenu", handleContextMenu)
   }, [])
 
+  useEffect(() => {
+    boardElementsMap[item.listId].items[item.order] = btnRef.current!
+  }, [])
+
   return (
     <button
+      data-order={item.order}
       ref={btnRef}
       onclick={(e) => {
         console.log("click", e.defaultPrevented)
@@ -342,7 +423,7 @@ function ListItemDisplay({ item }: ListItemDisplayProps) {
         className="hover:text-red-500"
         onclick={(e) => {
           e.preventDefault()
-          db.collections.items.delete(item.id)
+          handleDelete()
         }}
       >
         <TrashIcon />

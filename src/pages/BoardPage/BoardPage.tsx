@@ -19,6 +19,9 @@ export function BoardPage() {
     console.log("boardElementsMap", boardElementsMap)
     const onBoardChanged = (changedBoard: Board) => {
       if (changedBoard.id !== params.boardId) return
+      for (const key in boardElementsMap) {
+        delete boardElementsMap[key]
+      }
       board.invalidate()
     }
     db.collections.boards.addEventListener("write|delete", onBoardChanged)

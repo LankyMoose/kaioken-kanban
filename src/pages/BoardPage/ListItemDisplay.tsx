@@ -8,90 +8,113 @@ type ListItemDisplayProps = {
   item: Item
   handleDelete: () => void
 }
+
+const getEvtPos = (e: PointerEvent | TouchEvent) => {
+  return (e.type === "touchmove" && "touches" in e ? e.touches[0] : e) as {
+    clientX: number
+    clientY: number
+  }
+}
+
+const v2Dist = function (
+  a: { x: number; y: number },
+  b: { x: number; y: number }
+) {
+  var dx = b.x - a.x
+  var dy = b.y - a.y
+  return Math.sqrt(dx * dx + dy * dy)
+}
+
 export function ListItemDisplay({ item, handleDelete }: ListItemDisplayProps) {
   const btnRef = useRef<HTMLButtonElement>(null)
   const longPressing = useRef(false)
 
-  const handlePointerDown = useCallback((e: PointerEvent) => {
-    if (e.currentTarget !== btnRef.current) return
+  const handlePointerDown = useCallback(
+    (e: PointerEvent) => {
+      if (e.currentTarget !== btnRef.current) return
+      const initialPos = getEvtPos(e)
 
-    const beginDrag = () => {
-      document.body.style.userSelect = "none"
-      document.body.style.cursor = "grabbing"
-      longPressing.current = true
-      const domRect = el.getBoundingClientRect()
-      const element = el.cloneNode(true) as HTMLButtonElement
-      element.style.width = `${domRect.width}px`
-      element.style.height = `${domRect.height}px`
-      element.style.pointerEvents = "none"
-      itemDragState.value = {
-        item,
-        element,
-        offset: {
-          x: e.clientX - domRect.left,
-          y: e.clientY - domRect.top,
-        },
-        mousePos: { x: e.clientX, y: e.clientY },
-        target: {
-          listId: item.listId,
-          index: item.order,
-        },
+      const beginDrag = () => {
+        document.body.style.userSelect = "none"
+        document.body.style.cursor = "grabbing"
+        longPressing.current = true
+        const domRect = el.getBoundingClientRect()
+        const element = el.cloneNode(true) as HTMLButtonElement
+        element.style.width = `${domRect.width}px`
+        element.style.height = `${domRect.height}px`
+        element.style.pointerEvents = "none"
+        itemDragState.value = {
+          item,
+          element,
+          offset: {
+            x: e.clientX - domRect.left,
+            y: e.clientY - domRect.top,
+          },
+          mousePos: { x: e.clientX, y: e.clientY },
+          target: {
+            listId: item.listId,
+            index: item.order,
+          },
+        }
       }
-    }
-    const el = btnRef.current!
-    const timer = setTimeout(() => {
-      if (longPressing.current) return
-      beginDrag()
-    }, 500)
+      const el = btnRef.current!
+      const timer = setTimeout(() => {
+        if (longPressing.current) return
+        beginDrag()
+      }, 500)
 
-    // effectively handles 'long press' event for touch device
-    const handleContextMenu = () => {
-      if (longPressing.current) return
-      beginDrag()
-    }
+      // effectively handles 'long press' event for touch device
+      const handleContextMenu = () => {
+        if (longPressing.current) return
+        beginDrag()
+      }
 
-    const handlePointerMove = (e: TouchEvent | PointerEvent) => {
-      if (!longPressing.current) {
-        return handlePointerUp()
+      const handlePointerMove = (e: TouchEvent | PointerEvent) => {
+        const pos = getEvtPos(e)
+        const dist = v2Dist(
+          { x: pos.clientX, y: pos.clientY },
+          { x: initialPos.clientX, y: initialPos.clientY }
+        )
+        if (!longPressing.current && dist > 10) {
+          return handlePointerUp()
+        }
+        if (!itemDragState.value) return
+        const currentState = itemDragState.value
+        itemDragState.value = {
+          ...currentState,
+          mousePos: { x: pos.clientX, y: pos.clientY },
+        }
       }
-      if (!itemDragState.value) return
-      const currentState = itemDragState.value
-      const pos = (
-        e.type === "touchmove" && "touches" in e ? e.touches[0] : e
-      ) as {
-        clientX: number
-        clientY: number
+      // ptr up event fires before click
+      const handlePointerUp = () => {
+        document.body.style.userSelect = "auto"
+        document.body.style.cursor = "default"
+        clearTimeout(timer)
+        window.removeEventListener("touchmove", handlePointerMove)
+        window.removeEventListener("pointermove", handlePointerMove)
+        window.removeEventListener("touchend", handlePointerUp)
+        window.removeEventListener("pointerup", handlePointerUp)
+        window.removeEventListener("contextmenu", handleContextMenu)
+        itemDragState.value = null
+        longPressing.current = false
       }
-      itemDragState.value = {
-        ...currentState,
-        mousePos: { x: pos.clientX, y: pos.clientY },
-      }
-    }
-    // ptr up event fires before click
-    const handlePointerUp = () => {
-      document.body.style.userSelect = "auto"
-      document.body.style.cursor = "default"
-      clearTimeout(timer)
-      window.removeEventListener("touchmove", handlePointerMove)
-      window.removeEventListener("pointermove", handlePointerMove)
-      window.removeEventListener("touchend", handlePointerUp)
-      window.removeEventListener("pointerup", handlePointerUp)
-      window.removeEventListener("contextmenu", handleContextMenu)
-      itemDragState.value = null
-      longPressing.current = false
-    }
 
-    window.addEventListener("pointerup", handlePointerUp)
-    window.addEventListener("touchend", handlePointerUp)
-    window.addEventListener("touchmove", handlePointerMove)
-    window.addEventListener("pointermove", handlePointerMove)
-    window.addEventListener("contextmenu", handleContextMenu)
-  }, [])
+      window.addEventListener("pointerup", handlePointerUp)
+      window.addEventListener("touchend", handlePointerUp)
+      window.addEventListener("touchmove", handlePointerMove)
+      window.addEventListener("pointermove", handlePointerMove)
+      window.addEventListener("contextmenu", handleContextMenu)
+    },
+    [item.id, item.order]
+  )
 
   useEffect(() => {
     boardElementsMap[item.listId].items[item.order] = {
       ref: btnRef,
       item,
+    }
+    return () => {
+      boardElementsMap[item.listId]?.items.splice(item.order, 1)
     }
   })
 
@@ -101,6 +124,7 @@ export function ListItemDisplay({ item, handleDelete }: ListItemDisplayProps) {
 
   return (
     <button
+      data-order={item.order}
       ref={btnRef}
       onclick={(e) => {
         // prevent selection if delete was clicked

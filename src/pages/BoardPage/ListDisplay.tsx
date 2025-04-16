@@ -1,7 +1,13 @@
 import { Button } from "$/components/atoms/Button/Button"
 import { List, Item, db } from "$/db"
 import { itemDragState } from "./state"
-import { useRef, useAsync, useEffect, useLayoutEffect } from "kaioken"
+import {
+  useRef,
+  useAsync,
+  useEffect,
+  useLayoutEffect,
+  useComputed,
+} from "kaioken"
 import { boardElementsMap } from "./state"
 import { deleteItemAndReorder } from "./utils"
 import { ListItemDisplay } from "./ListItemDisplay"
@@ -19,13 +25,20 @@ export function ListDisplay({ list }: ListDisplayProps) {
   }, [list.id])
 
   useEffect(() => {
-    const handleDelete = async (item: Item) => {
-      if (item.listId !== list.id) return
+    const handleItemChanged = async (item: Item) => {
+      if (
+        item.listId !== list.id &&
+        items.current.find((i) => i.id === item.id) === undefined
+      )
+        return
       loadState.invalidate()
     }
-    db.collections.items.addEventListener("delete", handleDelete)
+    db.collections.items.addEventListener("write|delete", handleItemChanged)
     return () => {
-      db.collections.items.removeEventListener("delete", handleDelete)
+      db.collections.items.removeEventListener(
+        "write|delete",
+        handleItemChanged
+      )
     }
   }, [])
 
@@ -40,6 +53,21 @@ export function ListDisplay({ list }: ListDisplayProps) {
       delete boardElementsMap[list.id]
     }
   }, [])
+
+  const addPB = useComputed(() => {
+    if (!itemDragState.value) return false
+    if (itemDragState.value?.target.listId !== list.id) return false
+    if (itemDragState.value.item.listId !== list.id) {
+      return itemDragState.value.target.index === items.current.length
+    }
+    return itemDragState.value.target.index === items.current.length
+  })
+
+  const hideEmptyListDisplay = useComputed(() => {
+    if (!itemDragState.value) return false
+    if (itemDragState.value?.target.listId !== list.id) return false
+    return items.current.length === 0
+  })
 
   return (
     <div
@@ -58,9 +86,7 @@ export function ListDisplay({ list }: ListDisplayProps) {
             "bg-black/6",
             "dark:bg-black/30",
             "flex flex-col gap-1 p-1",
-            itemDragState.value?.target.listId === list.id &&
-              itemDragState.value.target.index === items.current.length &&
-              "pb-(--dragged-item-height)",
+            addPB.value && "pb-(--dragged-item-height)",
           ]}
         >
           {items.current.length ? (
@@ -80,9 +106,11 @@ export function ListDisplay({ list }: ListDisplayProps) {
           ) : loadState.error ? (
             loadState.error.message
           ) : (
-            <i className={["text-neutral-600 p-1", "dark:text-neutral-300"]}>
-              No items
-            </i>
+            hideEmptyListDisplay.value === false && (
+              <i className={["text-neutral-600 p-1", "dark:text-neutral-300"]}>
+                No items
+              </i>
+            )
           )}
         </div>
         <Button

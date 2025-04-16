@@ -10,6 +10,33 @@ import { ActionMenu } from "$/components/molecules/ActionMenu/ActionMenu"
 import { MoreIcon } from "$/components/icons/MoreIcon"
 
 export function HomePage() {
+  const handleSeedClick = async () => {
+    await db.collections.boards.clear()
+    const board = await db.collections.boards.create({})
+    const list1 = await db.collections.lists.create({
+      boardId: board.id,
+      order: 0,
+    })
+    await db.collections.items.create({
+      title: "a",
+      listId: list1.id,
+      order: 0,
+    })
+    await db.collections.items.create({
+      title: "b",
+      listId: list1.id,
+      order: 1,
+    })
+    await db.collections.items.create({
+      title: "c",
+      listId: list1.id,
+      order: 2,
+    })
+    await db.collections.lists.create({
+      boardId: board.id,
+      order: 1,
+    })
+  }
   return (
     <>
       <header className="flex gap-2 justify-between items-center h-16 px-4 sm:px-8">
@@ -17,6 +44,7 @@ export function HomePage() {
           <LogoIcon size={36} />
           <span>Kaioban</span>
         </h1>
+        <button onclick={handleSeedClick}>Seed</button>
         <ImportExportMenu />
       </header>
       <main className="flex flex-col grow">

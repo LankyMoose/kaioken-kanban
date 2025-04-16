@@ -1,14 +1,14 @@
 import { Transition, useEffect, useModel, useState } from "kaioken"
-import { Input } from "../atoms/Input"
-import { Modal } from "./Dialog/Modal"
-import { MoreIcon } from "../icons/MoreIcon"
-import { Button } from "../atoms/Button/Button"
-import { MDEditor } from "./MDEditor"
-import Dialog from "./Dialog/Dialog"
-import { ActionMenu } from "../molecules/ActionMenu/ActionMenu"
-import { selectedItem } from "$/state"
 import { db } from "$/db"
 import { maxItemNameLength } from "$/constants"
+import { Button } from "$/components/atoms/Button/Button"
+import { Input } from "$/components/atoms/Input"
+import { MoreIcon } from "$/components/icons/MoreIcon"
+import { ActionMenu } from "$/components/molecules/ActionMenu/ActionMenu"
+import Dialog from "$/components/organisms/Dialog/Dialog"
+import { Modal } from "$/components/organisms/Dialog/Modal"
+import { MDEditor } from "$/components/organisms/MDEditor"
+import { selectedItem } from "./state"
 
 export function ItemEditorModal() {
   const handleClose = () => {

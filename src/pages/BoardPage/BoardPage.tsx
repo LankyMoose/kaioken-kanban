@@ -1,43 +1,11 @@
-import { Button } from "$/components/atoms/Button/Button"
 import { ChevronLeftIcon } from "$/components/icons/ChevronLeftIcon"
-import { TrashIcon } from "$/components/icons/TrashIcon"
-import { Board, db, Item, List } from "$/db"
-import {
-  Link,
-  Portal,
-  useAsync,
-  useCallback,
-  useEffect,
-  useRef,
-  useRouter,
-  useWatch,
-} from "kaioken"
-import {
-  itemDragState,
-  listDragState,
-  preferredTheme,
-  selectedItem,
-} from "$/state"
-import { ItemEditorModal } from "$/components/organisms/ItemEditor"
-
-type BoardElementsMap = {
-  [listId: string]: {
-    listDropTarget: HTMLElement
-    items: HTMLElement[]
-  }
-}
-const boardElementsMap: BoardElementsMap = {}
-
-async function deleteItemAndReorder(items: Item[], item: Item) {
-  items.splice(item.order, 1)
-  if (items.some((item, idx) => item.order !== idx)) {
-    const newItems = items.map((item, idx) => ({ ...item, order: idx }))
-    console.log({ newItems })
-    await db.collections.items.upsert(...newItems)
-  }
-  await db.collections.items.delete(item.id)
-  boardElementsMap[item.listId].items.splice(item.order, 1)
-}
+import { Board, db } from "$/db"
+import { Link, Portal, useAsync, useEffect, useRouter } from "kaioken"
+import { itemDragState } from "./state"
+import { boardElementsMap } from "./state"
+import { BoardLists } from "./BoardLists"
+import { DraggedItemDisplay } from "./DraggedItemDisplay"
+import { ItemEditorModal } from "./ItemEditor"
 
 export function BoardPage() {
   const { params } = useRouter()
@@ -68,366 +36,37 @@ export function BoardPage() {
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <header
-        className={[
-          "bg-[#eee]",
-          "dark:bg-white/5",
-          "flex gap-2 justify-between items-center h-16 px-4 sm:px-8",
-        ]}
-      >
-        <div className="flex gap-2 items-center">
-          <Link to="/" children={<ChevronLeftIcon />} />
-          <h1 className="text-2xl flex gap-2 items-end">{board.data.title}</h1>
-        </div>
-      </header>
-      <div
-        className={[
-          "grow flex gap-2 items-start justify-start p-2 overflow-auto",
-        ]}
-      >
-        <BoardLists boardId={params.boardId} />
-        <Portal container={() => document.getElementById("portal-root")!}>
-          <DraggedItemDisplay />
-          <ItemEditorModal />
-        </Portal>
-      </div>
-    </div>
-  )
-}
-
-function DraggedItemDisplay(): JSX.Element {
-  const animTimeout = useRef(-1)
-  const ref = useRef<HTMLDivElement>(null)
-  useWatch(() => {
-    const state = itemDragState.value
-    const container = ref.current
-    clearTimeout(animTimeout.current)
-
-    if (!state && container?.firstChild) {
-      container.firstChild.remove()
-    }
-    if (!state || !container) return
-    const offset = {
-      x: state.mousePos.x - state.offset.x,
-      y: state.mousePos.y - state.offset.y,
-    }
-    container.style.transform = `translate(${offset.x}px, ${offset.y}px)`
-
-    const element = state.element
-    if (!container.firstChild) {
-      container.append(element)
-      element.style.userSelect = "none"
-      element.style.transition = "0.2s ease-in"
-      animTimeout.current = setTimeout(() => {
-        element.style.rotate = "-5deg"
-        element.style.scale = "1.1"
-        element.style.boxShadow =
-          preferredTheme.value === "dark"
-            ? "0 0 10px rgba(0, 0, 0, 0.5)"
-            : "0 0 10px rgba(0, 0, 0, 0.15)"
-      }, 1)
-    }
-  })
-
-  return <div ref={ref} className="absolute top-0 left-0" />
-}
-
-type BoardListsProps = {
-  boardId: string
-}
-function BoardLists({ boardId }: BoardListsProps) {
-  const lists = useAsync(async () => {
-    const res = await db.collections.lists.findMany(
-      (l) => l.boardId === boardId
-    )
-    return res.sort((a, b) => a.order - b.order)
-  }, [boardId])
-
-  useEffect(() => {
-    const onListChanged = (list: List) => {
-      if (list.boardId !== boardId) return
-      lists.invalidate()
-    }
-    const onListDeleted = (list: List) => {
-      if (list.boardId !== boardId) return
-      delete boardElementsMap[list.id]
-    }
-    db.collections.lists.addEventListener("write|delete", onListChanged)
-    db.collections.lists.addEventListener("delete", onListDeleted)
-    return () => {
-      db.collections.lists.removeEventListener("write|delete", onListChanged)
-      db.collections.lists.removeEventListener("delete", onListDeleted)
-    }
-  }, [boardId])
-
-  useWatch(() => {
-    const prevItemDrag = itemDragState.prev
-    const itemDrag = itemDragState.value
-
-    if (!itemDrag && prevItemDrag?.dragging) {
-      // handle item drop
-      console.log("DROP", prevItemDrag)
-      itemDragState.value = null // erase 'prev' state
-    } else if (itemDrag?.dragging) {
-      /**
-       * handle item drag calcs:
-       * - set auto scroll
-       * - apply 'drop target' styles to drag targets
-       */
-    }
-  })
-
-  useWatch(() => {
-    const prevListDrag = listDragState.prev
-    const listDrag = listDragState.value
-
-    if (!listDrag && prevListDrag) {
-      // handle list drop
-    }
-  })
-
-  if (lists.loading) {
-    return <div>Loading...</div>
-  }
-
-  if (lists.error) {
-    return <div>{lists.error.message}</div>
-  }
-
-  return (
     <>
-      {lists.data.map((list) => (
-        <ListDisplay key={list.id} list={list} />
-      ))}
-      <Button
-        onclick={() =>
-          db.collections.lists.create({ boardId, order: lists.data.length })
-        }
-        variant="primary"
-        className="min-w-64 basis-80 max-w-screen"
-      >
-        + Add List
-      </Button>
-    </>
-  )
-}
-
-type ListDisplayProps = {
-  list: List
-}
-function ListDisplay({ list }: ListDisplayProps) {
-  return (
-    <div
-      className={[
-        "bg-[#eee]",
-        "dark:bg-white/5",
-        "flex flex-col gap-2 p-2 min-w-64 basis-80 max-w-screen rounded-lg",
-      ]}
-    >
-      <div>{list.title}</div>
-      <ListItemsDisplay listId={list.id} />
-    </div>
-  )
-}
-
-type ListItemsDisplayProps = {
-  listId: string
-}
-function ListItemsDisplay({ listId }: ListItemsDisplayProps) {
-  const items = useRef<Item[]>([])
-  const loadState = useAsync(async () => {
-    const res = await db.collections.items.findMany((i) => i.listId === listId)
-    items.current = res.sort((a, b) => a.order - b.order)
-  }, [listId])
-
-  useEffect(() => {
-    const handleDelete = async (item: Item) => {
-      if (item.listId !== listId) return
-      loadState.invalidate()
-    }
-    db.collections.items.addEventListener("delete", handleDelete)
-    return () => {
-      db.collections.items.removeEventListener("delete", handleDelete)
-    }
-  }, [])
-
-  const dropTargetRef = useCallback((el: HTMLDivElement | null) => {
-    if (!el) {
-      delete boardElementsMap[listId]
-      return
-    }
-    boardElementsMap[listId] = {
-      listDropTarget: el,
-      items: [],
-    }
-  }, [])
-
-  return (
-    <div className="flex flex-col gap-2">
-      <div
-        ref={dropTargetRef}
-        className={[
-          "bg-black/6",
-          "dark:bg-black/30",
-          "flex flex-col gap-1 p-1",
-        ]}
-      >
-        {items.current.length ? (
-          items.current.map((item) => (
-            <ListItemDisplay
-              key={item.id}
-              item={item}
-              handleDelete={() => {
-                deleteItemAndReorder([...items.current], item)
-              }}
-            />
-          ))
-        ) : loadState.loading ? (
-          <i className={["text-neutral-600 p-1", "dark:text-neutral-300"]}>
-            Loading
-          </i>
-        ) : loadState.error ? (
-          loadState.error.message
-        ) : (
-          <i className={["text-neutral-600 p-1", "dark:text-neutral-300"]}>
-            No items
-          </i>
-        )}
+      <div className="flex flex-col min-h-screen">
+        <header
+          className={[
+            "bg-[#eee]",
+            "dark:bg-white/5",
+            "flex gap-2 justify-between items-center h-16 px-4 sm:px-8",
+          ]}
+        >
+          <div className="flex gap-2 items-center">
+            <Link to="/" children={<ChevronLeftIcon />} />
+            <h1 className="text-2xl flex gap-2 items-end">
+              {board.data.title}
+            </h1>
+          </div>
+        </header>
+        <div
+          className={[
+            "grow flex gap-2 items-start justify-start p-2 overflow-auto",
+          ]}
+          style={`--dragged-item-height: ${
+            itemDragState.value?.element?.offsetHeight ?? 0
+          }px;`}
+        >
+          <BoardLists boardId={params.boardId} />
+        </div>
       </div>
-      <Button
-        variant="primary"
-        onclick={async () => {
-          await db.collections.items.create({
-            listId,
-            order: items.current.length,
-          })
-          loadState.invalidate()
-        }}
-      >
-        Add Item
-      </Button>
-    </div>
-  )
-}
-
-type ListItemDisplayProps = {
-  item: Item
-  handleDelete: () => void
-}
-function ListItemDisplay({ item, handleDelete }: ListItemDisplayProps) {
-  const btnRef = useRef<HTMLButtonElement>(null)
-  const longPressing = useRef(false)
-
-  const handlePointerDown = useCallback((e: PointerEvent) => {
-    if (e.currentTarget !== btnRef.current) return
-
-    const beginDrag = () => {
-      document.body.style.userSelect = "none"
-      document.body.style.cursor = "grabbing"
-      longPressing.current = true
-      const domRect = el.getBoundingClientRect()
-      const element = el.cloneNode(true) as HTMLButtonElement
-      element.style.width = `${domRect.width}px`
-      element.style.height = `${domRect.height}px`
-      element.style.pointerEvents = "none"
-      itemDragState.value = {
-        item,
-        element,
-        dragging: false,
-        offset: {
-          x: e.clientX - domRect.left,
-          y: e.clientY - domRect.top,
-        },
-        mousePos: { x: e.clientX, y: e.clientY },
-        target: {
-          listId: item.listId,
-          index: item.order,
-        },
-      }
-    }
-    const el = btnRef.current!
-    const timer = setTimeout(() => {
-      if (longPressing.current) return
-      beginDrag()
-    }, 500)
-
-    // effectively handles 'long press' event for touch device
-    const handleContextMenu = () => {
-      if (longPressing.current) return
-      beginDrag()
-    }
-
-    const handlePointerMove = (e: TouchEvent | PointerEvent) => {
-      if (!longPressing.current) {
-        return handlePointerUp()
-      }
-      if (!itemDragState.value) return
-      const currentState = itemDragState.value
-      const pos = (
-        e.type === "touchmove" && "touches" in e ? e.touches[0] : e
-      ) as {
-        clientX: number
-        clientY: number
-      }
-      itemDragState.value = {
-        ...currentState,
-        dragging: true,
-        mousePos: { x: pos.clientX, y: pos.clientY },
-      }
-    }
-    // ptr up event fires before click
-    const handlePointerUp = () => {
-      document.body.style.userSelect = "auto"
-      document.body.style.cursor = "default"
-      clearTimeout(timer)
-      window.removeEventListener("touchmove", handlePointerMove)
-      window.removeEventListener("pointermove", handlePointerMove)
-      window.removeEventListener("touchend", handlePointerUp)
-      window.removeEventListener("pointerup", handlePointerUp)
-      window.removeEventListener("contextmenu", handleContextMenu)
-      itemDragState.value = null
-      longPressing.current = false
-    }
-
-    window.addEventListener("pointerup", handlePointerUp)
-    window.addEventListener("touchend", handlePointerUp)
-    window.addEventListener("touchmove", handlePointerMove)
-    window.addEventListener("pointermove", handlePointerMove)
-    window.addEventListener("contextmenu", handleContextMenu)
-  }, [])
-
-  useEffect(() => {
-    boardElementsMap[item.listId].items[item.order] = btnRef.current!
-  }, [])
-
-  return (
-    <button
-      data-order={item.order}
-      ref={btnRef}
-      onclick={(e) => {
-        console.log("click", e.defaultPrevented)
-        if (e.defaultPrevented) return
-        selectedItem.value = item
-      }}
-      onpointerdown={handlePointerDown}
-      className={[
-        "bg-[#eee]",
-        "dark:bg-[#202020]",
-        "p-2 text-sm flex gap-2 items-start",
-        itemDragState.value?.item.id === item.id && "opacity-50",
-      ]}
-    >
-      <p className="flex-grow text-left">{item.title}</p>
-      <button
-        className="hover:text-red-500"
-        onclick={(e) => {
-          e.preventDefault()
-          handleDelete()
-        }}
-      >
-        <TrashIcon />
-      </button>
-    </button>
+      <Portal container={() => document.getElementById("portal-root")!}>
+        <DraggedItemDisplay />
+        <ItemEditorModal />
+      </Portal>
+    </>
   )
 }

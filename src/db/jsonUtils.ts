@@ -23,7 +23,7 @@ export async function exportToJSON(): Promise<string> {
     items,
     tags,
     itemTags,
-    version: VERSION,
+    $db_version: VERSION,
   })
 }
 
@@ -54,16 +54,16 @@ export async function importFromJSON(data: string) {
       if (!(key in parsed))
         throw new Error(`store '${key}' not found in import data`)
     }
-    const { boards, lists, items, tags, itemTags, version } = parsed as {
+    const { boards, lists, items, tags, itemTags, $db_version } = parsed as {
       boards: Board[]
       lists: List[]
       items: Item[]
       tags: Tag[]
       itemTags: ItemTag[]
-      version?: number
+      $db_version?: number
     }
 
-    let v = version || 0
+    let v = $db_version || 0
     if (isNaN(v)) v = 0
 
     let transformed = [boards, lists, items, tags, itemTags] as const

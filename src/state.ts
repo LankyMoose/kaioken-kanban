@@ -1,7 +1,7 @@
-import { PrevStateSignal } from "./prevStateSignal"
+import { signal } from "kaioken"
 
 const prefersDark = window.matchMedia("(prefers-color-scheme: dark)")
-export const preferredTheme = new PrevStateSignal<"dark" | "light">(
+export const preferredTheme = signal<"dark" | "light">(
   prefersDark.matches ? "dark" : "light"
 )
 
@@ -9,7 +9,3 @@ prefersDark.addEventListener(
   "change",
   () => (preferredTheme.value = prefersDark.matches ? "dark" : "light")
 )
-
-preferredTheme.subscribe((theme) => {
-  console.log("theme changed", theme, preferredTheme.prev)
-})

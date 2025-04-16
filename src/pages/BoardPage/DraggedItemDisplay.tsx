@@ -26,6 +26,7 @@ export function DraggedItemDisplay(): JSX.Element {
       element.style.userSelect = "none"
       element.style.transition = "0.2s ease-in"
       animTimeout.current = setTimeout(() => {
+        element.style.opacity = "0.75"
         element.style.scale = "1.1"
         element.style.boxShadow =
           preferredTheme.value === "dark"

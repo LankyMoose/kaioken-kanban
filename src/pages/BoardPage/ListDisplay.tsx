@@ -29,8 +29,9 @@ export function ListDisplay({ list }: ListDisplayProps) {
       if (
         item.listId !== list.id &&
         items.current.find((i) => i.id === item.id) === undefined
-      )
+      ) {
         return
+      }
       loadState.invalidate()
     }
     db.collections.items.addEventListener("write|delete", handleItemChanged)

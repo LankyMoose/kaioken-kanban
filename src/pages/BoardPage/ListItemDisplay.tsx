@@ -1,6 +1,6 @@
 import { TrashIcon } from "$/components/icons/TrashIcon"
 import { Item } from "$/db"
-import { itemDragState, selectedItem } from "./state"
+import { handleItemDrop, itemDragState, selectedItem } from "./state"
 import { useRef, useCallback, useEffect } from "kaioken"
 import { boardElementsMap } from "./state"
 
@@ -95,8 +95,8 @@ export function ListItemDisplay({ item, handleDelete }: ListItemDisplayProps) {
         window.removeEventListener("touchend", handlePointerUp)
         window.removeEventListener("pointerup", handlePointerUp)
         window.removeEventListener("contextmenu", handleContextMenu)
-        itemDragState.value = null
         longPressing.current = false
+        handleItemDrop()
       }
 
       window.addEventListener("pointerup", handlePointerUp)

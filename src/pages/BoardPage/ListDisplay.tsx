@@ -58,9 +58,6 @@ export function ListDisplay({ list }: ListDisplayProps) {
   const addPB = useComputed(() => {
     if (!itemDragState.value) return false
     if (itemDragState.value?.target.listId !== list.id) return false
-    if (itemDragState.value.item.listId !== list.id) {
-      return itemDragState.value.target.index === items.current.length
-    }
     return itemDragState.value.target.index === items.current.length
   })
 

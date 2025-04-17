@@ -139,7 +139,7 @@ export function ListItemDisplay({ item, handleDelete }: ListItemDisplayProps) {
         itemDragState.value?.item.id === item.id && "opacity-50",
         itemDragState.value?.target.listId === item.listId &&
           itemDragState.value?.target.index === item.order &&
-          "mt-8",
+          "mt-(--dragged-item-height)",
       ]}
     >
       <p className="flex-grow text-left">{item.title}</p>

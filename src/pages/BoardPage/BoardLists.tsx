@@ -1,7 +1,6 @@
 import { Button } from "$/components/atoms/Button/Button"
 import { db, List } from "$/db"
-import { listDragState } from "./state"
-import { useAsync, useEffect, useWatch } from "kaioken"
+import { useAsync, useEffect } from "kaioken"
 import { boardElementsMap } from "./state"
 import { ListDisplay } from "./ListDisplay"
 
@@ -32,15 +31,6 @@ export function BoardLists({ boardId }: BoardListsProps) {
       db.collections.lists.removeEventListener("delete", onListDeleted)
     }
   }, [boardId])
-
-  useWatch(() => {
-    const prevListDrag = listDragState.prev
-    const listDrag = listDragState.value
-
-    if (!listDrag && prevListDrag) {
-      // handle list drop
-    }
-  })
 
   if (lists.loading) {
     return <div>Loading...</div>

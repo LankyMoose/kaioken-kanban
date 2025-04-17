@@ -51,7 +51,7 @@ export function BoardPage() {
           <div className="flex gap-2 items-center">
             <Link to="/" children={<ChevronLeftIcon />} />
             <h1 className="text-2xl flex gap-2 items-end">
-              {board.data.title}
+              {board.data.title || "(Unnamed board)"}
             </h1>
           </div>
         </header>

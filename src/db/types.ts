@@ -19,9 +19,7 @@ type Board = {
   order: number
 }
 
-type BoardDTO = {
-  title?: string
-}
+type BoardDTO = {}
 
 type List = {
   id: string
@@ -34,7 +32,6 @@ type List = {
 
 type ListDTO = {
   boardId: string
-  title?: string
   order: number
 }
 
@@ -51,7 +48,6 @@ type Item = {
 
 type ItemDTO = {
   listId: string
-  title?: string
   order: number
 }
 

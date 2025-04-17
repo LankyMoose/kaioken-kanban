@@ -57,8 +57,8 @@ function ItemEditor() {
         title,
         content,
       })
-      close()
     }
+    close()
   }
 
   async function handleCtxAction(action: "delete" | "archive") {
@@ -83,7 +83,7 @@ function ItemEditor() {
           placeholder="(Unnamed Item)"
           className="w-full border-0"
           onfocus={(e) => (e.target as HTMLInputElement)?.select()}
-          onkeyup={(e) => (e.key === "Enter" ? saveChanges() : null)}
+          onkeyup={(e) => e.key === "Enter" && saveChanges()}
         />
         <div className="relative">
           <ActionMenu

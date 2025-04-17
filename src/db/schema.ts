@@ -20,7 +20,7 @@ const boards = Collection.create<Board, BoardDTO>()
     create(data) {
       return {
         ...data,
-        title: data.title ?? "New Board",
+        title: "",
         created: new Date(),
         archived: false,
         id: crypto.randomUUID(),
@@ -38,7 +38,7 @@ const lists = Collection.create<List, ListDTO>()
     create(data) {
       return {
         ...data,
-        title: data.title ?? "New List",
+        title: "",
         created: new Date(),
         archived: false,
         id: crypto.randomUUID(),
@@ -55,7 +55,7 @@ const items = Collection.create<Item, ItemDTO>()
     create(data) {
       return {
         ...data,
-        title: data.title ?? "New Item",
+        title: "",
         content: "",
         created: new Date(),
         archived: false,

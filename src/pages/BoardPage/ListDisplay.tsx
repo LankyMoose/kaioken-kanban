@@ -1,6 +1,6 @@
 import { Button } from "$/components/atoms/Button/Button"
 import { List, Item, db } from "$/db"
-import { itemDragState } from "./state"
+import { itemDragState, selectedItem } from "./state"
 import {
   useRef,
   useAsync,
@@ -76,7 +76,7 @@ export function ListDisplay({ list }: ListDisplayProps) {
         "flex flex-col gap-2 p-2 min-w-64 basis-80 max-w-screen rounded-lg",
       ]}
     >
-      <div>{list.title}</div>
+      <div>{list.title || "(Unnamed List)"}</div>
       <div className="flex flex-col gap-2">
         <div
           ref={dropTargetRef}
@@ -114,11 +114,12 @@ export function ListDisplay({ list }: ListDisplayProps) {
         <Button
           variant="primary"
           onclick={async () => {
-            await db.collections.items.create({
+            const item = await db.collections.items.create({
               listId: list.id,
               order: items.current.length,
             })
             loadState.invalidate()
+            selectedItem.value = item
           }}
         >
           Add Item

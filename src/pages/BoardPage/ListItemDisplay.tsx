@@ -142,7 +142,7 @@ export function ListItemDisplay({ item, handleDelete }: ListItemDisplayProps) {
           "mt-(--dragged-item-height)",
       ]}
     >
-      <p className="flex-grow text-left">{item.title}</p>
+      <p className="flex-grow text-left">{item.title || "(Untitled Item)"}</p>
       <button
         className="hover:text-red-500"
         onclick={(e) => {

@@ -1,10 +1,12 @@
 import {
+  createContext,
   memo,
   Signal,
   signal,
   Transition,
   TransitionState,
   useComputed,
+  useContext,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -14,7 +16,7 @@ import { match } from "lit-match"
 export type Toast = {
   id: number
   type: "info" | "success" | "warning" | "danger"
-  children: (cancel: () => void) => JSX.Children
+  children: () => JSX.Children
   height: number
   expired?: boolean
   pauseOnHover?: boolean
@@ -23,7 +25,11 @@ export type Toast = {
   duration: number
 }
 
-const defaultDuration = 13000
+const ToastItemContext = createContext<{ cancel: () => void }>(null!)
+
+export const useToastItem = () => useContext(ToastItemContext)
+
+const defaultDuration = 4000
 
 const toasts = signal<Toast[]>([])
 
@@ -47,7 +53,7 @@ let id = 0
 
 type ToastOptions = {
   type: Toast["type"]
-  children: (cancel: () => void) => JSX.Children
+  children: () => JSX.Children
   pauseOnHover?: boolean
   duration?: number
 }
@@ -132,20 +138,26 @@ const ToastItem = memo(({ toast, state, index }: ToastItemProps) => {
       className={[
         "transition-transform duration-300",
         "absolute right-4 bottom-4",
-        "rounded flex flex-col items-start justify-between overflow-hidden",
+        "rounded flex flex-col items-start justify-between overflow-hidden shadow",
         match(toast.type)
-          .with("info", () => "bg-blue-500")
-          .with("success", () => "bg-green-500")
-          .with("danger", () => "bg-red-500")
-          .with("warning", () => "bg-yellow-500")
+          .with("info", () => "bg-blue-500 dark:bg-blue-600")
+          .with("success", () => "bg-green-600 dark:bg-green-700")
+          .with("danger", () => "bg-red-500 dark:bg-red-600")
+          .with("warning", () => "bg-yellow-500 dark:bg-yellow-600")
           .exhaustive(),
       ]}
     >
-      <div className="flex gap-2 p-4 items-center">
-        {toast.children(() => {
-          toast.expired = true
-          toasts.notify()
-        })}
+      <div>
+        <ToastItemContext.Provider
+          value={{
+            cancel: () => {
+              toast.expired = true
+              toasts.notify()
+            },
+          }}
+        >
+          <toast.children />
+        </ToastItemContext.Provider>
       </div>
       <ToastProgress toast={toast} />
     </div>
@@ -155,9 +167,7 @@ const ToastItem = memo(({ toast, state, index }: ToastItemProps) => {
 function ToastProgress({ toast }: { toast: Toast }) {
   const styles = useComputed(() => {
     const remaining = toast.remaining.value
-    return {
-      width: `${Math.abs(100 - (remaining / toast.duration) * 100)}%`,
-    }
+    return `width: ${Math.abs(100 - (remaining / toast.duration) * 100)}%`
   })
 
   return <div className="h-1 bg-white/75" style={styles} />

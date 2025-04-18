@@ -7,12 +7,12 @@ import {
   useEffect,
   useLayoutEffect,
   useComputed,
-  useCallback,
 } from "kaioken"
 import { boardElementsMap } from "./state"
-import { createItemAndReorder, deleteItemAndReorder } from "./utils"
+import { deleteItemAndReorder } from "./utils"
 import { ListItemDisplay } from "./ListItemDisplay"
 import { toast } from "$/components/Toasts"
+import { ItemDeletedToastContents } from "./ItemDeletedToastContents"
 
 type ListDisplayProps = {
   list: List
@@ -74,20 +74,7 @@ export function ListDisplay({ list }: ListDisplayProps) {
     toast({
       type: "success",
       pauseOnHover: true,
-      children: (cancel) => {
-        const handleCancelClick = useCallback(async () => {
-          await createItemAndReorder(items.current, item)
-          cancel()
-        }, [])
-        return (
-          <>
-            <p>Item deleted</p>
-            <Button variant="secondary" onclick={handleCancelClick}>
-              Undo
-            </Button>
-          </>
-        )
-      },
+      children: () => <ItemDeletedToastContents items={items} item={item} />,
     })
   }
 

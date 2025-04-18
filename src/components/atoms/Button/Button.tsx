@@ -1,13 +1,7 @@
 import "./Button.css"
 import { unwrap, type ElementProps } from "kaioken"
 
-type ButtonVariant =
-  | "primary"
-  | "secondary"
-  | "danger"
-  | "success"
-  | "link"
-  | "default"
+type ButtonVariant = "primary" | "secondary"
 
 export function Button({
   variant,

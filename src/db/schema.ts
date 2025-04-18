@@ -54,12 +54,13 @@ const items = Collection.create<Item, ItemDTO>()
   .withTransformers({
     create(data) {
       return {
-        ...data,
-        title: "",
-        content: "",
-        created: new Date(),
-        archived: false,
-        id: crypto.randomUUID(),
+        listId: data.listId,
+        order: data.order,
+        title: data.title ?? "",
+        content: data.content ?? "",
+        created: data.created ?? new Date(),
+        archived: data.archived ?? false,
+        id: data.id ?? crypto.randomUUID(),
         refereceItems: [],
       }
     },

@@ -47,8 +47,13 @@ type Item = {
 }
 
 type ItemDTO = {
+  id?: string
   listId: string
   order: number
+  title?: string
+  content?: string
+  created?: Date
+  archived?: boolean
 }
 
 type Tag = {

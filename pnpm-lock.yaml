@@ -14,6 +14,9 @@ importers:
       kaioken:
         specifier: 0.37.0
         version: 0.37.0
+      lit-match:
+        specifier: ^1.0.3
+        version: 1.0.3
       tiny-markdown-editor:
         specifier: ^0.1.31
         version: 0.1.31
@@ -485,6 +488,9 @@ packages:
     resolution: {integrity: sha512-6b6gd/RUXKaw5keVdSEtqFVdzWnU5jMxTUjA2bVcMNPLwSQ08Sv/UodBVtETLCn7k4S1Ibxwh7k68IwLZPgKaA==}
     engines: {node: '>= 12.0.0'}
 
+  lit-match@1.0.3:
+    resolution: {integrity: sha512-eXNuOQemRcUeyfBJUSWp9YoVCaFRtNn5Ghdy1YKW4QYqVbADfUBZlOSCp/eCGB6sJj8cR/TTDqzwMoDij+c8LA==}
+
   magic-string@0.30.17:
     resolution: {integrity: sha512-sNPKHvyjVf7gyjwS4xGTaW/mCnF8wnjtifKBEhxfZ7E/S8tQ0rssrwGNn6q8JH/ohItJfSQp9mBtQYuTlH5QnA==}
 
@@ -870,6 +876,8 @@ snapshots:
       lightningcss-linux-x64-musl: 1.29.2
       lightningcss-win32-arm64-msvc: 1.29.2
       lightningcss-win32-x64-msvc: 1.29.2
+
+  lit-match@1.0.3: {}
 
   magic-string@0.30.17:
     dependencies:

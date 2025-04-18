@@ -19,6 +19,7 @@
   "dependencies": {
     "async-idb-orm": "^5.3.1",
     "kaioken": "0.37.0",
+    "lit-match": "^1.0.3",
     "tiny-markdown-editor": "^0.1.31"
   }
 }

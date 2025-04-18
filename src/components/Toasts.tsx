@@ -170,5 +170,7 @@ function ToastProgress({ toast }: { toast: Toast }) {
     return `width: ${Math.abs(100 - (remaining / toast.duration) * 100)}%`
   })
 
-  return <div className="h-1 bg-white/75" style={styles} />
+  return (
+    <div className="absolute left-0 bottom-0 h-1 bg-white/75" style={styles} />
+  )
 }

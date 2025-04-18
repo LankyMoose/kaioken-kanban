@@ -2,9 +2,11 @@ import { useSignal } from "kaioken"
 import { MoreIcon } from "../../icons/MoreIcon"
 import { ActionMenu } from "../../molecules/ActionMenu/ActionMenu"
 import { jsonExport, jsonImport } from "./utils"
+import { useBoards } from "$/context/boardContext"
 
 export function ImportExportMenu() {
   const menuOpen = useSignal(false)
+  const { reloadBoards } = useBoards()
   return (
     <div className="relative">
       <ActionMenu
@@ -17,7 +19,9 @@ export function ImportExportMenu() {
           },
           {
             text: "Import data",
-            onclick: jsonImport,
+            onclick: () => {
+              jsonImport(reloadBoards)
+            },
           },
         ]}
         button={(ref) => (

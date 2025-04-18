@@ -59,7 +59,7 @@ function BoardItem({ board }: { board: Board }) {
   return (
     <Card
       className={
-        "transition hover:scale-105 cursor-pointer grow w-full md:w-auto"
+        "transition hover:scale-105 cursor-pointer basis-72 grow sm:grow-0"
       }
       onclick={(e) => !e.defaultPrevented && navigate(`/boards/${board.id}`)}
     >

@@ -19,7 +19,7 @@ export async function jsonExport() {
   a.click()
 }
 
-export function jsonImport() {
+export function jsonImport(onSuccess?: () => void) {
   const confirmOverwrite = confirm(
     "Continuing will overwrite your existing data. Are you sure you want to continue?"
   )
@@ -33,6 +33,7 @@ export function jsonImport() {
       const data = await readFile(file)
       console.log("IMPORT", data)
       await importFromJSON(data)
+      onSuccess?.()
     },
   })
   input.click()

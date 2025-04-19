@@ -90,8 +90,19 @@ export function ListItemDisplay({ item, handleDelete }: ListItemDisplayProps) {
       document.body.style.userSelect = "auto"
       document.body.style.cursor = "default"
       clearTimeout(timer)
-      window.removeEventListener("touchmove", handlePointerMove)
-      window.removeEventListener("pointermove", handlePointerMove)
+      window.removeEventListener("resize", cancelScrollOrResize, {
+        capture: true,
+      })
+      window.removeEventListener("scroll", cancelScrollOrResize, {
+        capture: true,
+      })
+
+      window.removeEventListener("touchmove", handlePointerMove, {
+        capture: true,
+      })
+      window.removeEventListener("pointermove", handlePointerMove, {
+        capture: true,
+      })
       window.removeEventListener("touchend", handlePointerUp)
       window.removeEventListener("pointerup", handlePointerUp)
       window.removeEventListener("contextmenu", handleContextMenu)
@@ -99,10 +110,28 @@ export function ListItemDisplay({ item, handleDelete }: ListItemDisplayProps) {
       handleItemDrop()
     }
 
+    const cancelScrollOrResize = (e: Event) => {
+      e.preventDefault()
+    }
+
+    window.addEventListener("resize", cancelScrollOrResize, {
+      capture: true,
+      passive: false,
+    })
+    window.addEventListener("scroll", cancelScrollOrResize, {
+      capture: true,
+      passive: false,
+    })
+    window.addEventListener("touchmove", handlePointerMove, {
+      capture: true,
+      passive: false,
+    })
+    window.addEventListener("pointermove", handlePointerMove, {
+      capture: true,
+      passive: false,
+    })
     window.addEventListener("pointerup", handlePointerUp)
     window.addEventListener("touchend", handlePointerUp)
-    window.addEventListener("touchmove", handlePointerMove)
-    window.addEventListener("pointermove", handlePointerMove)
     window.addEventListener("contextmenu", handleContextMenu)
   }
 

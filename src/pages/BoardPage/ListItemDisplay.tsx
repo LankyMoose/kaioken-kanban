@@ -27,7 +27,7 @@ const v2Dist = function (
 
 export function ListItemDisplay({ item, handleDelete }: ListItemDisplayProps) {
   const btnRef = useRef<HTMLButtonElement>(null)
-  const longPressing = useRef(false)
+  const isDragActive = useRef(false)
 
   const handlePointerDown = (e: PointerEvent) => {
     if (e.currentTarget !== btnRef.current) return
@@ -36,7 +36,7 @@ export function ListItemDisplay({ item, handleDelete }: ListItemDisplayProps) {
     const beginDrag = () => {
       document.body.style.userSelect = "none"
       document.body.style.cursor = "grabbing"
-      longPressing.current = true
+      isDragActive.current = true
       const domRect = el.getBoundingClientRect()
       const element = el.cloneNode(true) as HTMLButtonElement
       element.style.width = `${domRect.width}px`
@@ -58,26 +58,24 @@ export function ListItemDisplay({ item, handleDelete }: ListItemDisplayProps) {
     }
     const el = btnRef.current!
     const timer = setTimeout(() => {
-      if (longPressing.current) return
+      if (isDragActive.current) return
       beginDrag()
     }, 500)
 
     // effectively handles 'long press' event for touch device
     const handleContextMenu = (e: Event) => {
       e.preventDefault()
-      if (longPressing.current) return
+      if (isDragActive.current) return
       beginDrag()
     }
 
     const handlePointerMove = (e: TouchEvent | PointerEvent) => {
-      console.log("handlePointerMove")
       const pos = getEvtPos(e)
       const dist = v2Dist(
         { x: pos.clientX, y: pos.clientY },
         { x: initialPos.clientX, y: initialPos.clientY }
       )
-      if (!longPressing.current && dist > 10) {
-        console.log("!longPressing.current && dist > 10")
+      if (!isDragActive.current && dist > 10) {
         return handlePointerUp()
       }
       if (!itemDragState.value) return
@@ -97,7 +95,7 @@ export function ListItemDisplay({ item, handleDelete }: ListItemDisplayProps) {
       window.removeEventListener("touchend", handlePointerUp)
       window.removeEventListener("pointerup", handlePointerUp)
       window.removeEventListener("contextmenu", handleContextMenu)
-      longPressing.current = false
+      isDragActive.current = false
       handleItemDrop()
     }
 
@@ -117,11 +115,6 @@ export function ListItemDisplay({ item, handleDelete }: ListItemDisplayProps) {
       boardElementsMap[item.listId]?.items.splice(item.order, 1)
     }
   })
-
-  if (itemDragState.value?.item.id === item.id) {
-    return null
-  }
-
   return (
     <button
       data-order={item.order}
@@ -136,7 +129,7 @@ export function ListItemDisplay({ item, handleDelete }: ListItemDisplayProps) {
         "bg-[#eee]",
         "dark:bg-[#202020]",
         "p-2 text-sm flex gap-2 items-start",
-        itemDragState.value?.item.id === item.id && "opacity-50",
+        itemDragState.value?.item.id === item.id && "opacity-50 hidden",
         itemDragState.value?.target.listId === item.listId &&
           itemDragState.value?.target.index === item.order &&
           "mt-(--dragged-item-height)",

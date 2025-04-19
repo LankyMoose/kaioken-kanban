@@ -137,7 +137,7 @@ const ToastItem = memo(({ toast, state, index }: ToastItemProps) => {
       }}
       className={[
         "transition-transform duration-300",
-        "absolute right-4 bottom-4",
+        "absolute right-4 bottom-4 sm:p-2",
         "rounded flex flex-col items-start justify-between overflow-hidden shadow",
         match(toast.type)
           .with("info", () => "bg-blue-500 dark:bg-blue-600")

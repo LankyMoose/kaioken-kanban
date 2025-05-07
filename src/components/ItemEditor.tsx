@@ -1,4 +1,11 @@
-import { Transition, useEffect, useModel, useRef, useState } from "kaioken"
+import {
+  Transition,
+  useComputed,
+  useEffect,
+  useRef,
+  useSignal,
+  useState,
+} from "kaioken"
 import { Input } from "./atoms/Input"
 import { DialogBody } from "./dialog/DialogBody"
 import { DialogHeader } from "./dialog/DialogHeader"
@@ -11,6 +18,7 @@ import { DialogFooter } from "./dialog/DialogFooter"
 import { maxItemNameLength } from "../constants"
 import { useItemsStore } from "../state/items"
 import { MDEditor } from "./MDEditor"
+import { ListItem } from "../idb"
 
 export function ItemEditorModal() {
   const { clickedItem, setClickedItem } = useGlobal()
@@ -41,11 +49,17 @@ export function ItemEditorModal() {
 function ItemEditor() {
   const { setClickedItem, clickedItem } = useGlobal()
   const { updateItem, deleteItem, archiveItem } = useItemsStore()
-
-  const [titleRef, title] = useModel<HTMLInputElement, string>(
-    clickedItem?.item.title || ""
-  )
-  const [content, setContent] = useState(clickedItem?.item.content ?? "")
+  const titleRef = useRef<HTMLInputElement>(null)
+  const title = useSignal(clickedItem?.item.title || "")
+  const content = useSignal(clickedItem?.item.content || "")
+  const disableSave = useComputed(() => {
+    const _title = title.value
+    const _content = content.value
+    return (
+      _title === clickedItem?.item.title &&
+      _content === clickedItem?.item.content
+    )
+  })
 
   const [ctxOpen, setCtxOpen] = useState(false)
   const ctxMenuButtonRef = useRef<HTMLButtonElement | null>(null)
@@ -64,14 +78,21 @@ function ItemEditor() {
 
   async function saveChanges() {
     if (!clickedItem) return
+    const newContent = content.peek()
+    const newTitle = title.peek()
     if (
-      content !== clickedItem.item.content ||
-      title !== clickedItem.item.title
-    ) {
-      const newItem = { ...clickedItem.item, content, title }
-      await updateItem(newItem)
-      close()
+      newContent === clickedItem.item.content &&
+      newTitle === clickedItem.item.title
+    )
+      return
+
+    const newItem: ListItem = {
+      ...clickedItem.item,
+      content: newContent,
+      title: newTitle,
     }
+    await updateItem(newItem)
+    close()
   }
 
   async function handleCtxAction(action: "delete" | "archive") {
@@ -85,6 +106,7 @@ function ItemEditor() {
       <DialogHeader>
         <Input
           ref={titleRef}
+          bind:value={title}
           maxLength={maxItemNameLength}
           placeholder="(Unnamed Item)"
           className="w-full border-0"
@@ -115,20 +137,13 @@ function ItemEditor() {
           <label className="text-sm font-semibold">Description</label>
           <MDEditor
             initialValue={clickedItem?.item.content}
-            onChange={setContent}
+            onChange={(v) => (content.value = v)}
           />
         </div>
       </DialogBody>
       <DialogFooter>
         <span></span>
-        <Button
-          variant="primary"
-          onclick={saveChanges}
-          disabled={
-            title === clickedItem?.item.title &&
-            content === clickedItem?.item.content
-          }
-        >
+        <Button variant="primary" onclick={saveChanges} disabled={disableSave}>
           Save & close
         </Button>
       </DialogFooter>

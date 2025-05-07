@@ -1,4 +1,5 @@
-import { createStore, navigate } from "kaioken"
+import { createStore } from "kaioken"
+import { navigate } from "kaioken/router"
 import { useBoardTagsStore } from "./boardTags"
 import { useItemsStore } from "./items"
 import * as db from "../idb"

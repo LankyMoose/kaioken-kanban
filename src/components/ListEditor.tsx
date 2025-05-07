@@ -1,4 +1,11 @@
-import { Transition, useEffect, useModel, useRef, useState } from "kaioken"
+import {
+  Transition,
+  useComputed,
+  useEffect,
+  useRef,
+  useSignal,
+  useState,
+} from "kaioken"
 import { ClickedList } from "../types"
 import { Input } from "./atoms/Input"
 import { DialogHeader } from "./dialog/DialogHeader"
@@ -37,9 +44,9 @@ export function ListEditorModal() {
 function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
   const { setClickedList } = useGlobal()
   const { updateList, getList, deleteList, archiveList } = useListsStore()
-  const [titleRef, title] = useModel<HTMLInputElement, string>(
-    clickedList?.list.title || ""
-  )
+  const titleRef = useRef<HTMLInputElement>(null)
+  const title = useSignal(clickedList?.list.title || "")
+  const disableSave = useComputed(() => title.value === clickedList?.list.title)
 
   const [ctxOpen, setCtxOpen] = useState(false)
   const ctxMenuButtonRef = useRef<HTMLButtonElement | null>(null)
@@ -52,7 +59,7 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
     if (!clickedList) return
     const list = getList(clickedList.id)
     if (!list) throw new Error("no list, wah wah")
-    await updateList({ ...list, title })
+    await updateList({ ...list, title: title.peek() })
     setClickedList(null)
   }
 
@@ -77,6 +84,7 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
       <DialogHeader className="flex pb-0 mb-0 border-b-0">
         <Input
           ref={titleRef}
+          bind:value={title}
           maxLength={maxListNameLength}
           className="bg-transparent w-full border-0"
           placeholder="(Unnamed List)"
@@ -103,11 +111,7 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
       </DialogHeader>
       <DialogFooter className="mt-2">
         <span></span>
-        <Button
-          variant="primary"
-          onclick={saveChanges}
-          disabled={title === clickedList?.list.title}
-        >
+        <Button variant="primary" onclick={saveChanges} disabled={disableSave}>
           Save & close
         </Button>
       </DialogFooter>

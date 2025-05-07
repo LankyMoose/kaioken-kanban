@@ -1,4 +1,5 @@
-import { useRef, useEffect, useRouter, Link } from "kaioken"
+import { useRef, useEffect } from "kaioken"
+import { Link, useRouter } from "kaioken/router"
 import { Board } from "./components/Board"
 import { useGlobal } from "./state/global"
 

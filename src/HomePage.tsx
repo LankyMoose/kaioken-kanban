@@ -5,7 +5,8 @@ import { LogoIcon } from "./components/icons/LogoIcon"
 import { MoreIcon } from "./components/icons/MoreIcon"
 import { Board, JsonUtils } from "./idb"
 import { useGlobal } from "./state/global"
-import { Link, useRef, useState } from "kaioken"
+import { useRef, useState } from "kaioken"
+import { Link } from "kaioken/router"
 
 function readFile(file: Blob): Promise<string> {
   return new Promise((resolve) => {

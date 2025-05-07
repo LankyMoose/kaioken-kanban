@@ -12,8 +12,8 @@ importers:
         specifier: ^2.0.3
         version: 2.0.3
       kaioken:
-        specifier: 0.36.0
-        version: 0.36.0
+        specifier: 0.38.4
+        version: 0.38.4
       tiny-markdown-editor:
         specifier: ^0.1.31
         version: 0.1.31
@@ -34,8 +34,8 @@ importers:
         specifier: ^6.2.2
         version: 6.2.2(jiti@2.4.2)(lightningcss@1.29.2)
       vite-plugin-kaioken:
-        specifier: 0.16.0
-        version: 0.16.0(kaioken@0.36.0)
+        specifier: 0.18.4
+        version: 0.18.4(kaioken@0.38.4)
 
 packages:
 
@@ -192,6 +192,9 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@jridgewell/sourcemap-codec@1.5.0':
+    resolution: {integrity: sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ==}
 
   '@rollup/rollup-android-arm-eabi@4.35.0':
     resolution: {integrity: sha512-uYQ2WfPaqz5QtVgMxfN6NpLD+no0MYHDBywl7itPYd3K5TjjSghNKmX8ic9S8NU8w81NVhJv/XojcHptRly7qQ==}
@@ -398,8 +401,8 @@ packages:
     resolution: {integrity: sha512-rg9zJN+G4n2nfJl5MW3BMygZX56zKPNVEYYqq7adpmMh4Jn2QNEwhvQlFy6jPVdcod7txZtKHWnyZiA3a0zP7A==}
     hasBin: true
 
-  kaioken@0.36.0:
-    resolution: {integrity: sha512-+FkKudba2OlGjV+UeOE8x3FbOHCOKPE+rK1yQQnT3u8YXiqbgjOjHrd3RI3MZi/r6Ew2hkdZ1rfcOR0KkDAuhw==}
+  kaioken@0.38.4:
+    resolution: {integrity: sha512-8099J0t6V/NVrnJdSGsiXwoye6nnJIHgbwga9O/3oO0JIc2Ybi5zyLoNbokdgIa5WyDuLMm+hEWRjPt2EaSD4A==}
 
   lightningcss-darwin-arm64@1.29.2:
     resolution: {integrity: sha512-cK/eMabSViKn/PG8U/a7aCorpeKLMlK0bQeNHmdb7qUnBkNPnL+oV5DjJUo0kqWsJUapZsM4jCfYItbqBDvlcA==}
@@ -465,6 +468,9 @@ packages:
     resolution: {integrity: sha512-6b6gd/RUXKaw5keVdSEtqFVdzWnU5jMxTUjA2bVcMNPLwSQ08Sv/UodBVtETLCn7k4S1Ibxwh7k68IwLZPgKaA==}
     engines: {node: '>= 12.0.0'}
 
+  magic-string@0.30.17:
+    resolution: {integrity: sha512-sNPKHvyjVf7gyjwS4xGTaW/mCnF8wnjtifKBEhxfZ7E/S8tQ0rssrwGNn6q8JH/ohItJfSQp9mBtQYuTlH5QnA==}
+
   nanoid@3.3.10:
     resolution: {integrity: sha512-vSJJTG+t/dIKAUhUDw/dLdZ9s//5OxcHqLaDWWrW4Cdq7o6tdLIczUkMXt2MBNmk6sJRZBZRXVixs7URY1CmIg==}
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
@@ -501,10 +507,10 @@ packages:
     engines: {node: '>=14.17'}
     hasBin: true
 
-  vite-plugin-kaioken@0.16.0:
-    resolution: {integrity: sha512-R3f6UftBDcAHhIVfTTOUigpLA7Jq6eW3QOwNjajh/EPtHgC3iK4haqMOjBxcACoLuftf7IVAQZVUAa4GJNmMCA==}
+  vite-plugin-kaioken@0.18.4:
+    resolution: {integrity: sha512-NLvSq4ujPJE667dNbNsyKag5D1NNBVmydeLbTDmGvk6QQxamCw6/pnt3GsKLR75BRcWc5VWUhGE/8BwV3MnXJQ==}
     peerDependencies:
-      kaioken: '>=0.36.0'
+      kaioken: '>=0.38.2'
 
   vite@6.2.2:
     resolution: {integrity: sha512-yW7PeMM+LkDzc7CgJuRLMW2Jz0FxMOsVJ8Lv3gpgW9WLcb9cTW+121UEr1hvmfR7w3SegR5ItvYyzVz1vxNJgQ==}
@@ -624,6 +630,8 @@ snapshots:
 
   '@esbuild/win32-x64@0.25.1':
     optional: true
+
+  '@jridgewell/sourcemap-codec@1.5.0': {}
 
   '@rollup/rollup-android-arm-eabi@4.35.0':
     optional: true
@@ -792,7 +800,7 @@ snapshots:
 
   jiti@2.4.2: {}
 
-  kaioken@0.36.0: {}
+  kaioken@0.38.4: {}
 
   lightningcss-darwin-arm64@1.29.2:
     optional: true
@@ -838,6 +846,10 @@ snapshots:
       lightningcss-linux-x64-musl: 1.29.2
       lightningcss-win32-arm64-msvc: 1.29.2
       lightningcss-win32-x64-msvc: 1.29.2
+
+  magic-string@0.30.17:
+    dependencies:
+      '@jridgewell/sourcemap-codec': 1.5.0
 
   nanoid@3.3.10: {}
 
@@ -886,9 +898,10 @@ snapshots:
 
   typescript@5.8.2: {}
 
-  vite-plugin-kaioken@0.16.0(kaioken@0.36.0):
+  vite-plugin-kaioken@0.18.4(kaioken@0.38.4):
     dependencies:
-      kaioken: 0.36.0
+      kaioken: 0.38.4
+      magic-string: 0.30.17
 
   vite@6.2.2(jiti@2.4.2)(lightningcss@1.29.2):
     dependencies:

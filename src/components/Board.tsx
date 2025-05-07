@@ -1,7 +1,6 @@
 import "./Board.css"
 import type { Board as BoardType } from "../idb"
 import {
-  Link,
   Portal,
   Transition,
   useAsync,
@@ -9,6 +8,7 @@ import {
   useRef,
   useState,
 } from "kaioken"
+import { Link } from "kaioken/router"
 import { ItemList } from "./ItemList"
 import type { Vector2 } from "../types"
 import { useGlobal } from "../state/global"

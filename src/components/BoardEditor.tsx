@@ -1,4 +1,11 @@
-import { useModel, useState, useEffect, ElementProps, useRef } from "kaioken"
+import {
+  useState,
+  useEffect,
+  ElementProps,
+  useRef,
+  useSignal,
+  useComputed,
+} from "kaioken"
 import { Board, List, ListItem, loadItems, loadLists, Tag } from "../idb"
 import { useBoardStore } from "../state/board"
 import { Button } from "./atoms/Button"
@@ -45,10 +52,9 @@ function BoardEditor() {
     restoreBoard,
     updateSelectedBoard,
   } = useBoardStore()
-
-  const [titleRef, title] = useModel<HTMLInputElement, string>(
-    board?.title || ""
-  )
+  const titleRef = useRef<HTMLInputElement>(null)
+  const title = useSignal(board?.title || "")
+  const disableSave = useComputed(() => title.value === board?.title)
   const [ctxMenuOpen, setCtxMenuOpen] = useState(false)
   const ctxMenuButtonRef = useRef<HTMLButtonElement | null>(null)
 
@@ -57,7 +63,7 @@ function BoardEditor() {
   }, [])
 
   async function handleSubmit() {
-    const res = await updateSelectedBoard({ ...board, title })
+    const res = await updateSelectedBoard({ ...board, title: title.peek() })
     updateBoards(boards.map((b) => (b.id === res.id ? res : b)))
   }
 
@@ -117,15 +123,12 @@ function BoardEditor() {
       <div className="flex gap-2">
         <Input
           className="bg-black/15 w-full border-0"
+          bind:value={title}
           ref={titleRef}
           maxLength={maxBoardNameLength}
           placeholder="(Unnamed Board)"
         />
-        <Button
-          variant="primary"
-          onclick={handleSubmit}
-          disabled={title === board?.title}
-        >
+        <Button variant="primary" onclick={handleSubmit} disabled={disableSave}>
           Save
         </Button>
       </div>

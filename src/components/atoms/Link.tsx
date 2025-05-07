@@ -1,9 +1,9 @@
-import { Link as L, LinkProps } from "kaioken"
+import { Link as RouterLink, type LinkProps } from "kaioken/router"
 
 export function Link(props: LinkProps) {
   return (
-    <L className="text-blue-500" {...props}>
+    <RouterLink className="text-blue-500" {...props}>
       {props.children}
-    </L>
+    </RouterLink>
   )
 }

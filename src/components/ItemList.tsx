@@ -331,7 +331,7 @@ function Item({
         })
       }
     },
-    [item.id, listId, idx]
+    [item.id, item.title, item.content, listId, idx]
   )
 
   const handleClick = useCallback(() => {

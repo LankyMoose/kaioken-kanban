@@ -1,12 +1,12 @@
+import "./ContextMenu.css"
 import { Transition, useEffect, useMemo, useRef } from "kaioken"
 import { useContextMenu } from "../state/contextMenu"
-import "./ContextMenu.css"
 import { useBoardTagsStore } from "../state/boardTags"
 import { useItemsStore } from "../state/items"
 import { useBoardStore } from "../state/board"
 import { Tag } from "../idb"
 import { toast } from "./Toasts/Toasts"
-import { ItemDeletedToastContents } from "./Toasts/ItemDeletedToastContents"
+import { ToastContentsWithUndo } from "./Toasts/ToastContentsWithUndo"
 
 export function ContextMenu() {
   const menuRef = useRef<HTMLDivElement | null>(null)
@@ -90,7 +90,11 @@ function ContextMenuDisplay() {
     const revert = await deleteItem(item)
     toast({
       type: "info",
-      children: () => <ItemDeletedToastContents revert={revert} />,
+      children: () => (
+        <ToastContentsWithUndo undo={revert}>
+          Item deleted
+        </ToastContentsWithUndo>
+      ),
       pauseOnHover: true,
     })
     reset()
@@ -101,7 +105,11 @@ function ContextMenuDisplay() {
     const revert = await archiveItem(item)
     toast({
       type: "info",
-      children: () => <ItemDeletedToastContents revert={revert} isArchive />,
+      children: () => (
+        <ToastContentsWithUndo undo={revert}>
+          Item archilved
+        </ToastContentsWithUndo>
+      ),
       pauseOnHover: true,
     })
     reset()

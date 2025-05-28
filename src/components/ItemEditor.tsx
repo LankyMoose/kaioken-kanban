@@ -20,7 +20,7 @@ import { useItemsStore } from "../state/items"
 import { MDEditor } from "./MDEditor"
 import { ListItem } from "../idb"
 import { toast } from "./Toasts/Toasts"
-import { ItemDeletedToastContents } from "./Toasts/ItemDeletedToastContents"
+import { ToastContentsWithUndo } from "./Toasts/ToastContentsWithUndo"
 
 export function ItemEditorModal() {
   const { clickedItem, setClickedItem } = useGlobal()
@@ -105,10 +105,9 @@ function ItemEditor() {
     toast({
       type: "info",
       children: () => (
-        <ItemDeletedToastContents
-          revert={revert}
-          isArchive={action === "archive"}
-        />
+        <ToastContentsWithUndo undo={revert}>
+          item {action === "delete" ? "deleted" : "archived"}
+        </ToastContentsWithUndo>
       ),
       pauseOnHover: true,
     })

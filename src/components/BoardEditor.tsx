@@ -21,6 +21,8 @@ import { Drawer } from "./dialog/Drawer"
 import { useListsStore } from "../state/lists"
 import { useBoardTagsStore } from "../state/boardTags"
 import { useItemsStore } from "../state/items"
+import { toast } from "./Toasts/Toasts"
+import { ToastContentsWithUndo } from "./Toasts/ToastContentsWithUndo"
 
 export function BoardEditorDrawer() {
   const { boardEditorOpen, setBoardEditorOpen } = useGlobal()
@@ -69,24 +71,56 @@ function BoardEditor() {
 
   async function handleDeleteClick() {
     if (!board) return
-    const confirmDelete = confirm(
-      "Are you sure you want to delete this board and all of its data? This can't be undone!"
-    )
-    if (!confirmDelete) return
-    await deleteBoard()
-    updateBoards(boards.filter((b) => b.id !== board.id))
+    const restore = await deleteBoard()
+
+    const newBoards = boards.filter((b) => b.id !== board.id)
+    updateBoards(newBoards)
     setBoardEditorOpen(false)
+
+    toast({
+      type: "info",
+      children: () => (
+        <ToastContentsWithUndo
+          undo={async () => {
+            restore()
+            updateBoards([...newBoards, board])
+          }}
+        >
+          Board deleted
+        </ToastContentsWithUndo>
+      ),
+      pauseOnHover: true,
+    })
   }
 
   async function handleArchiveClick() {
     const res = await archiveBoard()
-    updateBoards(boards.map((b) => (b.id === res.id ? res : b)))
+    const newBoards = boards.map((b) => (b.id === res.id ? res : b))
+    updateBoards(newBoards)
     setBoardEditorOpen(false)
+
+    toast({
+      type: "info",
+      children: () => (
+        <ToastContentsWithUndo
+          undo={async () => {
+            await restoreBoard()
+            updateBoards(boards)
+          }}
+        >
+          Board archived
+        </ToastContentsWithUndo>
+      ),
+      pauseOnHover: true,
+    })
   }
 
   async function handleRestoreClick() {
     if (!board) return
     await restoreBoard()
+    updateBoards(
+      boards.map((b) => (b.id === board.id ? { ...board, archived: false } : b))
+    )
     setBoardEditorOpen(false)
   }
 

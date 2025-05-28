@@ -48,6 +48,15 @@ export const useBoardStore = createStore(
 
       set({ board: null })
       navigate("/")
+      return async () => {
+        await Promise.all([
+          ...tags.map((t) => db._db.tags.create(t)),
+          ...itemTags.map((it) => db._db.itemTags.create(it)),
+          ...items.map((i) => db._db.items.create(i)),
+          ...lists.map((l) => db._db.lists.create(l)),
+          db._db.boards.create(board),
+        ])
+      }
     }
     const archiveBoard = async () => {
       const board = get().board!

@@ -90,6 +90,7 @@ export type ItemTag = InferRecord<typeof itemTags>
 export type ItemTagDTO = InferDto<typeof itemTags>
 
 const db = idb("kanban", { boards, lists, items, tags, itemTags }, 3)
+export { db as _db }
 
 const JsonUtils = {
   export: async () => {

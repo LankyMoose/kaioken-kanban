@@ -22,6 +22,7 @@ export const ToastContentsWithUndo = ({
     <div className="flex gap-2 pl-4 pr-2 py-2 items-center">
       <p className="text-white text-shadow">{children}</p>
       <button
+        title={"Undo"}
         disabled={cancelling}
         onclick={handleCancelClick}
         className="text-white bg-black/10 hover:bg-black/30 px-2 py-1 rounded"

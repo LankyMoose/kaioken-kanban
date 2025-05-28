@@ -69,6 +69,10 @@ function BoardEditor() {
 
   async function handleDeleteClick() {
     if (!board) return
+    const confirmDelete = confirm(
+      "Are you sure you want to delete this board and all of its data? This can't be undone!"
+    )
+    if (!confirmDelete) return
     await deleteBoard()
     updateBoards(boards.filter((b) => b.id !== board.id))
     setBoardEditorOpen(false)

@@ -34,10 +34,6 @@ export const useBoardStore = createStore(
     const deleteBoard = async () => {
       const board = get().board!
       if (!board) throw "no board, yikes!"
-      const confirmDelete = confirm(
-        "Are you sure you want to delete this board and all of its data? This can't be undone!"
-      )
-      if (!confirmDelete) return
 
       const { items } = useItemsStore.getState()
       const { tags, itemTags } = useBoardTagsStore.getState()

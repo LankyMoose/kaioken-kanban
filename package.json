@@ -9,16 +9,16 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.0.14",
+    "@tailwindcss/postcss": "^4.1.7",
     "postcss": "^8.5.3",
-    "tailwindcss": "^4.0.14",
-    "typescript": "^5.8.2",
-    "vite": "^6.2.2",
-    "vite-plugin-kaioken": "0.18.4"
+    "tailwindcss": "^4.1.7",
+    "typescript": "^5.8.3",
+    "vite": "^6.3.5",
+    "vite-plugin-kaioken": "0.19.0"
   },
   "dependencies": {
     "async-idb-orm": "^2.0.3",
-    "kaioken": "0.38.4",
+    "kaioken": "0.39.0",
     "tiny-markdown-editor": "^0.1.31"
   }
 }

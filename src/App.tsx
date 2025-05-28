@@ -3,6 +3,7 @@ import { GlobalProvider } from "./state/GlobalProvider"
 import { BoardPage } from "./BoardPage"
 import { HomePage } from "./HomePage"
 import { Portal } from "kaioken"
+import { Toasts } from "./components/Toasts/Toasts"
 
 export function App() {
   return (
@@ -11,7 +12,9 @@ export function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/boards/:boardId" element={<BoardPage />} />
       </Router>
-      <Portal container={document.getElementById("toast-root")!}></Portal>
+      <Portal container={document.getElementById("toast-root")!}>
+        <Toasts />
+      </Portal>
     </GlobalProvider>
   )
 }

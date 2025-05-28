@@ -98,7 +98,12 @@ function ContextMenuDisplay() {
 
   async function handleArchive() {
     if (!item) return
-    await archiveItem(item)
+    const revert = await archiveItem(item)
+    toast({
+      type: "info",
+      children: () => <ItemDeletedToastContents revert={revert} isArchive />,
+      pauseOnHover: true,
+    })
     reset()
   }
 

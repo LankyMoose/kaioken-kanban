@@ -14,10 +14,10 @@ const useListsStore = createStore({ lists: [] as List[] }, function (set, get) {
     if (!board) throw "no board selected"
     return board
   }
-  const handleListRemoved = async (id: number) => {
+  const updateListOrders = async (id: number) => {
     const newLists = await Promise.all(
       get()
-        .lists.filter((l) => l.id !== id)
+        .lists.filter((l) => l.id !== id && !l.archived)
         .map(async (list, i) => {
           if (list.order !== i) {
             list.order = i
@@ -42,13 +42,17 @@ const useListsStore = createStore({ lists: [] as List[] }, function (set, get) {
     const list = getList(id)
     if (!list) throw new Error("dafooq, no list")
     await db.archiveList(list)
-    await handleListRemoved(id)
+    await updateListOrders(id)
+
+    return async () => {
+      await db._db.lists.update({ ...list, archived: false })
+      const newState = get()
+      newState.lists.splice(list.order, 0, list)
+      set(newState)
+      await updateListOrders(-1)
+    }
   }
   const deleteList = async (id: number) => {
-    const confirmDeletion = confirm(
-      "Are you sure you want to delete this list and all of its data? It can't be undone!"
-    )
-    if (!confirmDeletion) return
     const list = getList(id)
     if (!list) throw new Error("no list, wah wah")
     const { itemTags } = useBoardTagsStore.getState()
@@ -59,8 +63,22 @@ const useListsStore = createStore({ lists: [] as List[] }, function (set, get) {
         .filter((it) => listItems.some((li) => it.itemId === li.id))
         .map(db.deleteItemTag),
       db.deleteList(list),
-      handleListRemoved(id),
     ])
+    await updateListOrders(id)
+
+    return async () => {
+      await Promise.all([
+        ...listItems.map((li) => db._db.items.create(li)),
+        ...itemTags
+          .filter((it) => listItems.some((li) => it.itemId === li.id))
+          .map((it) => db._db.itemTags.create(it)),
+        db._db.lists.create(list),
+      ])
+      const newState = get()
+      newState.lists.splice(list.order, 0, list)
+      set(newState)
+      await updateListOrders(-1)
+    }
   }
   const updateList = async (payload: List) => {
     const list = await db.updateList(payload)

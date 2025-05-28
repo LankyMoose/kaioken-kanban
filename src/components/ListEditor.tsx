@@ -17,6 +17,8 @@ import { DialogFooter } from "./dialog/DialogFooter"
 import { Button } from "./atoms/Button"
 import { maxListNameLength } from "../constants"
 import { useListsStore } from "../state/lists"
+import { ToastContentsWithUndo } from "./Toasts/ToastContentsWithUndo"
+import { toast } from "./Toasts/Toasts"
 
 export function ListEditorModal() {
   const { clickedList, setClickedList } = useGlobal()
@@ -65,18 +67,20 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
 
   async function handleCtxAction(action: "delete" | "archive") {
     if (!clickedList) return
-    switch (action) {
-      case "delete": {
-        await deleteList(clickedList.id)
-        setClickedList(null)
-        break
-      }
-      case "archive": {
-        await archiveList(clickedList.id)
-        setClickedList(null)
-        break
-      }
-    }
+    const revert = await (action === "delete" ? deleteList : archiveList)(
+      clickedList.id
+    )
+    setClickedList(null)
+
+    toast({
+      type: "info",
+      children: () => (
+        <ToastContentsWithUndo undo={revert}>
+          list {action === "delete" ? "deleted" : "archived"}
+        </ToastContentsWithUndo>
+      ),
+      pauseOnHover: true,
+    })
   }
 
   return (

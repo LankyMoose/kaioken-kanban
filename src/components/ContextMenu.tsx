@@ -5,6 +5,8 @@ import { useBoardTagsStore } from "../state/boardTags"
 import { useItemsStore } from "../state/items"
 import { useBoardStore } from "../state/board"
 import { Tag } from "../idb"
+import { toast } from "./Toasts/Toasts"
+import { ItemDeletedToastContents } from "./Toasts/ItemDeletedToastContents"
 
 export function ContextMenu() {
   const menuRef = useRef<HTMLDivElement | null>(null)
@@ -85,7 +87,12 @@ function ContextMenuDisplay() {
 
   async function handleDelete() {
     if (!item) return
-    await deleteItem(item)
+    const revert = await deleteItem(item)
+    toast({
+      type: "info",
+      children: () => <ItemDeletedToastContents revert={revert} />,
+      pauseOnHover: true,
+    })
     reset()
   }
 

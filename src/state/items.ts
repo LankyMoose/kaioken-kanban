@@ -32,6 +32,16 @@ const useItemsStore = createStore(
         .map((item) => updatedListitems.find((i) => i.id === item.id) ?? item)
     }
 
+    const insertItemAndReorderList = async (payload: ListItem) => {
+      const items = getListItems(payload.listId).sort(
+        (a, b) => a.order - b.order
+      )
+      items.splice(payload.order, 0, payload)
+      return Promise.all(
+        items.map((item, i) => db.updateItem({ ...item, order: i }))
+      )
+    }
+
     const handleItemDrop = async (
       clickedItem: ClickedItem,
       itemDragTarget: ItemDragTarget
@@ -113,25 +123,33 @@ const useItemsStore = createStore(
       set(({ items }) => ({ items: [...items, newItem] }))
     }
     const deleteItem = async (payload: ListItem) => {
-      const confirmDelete = confirm(
-        "Are you sure you want to delete this item? It can't be undone!"
-      )
-      if (!confirmDelete) return
       const { itemTags } = useBoardTagsStore.getState()
+      const tags = itemTags.filter((it) => it.itemId === payload.id)
       await Promise.all([
-        ...itemTags
-          .filter((it) => it.itemId === payload.id)
-          .map((it) => db.deleteItemTag(it)),
+        ...tags.map((it) => db.deleteItemTag(it)),
         db.deleteItem(payload),
       ])
 
       const newItems = await removeItemAndReorderList(payload)
       set({ items: newItems })
+      return async () => {
+        const items = await insertItemAndReorderList(payload)
+        await Promise.all(
+          tags.map((it) => db.addItemTag(it.boardId, it.itemId, it.tagId))
+        )
+        set({ items })
+      }
     }
     const archiveItem = async (payload: ListItem) => {
       await db.archiveItem(payload)
       const newItems = await removeItemAndReorderList(payload)
       set({ items: newItems })
+
+      return async () => {
+        const item = await db.updateItem({ ...payload, archived: false })
+        const newItems = await insertItemAndReorderList(item)
+        set({ items: newItems })
+      }
     }
     const setState = async (payload: ListItem[]) => {
       set({ items: payload })

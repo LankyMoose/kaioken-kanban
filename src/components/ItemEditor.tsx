@@ -19,6 +19,8 @@ import { maxItemNameLength } from "../constants"
 import { useItemsStore } from "../state/items"
 import { MDEditor } from "./MDEditor"
 import { ListItem } from "../idb"
+import { toast } from "./Toasts/Toasts"
+import { ItemDeletedToastContents } from "./Toasts/ItemDeletedToastContents"
 
 export function ItemEditorModal() {
   const { clickedItem, setClickedItem } = useGlobal()
@@ -97,7 +99,19 @@ function ItemEditor() {
 
   async function handleCtxAction(action: "delete" | "archive") {
     if (!clickedItem) return
-    await (action === "delete" ? deleteItem : archiveItem)(clickedItem.item)
+    const revert = await (action === "delete" ? deleteItem : archiveItem)(
+      clickedItem.item
+    )
+    toast({
+      type: "info",
+      children: () => (
+        <ItemDeletedToastContents
+          revert={revert}
+          isArchive={action === "archive"}
+        />
+      ),
+      pauseOnHover: true,
+    })
     close()
   }
 

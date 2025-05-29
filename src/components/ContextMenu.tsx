@@ -107,7 +107,7 @@ function ContextMenuDisplay() {
       type: "info",
       children: () => (
         <ToastContentsWithUndo undo={revert}>
-          Item archilved
+          Item archived
         </ToastContentsWithUndo>
       ),
       pauseOnHover: true,

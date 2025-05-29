@@ -131,24 +131,36 @@ const useItemsStore = createStore(
       ])
 
       const newItems = await removeItemAndReorderList(payload)
-      set({ items: newItems })
+      set((prev) => ({
+        items: [...prev.items.filter((i) => i.id !== payload.id), ...newItems],
+      }))
+
       return async () => {
         const items = await insertItemAndReorderList(payload)
         await Promise.all(
           tags.map((it) => db.addItemTag(it.boardId, it.itemId, it.tagId))
         )
-        set({ items })
+        set((prev) => ({
+          items: [...prev.items.filter((i) => i.id !== payload.id), ...items],
+        }))
       }
     }
     const archiveItem = async (payload: ListItem) => {
       await db.archiveItem(payload)
       const newItems = await removeItemAndReorderList(payload)
-      set({ items: newItems })
+      set((prev) => ({
+        items: [...prev.items.filter((i) => i.id !== payload.id), ...newItems],
+      }))
 
       return async () => {
         const item = await db.updateItem({ ...payload, archived: false })
         const newItems = await insertItemAndReorderList(item)
-        set({ items: newItems })
+        set((prev) => ({
+          items: [
+            ...prev.items.filter((i) => i.id !== payload.id),
+            ...newItems,
+          ],
+        }))
       }
     }
     const setState = async (payload: ListItem[]) => {

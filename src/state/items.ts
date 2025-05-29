@@ -17,19 +17,24 @@ const useItemsStore = createStore(
         (acc, item) => (item.order > acc ? item.order : acc),
         -1
       )
-    const removeItemAndReorderList = async (payload: ListItem) => {
-      const updatedListitems = await Promise.all(
-        getListItems(payload.listId)
-          .filter((i) => i.id !== payload.id)
+
+    const updateItemOrders = async (id: number) => {
+      const newItems = await Promise.all(
+        get()
+          .items.filter((item) => item.listId === id)
           .map(async (item, i) => {
-            if (item.order === i) return item
-            item.order = i
-            return await db.updateItem(item)
+            if (item.order !== i) {
+              item.order = i
+              await db.updateItem(item)
+            }
+            return item
           })
       )
-      return get()
-        .items.filter((item) => item.id !== payload.id)
-        .map((item) => updatedListitems.find((i) => i.id === item.id) ?? item)
+      set({
+        items: get()
+          .items.filter((item) => item.listId !== id)
+          .concat(newItems),
+      })
     }
 
     const insertItemAndReorderList = async (payload: ListItem) => {
@@ -38,7 +43,9 @@ const useItemsStore = createStore(
       )
       items.splice(payload.order, 0, payload)
       return Promise.all(
-        items.map((item, i) => db.updateItem({ ...item, order: i }))
+        items
+          .filter((item) => item.listId === payload.listId)
+          .map((item, i) => db.updateItem({ ...item, order: i }))
       )
     }
 
@@ -129,11 +136,10 @@ const useItemsStore = createStore(
         ...tags.map((it) => db.deleteItemTag(it)),
         db.deleteItem(payload),
       ])
-
-      const newItems = await removeItemAndReorderList(payload)
       set((prev) => ({
-        items: [...prev.items.filter((i) => i.id !== payload.id), ...newItems],
+        items: prev.items.filter((i) => i.id !== payload.id),
       }))
+      await updateItemOrders(payload.listId)
 
       return async () => {
         const items = await insertItemAndReorderList(payload)
@@ -141,15 +147,22 @@ const useItemsStore = createStore(
           tags.map((it) => db.addItemTag(it.boardId, it.itemId, it.tagId))
         )
         set((prev) => ({
-          items: [...prev.items.filter((i) => i.id !== payload.id), ...items],
+          items: prev.items
+            .filter((i) => i.listId !== payload.listId)
+            .concat(items),
         }))
+        updateItemOrders(payload.listId)
       }
     }
     const archiveItem = async (payload: ListItem) => {
       await db.archiveItem(payload)
-      const newItems = await removeItemAndReorderList(payload)
       set((prev) => ({
-        items: [...prev.items.filter((i) => i.id !== payload.id), ...newItems],
+        items: prev.items.filter((i) => i.id !== payload.id),
+      }))
+      await updateItemOrders(payload.listId)
+
+      set((prev) => ({
+        items: prev.items.filter((i) => i.id !== payload.id),
       }))
 
       return async () => {
@@ -157,7 +170,7 @@ const useItemsStore = createStore(
         const newItems = await insertItemAndReorderList(item)
         set((prev) => ({
           items: [
-            ...prev.items.filter((i) => i.id !== payload.id),
+            ...prev.items.filter((i) => i.listId !== payload.listId),
             ...newItems,
           ],
         }))

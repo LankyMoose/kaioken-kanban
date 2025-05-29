@@ -1,105 +1,159 @@
-import { idb, model, Field, InferRecord, InferDto } from "async-idb-orm"
+import { idb, Collection } from "async-idb-orm"
 
-export {
-  // boards
-  loadBoards,
-  updateBoard,
-  addBoard,
-  deleteBoard,
-  archiveBoard,
-  // lists
-  loadLists,
-  updateList,
-  addList,
-  deleteList,
-  archiveList,
-  // items
-  loadItems,
-  updateItem,
-  addItem,
-  deleteItem,
-  archiveItem,
-  // tags
-  loadTags,
-  updateTag,
-  addTag,
-  deleteTag,
-  addItemTag,
-  deleteItemTag,
-  deleteTagAndRelations,
-  // import/export
-  JsonUtils,
+export { addBoard, loadTags, deleteTagAndRelations, JsonUtils, db }
+
+export type Board = {
+  id: number
+  uuid: string
+  title: string
+  created: Date
+  archived: boolean
+  order: number
 }
 
-const boards = model({
-  id: Field.number({ key: true }),
-  uuid: Field.string({ default: () => crypto.randomUUID() as string }),
-  title: Field.string({ default: () => "" }),
-  created: Field.date({ default: () => new Date() }),
-  archived: Field.boolean({ default: () => false }),
-  order: Field.number({ default: () => 0 }),
+export type BoardDTO = {
+  id?: number
+  uuid?: string
+  title?: string
+  created?: Date
+  archived?: boolean
+  order?: number
+}
+
+const boards = Collection.create<Board, BoardDTO>()
+  .withKeyPath("id", { autoIncrement: true })
+  .withTransformers({
+    create: (dto: BoardDTO) => ({
+      ...dto,
+      uuid: dto.uuid ?? crypto.randomUUID(),
+      created: dto.created ?? new Date(),
+      archived: dto.archived ?? false,
+      order: dto.order ?? 0,
+      title: dto.title ?? "",
+    }),
+  })
+
+export type List = {
+  id: number
+  boardId: number
+  title: string
+  created: Date
+  archived: boolean
+  order: number
+}
+
+export type ListDTO = {
+  id?: number
+  boardId: number
+  title?: string
+  created?: Date
+  archived?: boolean
+  order?: number
+}
+
+const lists = Collection.create<List, ListDTO>()
+  .withKeyPath("id", { autoIncrement: true })
+  .withTransformers({
+    create: (dto: ListDTO) => ({
+      ...dto,
+      created: dto.created ?? new Date(),
+      archived: dto.archived ?? false,
+      order: dto.order ?? 0,
+      title: dto.title ?? "",
+    }),
+  })
+
+export type ListItem = {
+  id: number
+  listId: number
+  title: string
+  content: string
+  created: Date
+  archived: boolean
+  refereceItems: number[]
+  order: number
+}
+
+export type ListItemDTO = {
+  id?: number
+  listId: number
+  title?: string
+  content?: string
+  created?: Date
+  archived?: boolean
+  refereceItems?: number[]
+  order?: number
+}
+
+const items = Collection.create<ListItem, ListItemDTO>()
+  .withKeyPath("id", { autoIncrement: true })
+  .withTransformers({
+    create: (dto: ListItemDTO) => ({
+      ...dto,
+      created: dto.created ?? new Date(),
+      archived: dto.archived ?? false,
+      order: dto.order ?? 0,
+      title: dto.title ?? "",
+      content: dto.content ?? "",
+      refereceItems: dto.refereceItems ?? [],
+    }),
+  })
+
+export type Tag = {
+  id: number
+  boardId: number
+  title: string
+  color: string
+}
+
+export type TagDTO = {
+  id?: number
+  boardId: number
+  title?: string
+  color?: string
+}
+
+const tags = Collection.create<Tag, TagDTO>()
+  .withKeyPath("id", { autoIncrement: true })
+  .withTransformers({
+    create: (dto: TagDTO) => ({
+      ...dto,
+      title: dto.title ?? "",
+      color: dto.color ?? "#402579",
+    }),
+  })
+
+export type ItemTag = {
+  id: number
+  boardId: number
+  itemId: number
+  tagId: number
+}
+
+export type ItemTagDTO = {
+  id?: number
+  boardId: number
+  itemId: number
+  tagId: number
+}
+
+const itemTags = Collection.create<ItemTag, ItemTagDTO>().withKeyPath("id", {
+  autoIncrement: true,
 })
 
-export type Board = InferRecord<typeof boards>
-export type BoardDTO = InferDto<typeof boards>
-
-const lists = model({
-  id: Field.number({ key: true }),
-  boardId: Field.number(),
-  title: Field.string({ default: () => "" }),
-  created: Field.date({ default: () => new Date() }),
-  archived: Field.boolean({ default: () => false }),
-  order: Field.number({ default: () => 0 }),
+const db = idb("kanban", {
+  schema: { boards, lists, items, tags, itemTags },
+  version: 3,
 })
-
-export type List = InferRecord<typeof lists>
-export type ListDTO = InferDto<typeof lists>
-
-const items = model({
-  id: Field.number({ key: true }),
-  listId: Field.number(),
-  title: Field.string({ default: () => "" }),
-  content: Field.string({ default: () => "" }),
-  created: Field.date({ default: () => new Date() }),
-  archived: Field.boolean({ default: () => false }),
-  refereceItems: Field.array(Field.number()),
-  order: Field.number({ default: () => 0 }),
-})
-
-export type ListItem = InferRecord<typeof items>
-export type ListItemDTO = InferDto<typeof items>
-
-const tags = model({
-  id: Field.number({ key: true }),
-  boardId: Field.number(),
-  title: Field.string({ default: () => "" }),
-  color: Field.string({ default: () => "#402579" }),
-})
-
-export type Tag = InferRecord<typeof tags>
-export type TagDTO = InferDto<typeof tags>
-
-const itemTags = model({
-  id: Field.number({ key: true }),
-  itemId: Field.number(),
-  tagId: Field.number(),
-  boardId: Field.number(),
-})
-
-export type ItemTag = InferRecord<typeof itemTags>
-export type ItemTagDTO = InferDto<typeof itemTags>
-
-const db = idb("kanban", { boards, lists, items, tags, itemTags }, 3)
-export { db as _db }
 
 const JsonUtils = {
   export: async () => {
     const [boards, lists, items, tags, itemTags] = await Promise.all([
-      db.boards.all(),
-      db.lists.all(),
-      db.items.all(),
-      db.tags.all(),
-      db.itemTags.all(),
+      db.collections.boards.all(),
+      db.collections.lists.all(),
+      db.collections.items.all(),
+      db.collections.tags.all(),
+      db.collections.itemTags.all(),
     ])
     return JSON.stringify({
       boards,
@@ -118,11 +172,11 @@ const JsonUtils = {
       })
 
       await Promise.all([
-        db.boards.clear(),
-        db.lists.clear(),
-        db.items.clear(),
-        db.tags.clear(),
-        db.itemTags.clear(),
+        db.collections.boards.clear(),
+        db.collections.lists.clear(),
+        db.collections.items.clear(),
+        db.collections.tags.clear(),
+        db.collections.itemTags.clear(),
       ])
 
       const { boards, lists, items, tags, itemTags } = parsed as {
@@ -133,11 +187,11 @@ const JsonUtils = {
         itemTags: ItemTag[]
       }
       await Promise.all([
-        ...boards.map((b) => db.boards.create(b)),
-        ...lists.map((l) => db.lists.create(l)),
-        ...items.map((i) => db.items.create(i)),
-        ...tags.map((t) => db.tags.create(t)),
-        ...itemTags.map((it) => db.itemTags.create(it)),
+        ...boards.map((b) => db.collections.boards.create(b)),
+        ...lists.map((l) => db.collections.lists.create(l)),
+        ...items.map((i) => db.collections.items.create(i)),
+        ...tags.map((t) => db.collections.tags.create(t)),
+        ...itemTags.map((it) => db.collections.itemTags.create(it)),
       ])
     } catch (error) {
       alert("an error occured while importing your data: " + error)
@@ -145,67 +199,22 @@ const JsonUtils = {
   },
 }
 
-// Boards
-
-const loadBoards = async () => await db.boards.all()
-
-const updateBoard = (board: Board) => db.boards.update(board) as Promise<Board>
-
 const addBoard = async () => {
-  const board = await db.boards.create({})
-  if (!board) throw new Error("failed to create board")
-  await addList(board.id)
-  return board as Board
+  const board = await db.collections.boards.create({})
+  const list = await db.collections.lists.create({
+    boardId: board.id,
+    order: 0,
+  })
+  await db.collections.items.create({ listId: list.id, order: 0 })
+  return board
 }
-
-const deleteBoard = (board: Board) => db.boards.delete(board.id)
-
-const archiveBoard = (board: Board) =>
-  db.boards.update({ ...board, archived: true })
-
-// Lists
-
-const loadLists = (boardId: number, archived = false) =>
-  db.lists.findMany((l) => {
-    return l.boardId === boardId && l.archived === archived
-  }) as Promise<List[]>
-
-const updateList = (list: List) => db.lists.update(list) as Promise<List>
-
-const addList = (boardId: number, order = 0) =>
-  db.lists.create({ boardId, order }) as Promise<List>
-
-const deleteList = (list: List) => db.lists.delete(list.id)
-
-const archiveList = (list: List) =>
-  db.lists.update({ ...list, archived: true }) as Promise<List>
-
-// Items
-
-const loadItems = (listId: number, archived = false) =>
-  db.items.findMany((i) => {
-    return i.listId === listId && i.archived === archived
-  }) as Promise<ListItem[]>
-
-const updateItem = (item: ListItem) =>
-  db.items.update(item) as Promise<ListItem>
-
-const addItem = (listId: number, order = 0) =>
-  db.items.create({ listId, refereceItems: [], order }) as Promise<ListItem>
-
-const deleteItem = (item: ListItem) => db.items.delete(item.id)
-
-const archiveItem = (item: ListItem) =>
-  db.items.update({ ...item, archived: true }) as Promise<ListItem>
-
-// Tags
 
 const loadTags = async (
   boardId: number
 ): Promise<{ tags: Tag[]; itemTags: ItemTag[] }> => {
   const [tags, itemTags] = await Promise.all([
-    db.tags.findMany((t) => t.boardId === boardId),
-    db.itemTags.findMany((t) => t.boardId === boardId),
+    db.collections.tags.findMany((t) => t.boardId === boardId),
+    db.collections.itemTags.findMany((t) => t.boardId === boardId),
   ])
   return {
     tags,
@@ -213,23 +222,12 @@ const loadTags = async (
   }
 }
 
-const updateTag = (tag: Tag) => db.tags.update(tag) as Promise<Tag>
-
-const addTag = (boardId: number) => db.tags.create({ boardId }) as Promise<Tag>
-
-const deleteTag = async (tag: Tag) => db.tags.delete(tag.id)
-
 const deleteTagAndRelations = async (tag: Tag) => {
-  await db.tags.delete(tag.id)
-  const iTags = await db.itemTags.findMany((it) => it.tagId === tag.id)
-  await Promise.all(iTags.map((iTag) => db.itemTags.delete(iTag.id)))
+  await db.collections.tags.delete(tag.id)
+  const iTags = await db.collections.itemTags.findMany(
+    (it) => it.tagId === tag.id
+  )
+  await Promise.all(
+    iTags.map((iTag) => db.collections.itemTags.delete(iTag.id))
+  )
 }
-
-const addItemTag = (boardId: number, itemId: number, tagId: number) =>
-  db.itemTags.create({
-    boardId,
-    itemId,
-    tagId,
-  }) as Promise<ItemTag>
-
-const deleteItemTag = (itemTag: ItemTag) => db.itemTags.delete(itemTag.id)

@@ -1,6 +1,6 @@
 import { createStore } from "kaioken"
 import { ClickedItem, ItemDragTarget } from "../types"
-import * as db from "../idb"
+import { db } from "../idb"
 import { useBoardTagsStore } from "./boardTags"
 import { ListItem } from "../idb"
 
@@ -25,7 +25,7 @@ const useItemsStore = createStore(
           .map(async (item, i) => {
             if (item.order !== i) {
               item.order = i
-              await db.updateItem(item)
+              await db.collections.items.update(item)
             }
             return item
           })
@@ -45,7 +45,10 @@ const useItemsStore = createStore(
       return Promise.all(
         items
           .filter((item) => item.listId === payload.listId)
-          .map((item, i) => db.updateItem({ ...item, order: i }))
+          .map(
+            async (item, i) =>
+              (await db.collections.items.update({ ...item, order: i }))!
+          )
       )
     }
 
@@ -69,10 +72,10 @@ const useItemsStore = createStore(
 
       itemList.splice(clickedItem.index, 1)
 
-      const applyItemOrder = (item: ListItem, idx: number) => {
+      const applyItemOrder = async (item: ListItem, idx: number) => {
         if (item.order === idx) return item
         item.order = idx
-        return db.updateItem(item)
+        return (await db.collections.items.update(item))!
       }
 
       if (isOriginList) {
@@ -89,11 +92,11 @@ const useItemsStore = createStore(
         const newOriginItems = await Promise.all(itemList.map(applyItemOrder))
 
         const newTargetListItems = await Promise.all(
-          targetList.map((item, i) => {
+          targetList.map(async (item, i) => {
             if (item.id === clickedItem.id) {
               item.order = i
               item.listId = itemDragTarget.listId
-              return db.updateItem(item)
+              return (await db.collections.items.update(item))!
             }
             return applyItemOrder(item, i)
           })
@@ -110,19 +113,22 @@ const useItemsStore = createStore(
     }
     const addItem = async (listId: number) => {
       const maxListOrder = getMaxListOrder(listId)
-      const item = await db.addItem(listId, maxListOrder + 1)
+      const item = await db.collections.items.create({
+        listId,
+        order: maxListOrder + 1,
+      })
       set(({ items }) => ({ items: [...items, item] }))
       return item
     }
     const updateItem = async (payload: ListItem) => {
-      const newItem = await db.updateItem(payload)
+      const newItem = (await db.collections.items.update(payload))!
       set(({ items }) => ({
         items: items.map((item) => (item.id === newItem.id ? newItem : item)),
       }))
     }
     const restoreItem = async (payload: ListItem) => {
       const maxListOrder = getMaxListOrder(payload.listId)
-      const newItem = await db.updateItem({
+      const newItem = await db.collections.items.create({
         ...payload,
         archived: false,
         order: maxListOrder + 1,
@@ -133,8 +139,8 @@ const useItemsStore = createStore(
       const { itemTags } = useBoardTagsStore.getState()
       const tags = itemTags.filter((it) => it.itemId === payload.id)
       await Promise.all([
-        ...tags.map((it) => db.deleteItemTag(it)),
-        db.deleteItem(payload),
+        ...tags.map((it) => db.collections.itemTags.delete(it.id)),
+        db.collections.items.delete(payload.id),
       ])
       set((prev) => ({
         items: prev.items.filter((i) => i.id !== payload.id),
@@ -143,9 +149,7 @@ const useItemsStore = createStore(
 
       return async () => {
         const items = await insertItemAndReorderList(payload)
-        await Promise.all(
-          tags.map((it) => db.addItemTag(it.boardId, it.itemId, it.tagId))
-        )
+        await Promise.all(tags.map((it) => db.collections.itemTags.create(it)))
         set((prev) => ({
           items: prev.items
             .filter((i) => i.listId !== payload.listId)
@@ -155,7 +159,7 @@ const useItemsStore = createStore(
       }
     }
     const archiveItem = async (payload: ListItem) => {
-      await db.archiveItem(payload)
+      await db.collections.items.update({ ...payload, archived: true })
       set((prev) => ({
         items: prev.items.filter((i) => i.id !== payload.id),
       }))
@@ -166,7 +170,10 @@ const useItemsStore = createStore(
       }))
 
       return async () => {
-        const item = await db.updateItem({ ...payload, archived: false })
+        const item = (await db.collections.items.update({
+          ...payload,
+          archived: false,
+        }))!
         const newItems = await insertItemAndReorderList(item)
         set((prev) => ({
           items: [

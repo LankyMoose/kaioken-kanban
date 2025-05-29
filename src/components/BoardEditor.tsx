@@ -6,7 +6,7 @@ import {
   useSignal,
   useComputed,
 } from "kaioken"
-import { Board, List, ListItem, loadItems, loadLists, Tag } from "../idb"
+import { Board, db, List, ListItem, Tag } from "../idb"
 import { useBoardStore } from "../state/board"
 import { Button } from "./atoms/Button"
 import { Input } from "./atoms/Input"
@@ -256,7 +256,11 @@ function ArchivedItems({ board }: { board: Board | null }) {
     ;(async () => {
       const res = await Promise.all(
         lists.map(async (list) => {
-          return (await loadItems(list.id, true)).map((item) => ({
+          return (
+            await db.collections.items.findMany(
+              (it) => it.listId === list.id && it.archived
+            )
+          ).map((item) => ({
             ...item,
             list: list.title,
           }))
@@ -315,7 +319,9 @@ function ArchivedLists({ board }: { board: Board | null }) {
     if (!board) return
     setLoading(true)
     ;(async () => {
-      const res = await loadLists(board.id, true)
+      const res = await db.collections.lists.findMany(
+        (l) => l.boardId === board.id && l.archived
+      )
       setLists(res)
       setLoading(false)
     })()

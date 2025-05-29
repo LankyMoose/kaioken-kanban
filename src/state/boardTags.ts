@@ -1,6 +1,10 @@
 import { createStore } from "kaioken"
-import * as db from "../idb"
-import { ItemTag, Tag } from "../idb"
+import {
+  db,
+  ItemTag,
+  Tag,
+  deleteTagAndRelations as db_deleteTagAndRelations,
+} from "../idb"
 
 export { useBoardTagsStore }
 
@@ -16,11 +20,15 @@ const useBoardTagsStore = createStore(
       itemId: number
       tagId: number
     }) => {
-      const itemTag = await db.addItemTag(boardId, itemId, tagId)
+      const itemTag = await db.collections.itemTags.create({
+        boardId,
+        itemId,
+        tagId,
+      })
       set((prev) => ({ ...prev, itemTags: [...prev.itemTags, itemTag] }))
     }
     const removeItemTag = async (itemTag: ItemTag) => {
-      await db.deleteItemTag(itemTag)
+      await db.collections.itemTags.delete(itemTag.id)
       set((prev) => ({
         ...prev,
         itemTags: prev.itemTags.filter((it) => it.id !== itemTag.id),
@@ -28,7 +36,7 @@ const useBoardTagsStore = createStore(
     }
 
     const deleteTagAndRelations = async (tag: Tag) => {
-      await db.deleteTagAndRelations(tag)
+      await db_deleteTagAndRelations(tag)
       set((prev) => ({
         tags: prev.tags.filter((t) => t.id !== tag.id),
         itemTags: prev.itemTags.filter((it) => it.tagId !== tag.id),
@@ -36,12 +44,12 @@ const useBoardTagsStore = createStore(
     }
 
     const addTag = async (boardId: number) => {
-      const tag = await db.addTag(boardId)
+      const tag = await db.collections.tags.create({ boardId })
       set((prev) => ({ ...prev, tags: [...prev.tags, tag] }))
     }
 
     const updateTag = async (tag: Tag) => {
-      const newTag = await db.updateTag(tag)
+      const newTag = (await db.collections.tags.update(tag))!
       set((prev) => ({
         ...prev,
         tags: prev.tags.map((t) => (t.id === tag.id ? newTag : t)),

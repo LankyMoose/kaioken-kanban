@@ -2,9 +2,8 @@ import { createStore } from "kaioken"
 import type { ClickedList, ListDragTarget } from "../types"
 import { useBoardStore } from "./board"
 import { getListItems } from "./items"
-import * as db from "../idb"
 import { useBoardTagsStore } from "./boardTags"
-import { List } from "../idb"
+import { List, db } from "../idb"
 
 export { useListsStore }
 
@@ -21,7 +20,7 @@ const useListsStore = createStore({ lists: [] as List[] }, function (set, get) {
         .map(async (list, i) => {
           if (list.order !== i) {
             list.order = i
-            await db.updateList(list)
+            return (await db.collections.lists.update(list))!
           }
           return list
         })
@@ -34,18 +33,21 @@ const useListsStore = createStore({ lists: [] as List[] }, function (set, get) {
 
   const addList = async () => {
     const maxListOrder = getMaxListOrder()
-    const newList = await db.addList(getBoardOrDie().id, maxListOrder + 1)
+    const newList = await db.collections.lists.create({
+      boardId: getBoardOrDie().id,
+      order: maxListOrder + 1,
+    })
     set(({ lists }) => ({ lists: [...lists, { ...newList, items: [] }] }))
     return newList
   }
   const archiveList = async (id: number) => {
     const list = getList(id)
     if (!list) throw new Error("dafooq, no list")
-    await db.archiveList(list)
+    await db.collections.lists.update({ ...list, archived: true })
     await updateListOrders(id)
 
     return async () => {
-      await db._db.lists.update({ ...list, archived: false })
+      await db.collections.lists.update({ ...list, archived: false })
       const newState = get()
       newState.lists.splice(list.order, 0, list)
       set(newState)
@@ -58,21 +60,21 @@ const useListsStore = createStore({ lists: [] as List[] }, function (set, get) {
     const { itemTags } = useBoardTagsStore.getState()
     const listItems = getListItems(list.id)
     await Promise.all([
-      ...listItems.map(db.deleteItem),
+      ...listItems.map((li) => db.collections.items.delete(li.id)),
       ...itemTags
         .filter((it) => listItems.some((li) => it.itemId === li.id))
-        .map(db.deleteItemTag),
-      db.deleteList(list),
+        .map((it) => db.collections.itemTags.delete(it.id)),
+      db.collections.lists.delete(list.id),
     ])
     await updateListOrders(id)
 
     return async () => {
       await Promise.all([
-        ...listItems.map((li) => db._db.items.create(li)),
+        ...listItems.map((li) => db.collections.items.create(li)),
         ...itemTags
           .filter((it) => listItems.some((li) => it.itemId === li.id))
-          .map((it) => db._db.itemTags.create(it)),
-        db._db.lists.create(list),
+          .map((it) => db.collections.itemTags.create(it)),
+        db.collections.lists.create(list),
       ])
       const newState = get()
       newState.lists.splice(list.order, 0, list)
@@ -81,7 +83,7 @@ const useListsStore = createStore({ lists: [] as List[] }, function (set, get) {
     }
   }
   const updateList = async (payload: List) => {
-    const list = await db.updateList(payload)
+    const list = (await db.collections.lists.update(payload))!
     set(({ lists }) => ({
       lists: lists.map((l) => (l.id === list.id ? list : l)),
     }))
@@ -93,8 +95,10 @@ const useListsStore = createStore({ lists: [] as List[] }, function (set, get) {
       archived: false,
       order: maxListOrder + 1,
     }
-    await db.updateList(newList)
-    const items = await db.loadItems(list.id)
+    await db.collections.lists.update(newList)
+    const items = await db.collections.items.findMany(
+      (i) => i.listId === list.id && !i.archived
+    )
     set(({ lists }) => ({ lists: [...lists, { ...newList, items }] }))
   }
   const handleListDrop = async (
@@ -119,7 +123,7 @@ const useListsStore = createStore({ lists: [] as List[] }, function (set, get) {
         sortedLists.map(async (list, i) => {
           if (list.order === i) return list
           list.order = i
-          await db.updateList(list)
+          await db.collections.lists.update(list)
           return list
         })
       )

@@ -9,17 +9,17 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.8",
-    "postcss": "^8.5.3",
-    "tailwindcss": "^4.1.8",
+    "@tailwindcss/postcss": "^4.1.11",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.11",
     "typescript": "^5.8.3",
-    "vite": "^6.3.5",
-    "vite-plugin-kaioken": "0.19.0"
+    "vite": "^7.0.0",
+    "vite-plugin-kaioken": "0.20.4"
   },
   "dependencies": {
-    "async-idb-orm": "^5.4.0",
-    "kaioken": "0.39.0",
-    "lit-match": "^1.0.3",
-    "tiny-markdown-editor": "^0.1.31"
+    "async-idb-orm": "7.2.0",
+    "kaioken": "0.40.5",
+    "lit-match": "1.0.3",
+    "tiny-markdown-editor": "0.1.31"
   }
 }

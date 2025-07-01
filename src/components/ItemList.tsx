@@ -189,7 +189,7 @@ export function ItemList({ list }: { list: List }) {
 
     const x = rect.left - dropAreaRect.x - rootElement.scrollLeft
     const y = rect.y - dropAreaRect.y - rootElement.scrollTop
-    return `transform: translate(calc(${x}px - 1rem), calc(${y}px - 1rem))`
+    return `position:absolute; transform: translate(calc(${x}px - 1rem), calc(${y}px - 1rem))`
   }
 
   return (
@@ -370,18 +370,20 @@ function Item({
       onclick={handleClick}
       data-id={item.id}
     >
-      <span>{item.title || "(Unnamed Item)"}</span>
-      <div className="flex gap-2 flex-wrap">
-        {itemItemTags.map((tag) => (
-          <span
-            key={tag.id}
-            className="px-[4px] py-[1px] text-xs"
-            style={{ backgroundColor: tag.color }}
-          >
-            {tag.title}
-          </span>
-        ))}
-      </div>
+      <span className="font-light">{item.title || "(Unnamed Item)"}</span>
+      {itemItemTags.length > 0 && (
+        <div className="flex gap-2 flex-wrap">
+          {itemItemTags.map((tag) => (
+            <span
+              key={tag.id}
+              className="px-[4px] py-[1px] text-xs"
+              style={{ backgroundColor: tag.color }}
+            >
+              {tag.title}
+            </span>
+          ))}
+        </div>
+      )}
     </button>
   )
 }

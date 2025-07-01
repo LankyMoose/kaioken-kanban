@@ -9,26 +9,35 @@ type DrawerProps = {
 
 export function Drawer({ state, close, children }: DrawerProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null)
-  if (state == "exited") return null
-  const opacity = state === "entered" ? "1" : "0"
-  const translateX = state === "entered" ? 0 : 100
-
+  const didPtrDownBackdrop = useRef(false)
   useEffect(() => {
+    function handleKeyPress(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        e.preventDefault()
+        if (state === "exited") return
+        close()
+      }
+    }
     window.addEventListener("keyup", handleKeyPress)
     return () => window.removeEventListener("keyup", handleKeyPress)
-  }, [])
+  }, [state])
 
-  function handleKeyPress(e: KeyboardEvent) {
-    if (e.key === "Escape") {
-      e.preventDefault()
-      close()
-    }
-  }
+  if (state == "exited") return null
+
+  const opacity = state === "entered" ? "1" : "0"
+  const translateX = state === "entered" ? 0 : 100
 
   return (
     <Backdrop
       ref={wrapperRef}
-      onclick={(e) => e.target === wrapperRef.current && close()}
+      onpointerdown={(e) =>
+        e.target === wrapperRef.current && (didPtrDownBackdrop.current = true)
+      }
+      onpointerup={(e) =>
+        e.target === wrapperRef.current &&
+        didPtrDownBackdrop.current &&
+        ((didPtrDownBackdrop.current = false), close())
+      }
       style={{ opacity }}
     >
       <div

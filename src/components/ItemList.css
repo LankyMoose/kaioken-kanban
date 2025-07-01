@@ -29,11 +29,6 @@
   transition: none;
 }
 
-.list.selected {
-  position: absolute;
-}
-
-
 .list-header {
   display: flex;
   padding-inline: var(--list-header-padding-x);
@@ -126,7 +121,6 @@
   margin-top: 0;
   transition: margin-top .15s ease;
   background: rgba(255, 255, 255, .025);
-  min-height: var(--item-height);
   text-align: left;
 }
 

@@ -2,11 +2,11 @@ import "./Board.css"
 import type { Board as BoardType } from "../idb"
 import {
   Portal,
+  signal,
   Transition,
   useAsync,
   useEffect,
   useRef,
-  useState,
 } from "kaioken"
 import { Link } from "kaioken/router"
 import { ItemList } from "./ItemList"
@@ -17,7 +17,7 @@ import { ItemEditorModal } from "./ItemEditor"
 import { ListEditorModal } from "./ListEditor"
 import { ListItemClone } from "./ListItemClone"
 import { ListClone } from "./ListClone"
-import { MouseCtx } from "../state/mouse"
+import { mousePos } from "../state/mouse"
 import { BoardEditorDrawer } from "./BoardEditor"
 import { ChevronLeftIcon } from "./icons/ChevronLeftIcon"
 import { MoreIcon } from "./icons/MoreIcon"
@@ -27,6 +27,8 @@ import { ContextMenu } from "./ContextMenu"
 import { useBoardStore } from "../state/board"
 
 const autoScrollSpeed = 10
+
+const autoScrollVec = signal<Vector2>({ x: 0, y: 0 })
 
 export function Board({ board }: { board: BoardType }) {
   const { selectBoard } = useBoardStore()
@@ -47,8 +49,6 @@ export function Board({ board }: { board: BoardType }) {
     handleListDrag,
   } = useGlobal()
   const animFrameRef = useRef(-1)
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
-  const [autoScrollVec, setAutoScrollVec] = useState<Vector2>({ x: 0, y: 0 })
   const { handleItemDrop } = useItemsStore()
   const { handleListDrop } = useListsStore()
   const boardInnerRef = useRef<HTMLDivElement | null>(null)
@@ -59,10 +59,10 @@ export function Board({ board }: { board: BoardType }) {
 
   useEffect(() => {
     const v = getAutoScrollVec()
-    if (v.x !== autoScrollVec.x || v.y !== autoScrollVec.y) {
-      setAutoScrollVec(v)
+    if (v.x !== autoScrollVec.value.x || v.y !== autoScrollVec.value.y) {
+      autoScrollVec.value = v
     }
-  }, [mousePos, clickedItem, clickedList])
+  }, [clickedItem, clickedList])
 
   useEffect(() => {
     animFrameRef.current = requestAnimationFrame(applyAutoScroll)
@@ -76,10 +76,10 @@ export function Board({ board }: { board: BoardType }) {
 
   function applyAutoScroll() {
     if (rootElement) {
-      if (autoScrollVec.x !== 0)
-        rootElement.scrollLeft += autoScrollVec.x * autoScrollSpeed
-      if (autoScrollVec.y !== 0)
-        rootElement.scrollTop += autoScrollVec.y * autoScrollSpeed
+      if (autoScrollVec.value.x !== 0)
+        rootElement.scrollLeft += autoScrollVec.value.x * autoScrollSpeed
+      if (autoScrollVec.value.y !== 0)
+        rootElement.scrollTop += autoScrollVec.value.y * autoScrollSpeed
     }
 
     animFrameRef.current = requestAnimationFrame(applyAutoScroll)
@@ -90,14 +90,14 @@ export function Board({ board }: { board: BoardType }) {
     const res: Vector2 = { x: 0, y: 0 }
     if (!clickedItem?.dragging && !clickedList?.dragging) return res
 
-    if (mousePos.x + scrollPadding > window.innerWidth) {
+    if (mousePos.value.x + scrollPadding > window.innerWidth) {
       res.x++
-    } else if (mousePos.x - scrollPadding < 0) {
+    } else if (mousePos.value.x - scrollPadding < 0) {
       res.x--
     }
-    if (mousePos.y + scrollPadding > window.innerHeight) {
+    if (mousePos.value.y + scrollPadding > window.innerHeight) {
       res.y++
-    } else if (mousePos.y - scrollPadding < 0) {
+    } else if (mousePos.value.y - scrollPadding < 0) {
       res.y--
     }
     return res
@@ -132,10 +132,10 @@ export function Board({ board }: { board: BoardType }) {
   }
 
   function handleMouseMove(e: MouseEvent) {
-    setMousePos({
+    mousePos.value = {
       x: e.clientX,
       y: e.clientY,
-    })
+    }
     if (clickedList && !clickedList.dragging) {
       setClickedList({
         ...clickedList,
@@ -150,7 +150,7 @@ export function Board({ board }: { board: BoardType }) {
   }
 
   return (
-    <MouseCtx.Provider value={{ current: mousePos, setValue: setMousePos }}>
+    <>
       <Nav />
       <div
         id="board"
@@ -207,7 +207,7 @@ export function Board({ board }: { board: BoardType }) {
           <ContextMenu />
         </Portal>
       </div>
-    </MouseCtx.Provider>
+    </>
   )
 }
 

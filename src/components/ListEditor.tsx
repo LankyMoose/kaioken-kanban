@@ -22,7 +22,6 @@ import { toast } from "./Toasts/Toasts"
 
 export function ListEditorModal() {
   const { clickedList, setClickedList } = useGlobal()
-  if (!clickedList) return null
   return (
     <Transition
       in={clickedList?.dialogOpen || false}
@@ -31,7 +30,7 @@ export function ListEditorModal() {
         <Modal
           state={state}
           close={() => {
-            const tgt = clickedList.sender?.target
+            const tgt = clickedList?.sender?.target
             if (tgt && tgt instanceof HTMLElement) tgt.focus()
             setClickedList(null)
           }}
@@ -93,6 +92,7 @@ function ListEditor({ clickedList }: { clickedList: ClickedList | null }) {
           className="bg-transparent w-full border-0"
           placeholder="(Unnamed List)"
           onfocus={(e) => (e.target as HTMLInputElement)?.select()}
+          onkeyup={(e) => (e.key === "Enter" ? saveChanges() : null)}
         />
         <div className="relative">
           <button

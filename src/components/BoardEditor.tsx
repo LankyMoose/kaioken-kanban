@@ -1,11 +1,4 @@
-import {
-  useState,
-  useEffect,
-  ElementProps,
-  useRef,
-  useSignal,
-  useComputed,
-} from "kaioken"
+import { useState, useEffect, ElementProps, useRef, useSignal } from "kaioken"
 import { Board, db, List, ListItem, Tag } from "../idb"
 import { useBoardStore } from "../state/board"
 import { Button } from "./atoms/Button"
@@ -56,7 +49,6 @@ function BoardEditor() {
   } = useBoardStore()
   const titleRef = useRef<HTMLInputElement>(null)
   const title = useSignal(board?.title || "")
-  const disableSave = useComputed(() => title.value === board?.title)
   const [ctxMenuOpen, setCtxMenuOpen] = useState(false)
   const ctxMenuButtonRef = useRef<HTMLButtonElement | null>(null)
 
@@ -165,8 +157,13 @@ function BoardEditor() {
           ref={titleRef}
           maxLength={maxBoardNameLength}
           placeholder="(Unnamed Board)"
+          onkeypress={(e) => e.key === "Enter" && handleSubmit()}
         />
-        <Button variant="primary" onclick={handleSubmit} disabled={disableSave}>
+        <Button
+          variant="primary"
+          onclick={handleSubmit}
+          disabled={title.value === board?.title}
+        >
           Save
         </Button>
       </div>

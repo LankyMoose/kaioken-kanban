@@ -42,13 +42,10 @@ const useItemsStore = createStore(
         (a, b) => a.order - b.order
       )
       items.splice(payload.order, 0, payload)
-      return Promise.all(
-        items
+      return db.collections.items.upsert(
+        ...items
           .filter((item) => item.listId === payload.listId)
-          .map(
-            async (item, i) =>
-              (await db.collections.items.update({ ...item, order: i }))!
-          )
+          .map((item, order) => ({ ...item, order }))
       )
     }
 

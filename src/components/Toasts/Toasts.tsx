@@ -11,6 +11,7 @@ import {
   useMemo,
   useRef,
 } from "kaioken"
+import { className as cls } from "kaioken/utils"
 import { match } from "lit-match"
 
 export type Toast = {
@@ -133,7 +134,7 @@ const ToastItem = memo(({ toast, state, index }: ToastItemProps) => {
       style={{
         transform: `translate(${translateX}px, ${translateY})`,
       }}
-      className={[
+      className={cls(
         "transition-transform duration-300",
         "absolute right-4 bottom-4 sm:p-2",
         "rounded flex flex-col items-start justify-between overflow-hidden shadow",
@@ -142,8 +143,8 @@ const ToastItem = memo(({ toast, state, index }: ToastItemProps) => {
           .with("success", () => "bg-green-600 dark:bg-green-700")
           .with("danger", () => "bg-red-500 dark:bg-red-600")
           .with("warning", () => "bg-yellow-500 dark:bg-yellow-600")
-          .exhaustive(),
-      ]}
+          .exhaustive()
+      )}
     >
       <div>
         <ToastItemContext.Provider

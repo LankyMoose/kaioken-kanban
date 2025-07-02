@@ -198,7 +198,7 @@ export function Board({ board }: { board: BoardType }) {
           }}
         />
 
-        <Portal container={document.getElementById("portal")!}>
+        <Portal container={document.getElementById("portal-root")!}>
           {clickedItem?.dragging && <ListItemClone item={clickedItem} />}
           {clickedList?.dragging && <ListClone list={clickedList} />}
           <ItemEditorModal />
